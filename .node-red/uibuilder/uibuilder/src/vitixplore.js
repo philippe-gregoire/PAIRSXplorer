@@ -45,6 +45,7 @@ var appViti = new Vue({
         endDay      : new Date().toISOString().split("T")[0],
         map         : null,
         refPointMarker: null,
+        pageWait    : false,
         layersListHTML : '<tr><td>Not there yet</td></tr>',
         feVersion   : '',
         counterBtn  : 0,
@@ -96,6 +97,7 @@ var appViti = new Vue({
       },
       getLayers: function(event) {
         this.sendToNodered('getLayers',{'pos': this.curPos, 'startDay' : this.startDay, 'endDay' : this.endDay})
+        this.pageWait=true
       },
       moveTo: function(event) {
         this.map.flyTo(this.curPos,this.map.getZoom()+1)
@@ -201,13 +203,11 @@ var appViti = new Vue({
                   var layer=layersFlat[layerId]
                   return `<tr><td>${layer.name}</td><td>${layer.Min.toFixed(2)}</td><td>${layer.Mean.toFixed(2)}</td><td>${layer.Max.toFixed(2)}</td><td> <input type="range" min="${layer.Min}" value="${layer.Mean}" max="${layer.Max}" class="slider" id="layer_${layer.layerId}"></td></tr>`
               }).join('')
+              vueApp.pageWait=false
               //layerListHTML=`<table style="color:green;line-height: 80%;">${layerListHTML}</table>`
             } else {
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
             }
-
-
-
         })
 
         // // If Socket.IO connects/disconnects, we get true/false here
