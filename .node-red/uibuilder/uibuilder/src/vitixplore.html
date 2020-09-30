@@ -85,8 +85,19 @@
 
     <b-container id="appViti_container_2">
       <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
-      <h1>PAIRS Viti Xplorer v0.4 page 2</h1>
-      <table id="layersListTable" style="color:green;line-height: 80%;" v-html="layersListHTML"></table>
+      <h1>PAIRS Viti Xplorer v0.5 page 2</h1>
+      <p v-if="qryPos">Query results at latitude: {{qryPos.lat}} Longitude: {{qryPos.lng}}</p>
+      <table v-if="qryLayers" id="layersListTable" style="color:green;line-height: 80%;">
+        <thead>
+        <tr><th>Name</th><th>Min</th><th>Mean</th><th>Max</th><th>Range<th></tr>
+      </thead>
+      <tbody>
+        <tr v-for="l in qryLayers">
+          <td>{{l.name}}</td><td>{{l.Min.toFixed(2)}}</td><td>{{l.Mean.toFixed(2)}}</td><td>{{l.Max.toFixed(2)}}</td>
+          <td><input type="range" v-bind:min="l.Min" v-bind:value="l.Mean" v-bind:max="l.Max" class="slider" v-bind:id="'slider-'+l.layerID"></input></td>
+        </tr>
+      </tbody>
+      </table>
     </b-container>
   </div>
 

@@ -37,10 +37,13 @@ var appViti = new Vue({
     el: '#appViti',
     data: {
         startMsg    : 'VitiVue has started, waiting for messages',
-        refPos      : {lat : INIT_LAT, lng :INIT_LNG},
-        refZoom     : INIT_ZOOM,
+        initPos      : {lat : INIT_LAT, lng :INIT_LNG},
+        initZoom     : INIT_ZOOM,
         curPos      : {lat : null, lng : null},
         curZoom     : null,
+//        qryPos      : {lat : null, lng : null},
+        qryPos      : null,
+        qryLayers   : null,
         startDay    : new Date(new Date()-1000*3600*24*30.5*MONTHS_BACK).toISOString().split("T")[0],  // About 6 months back
         endDay      : new Date().toISOString().split("T")[0],
         map         : null,
@@ -181,8 +184,8 @@ var appViti = new Vue({
             } else if (msg.topic=='setRefPointMarker') {
               vueApp.setRefPointMarker(msg.payload.pos)
             } else if (msg.topic=='getLayers') {
-              var lat=msg.payload.data[0].latitude
-              var lng=msg.payload.data[0].longitude
+              // Set the Query position
+              vueApp.qryPos={"lat":msg.payload.data[0].latitude, "lng":msg.payload.data[0].longitude}
 
               console.log('Got layers',msg.payload.data)
               // first group all the layers by layer ID and flatten Min-Mean-Max
@@ -197,9 +200,10 @@ var appViti = new Vue({
               },{})
 
               console.log(layersFlat)
-              console.log(Object.keys(layersFlat))
+              console.debug(Object.keys(layersFlat))
+              vueApp.qryLayers=layersFlat
 
-              vueApp.layersListHTML=`Lat: ${lat} Lng: ${lng}<BR>`+Object.keys(layersFlat).map(function(layerId) {
+              vueApp.layersListHTML=Object.keys(layersFlat).map(function(layerId) {
                   var layer=layersFlat[layerId]
                   return `<tr><td>${layer.name}</td><td>${layer.Min.toFixed(2)}</td><td>${layer.Mean.toFixed(2)}</td><td>${layer.Max.toFixed(2)}</td><td> <input type="range" min="${layer.Min}" value="${layer.Mean}" max="${layer.Max}" class="slider" id="layer_${layer.layerId}"></td></tr>`
               }).join('')
@@ -233,10 +237,10 @@ var appViti = new Vue({
         }
 
         vueApp.map=createOpenStreetMap(L,PAIRS_MAPID,overlayMaps)
-        vueApp.curPos=vueApp.refPos
-        vueApp.curZoom=vueApp.refZoom
+        vueApp.curPos=vueApp.initPos
+        vueApp.curZoom=vueApp.initZoom
 
-        vueApp.setView(vueApp.refPos,vueApp.refZoom)
+        vueApp.setView(vueApp.initPos,vueApp.initZoom)
 
         vueApp.map.on('moveend',vueApp.mapMoveEnd)
         vueApp.map.on('zoomend',vueApp.mapZoomEnd)
