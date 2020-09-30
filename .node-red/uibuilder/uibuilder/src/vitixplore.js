@@ -36,37 +36,27 @@ const DEFAULT_FLYTO_SEC = 2
 var appViti = new Vue({
     el: '#appViti',
     data: {
-        startMsg    : 'VitiVue has started, waiting for messages',
-        initPos      : {lat : INIT_LAT, lng :INIT_LNG},
-        initZoom     : INIT_ZOOM,
+        curPage     : 1,
+        initPos     : {lat : INIT_LAT, lng :INIT_LNG},
+        initZoom    : INIT_ZOOM,
+        layersDict  : null, // Dict of layers indexed by layerID
+        // ---- Current position and dates
         curPos      : {lat : null, lng : null},
         curZoom     : null,
-//        qryPos      : {lat : null, lng : null},
-        qryPos      : null,
-        qryLayers   : null,
         startDay    : new Date(new Date()-1000*3600*24*30.5*MONTHS_BACK).toISOString().split("T")[0],  // About 6 months back
         endDay      : new Date().toISOString().split("T")[0],
+        ///############## Query
+        qryRunning  : false, // true while query is running
+        qryPos      : null,
+        qryLayers   : null,
+        // ---- Map variables
         map         : null,
         refPointMarker: null,
-        pageWait    : false,
-        layersListHTML : '<tr><td>Not there yet</td></tr>',
+        // -- Misc
         feVersion   : '',
-        counterBtn  : 0,
-        inputText   : null,
-        inputChkBox : false,
         socketConnectedState : false,
         serverTimeOffset     : '[unknown]',
         imgProps             : { width: 75, height: 75 },
-
-        // msgRecvd    : '[Nothing]',
-        // msgsReceived: 0,
-        // msgCtrl     : '[Nothing]',
-        // msgsControl : 0,
-        //
-        // msgSent     : '[Nothing]',
-        // msgsSent    : 0,
-        // msgCtrlSent : '[Nothing]',
-        // msgsCtrlSent: 0,
     }, // --- End of data --- //
     computed: {
         hLastRcvd: function() {
@@ -98,9 +88,12 @@ var appViti = new Vue({
       initMap: function(event) {
         this.sendToNodered('initMap',{'point': {'lat':this.refLat, 'lng': this.refLng}})
       },
-      getLayers: function(event) {
-        this.sendToNodered('getLayers',{'pos': this.curPos, 'startDay' : this.startDay, 'endDay' : this.endDay})
-        this.pageWait=true
+      initLayers: function() {
+        this.sendToNodered('initLayers',{})
+      },
+      loadLayers: function(event) {
+        this.sendToNodered('loadLayers',{'pos': this.curPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
+        this.qryRunning=true
       },
       moveTo: function(event) {
         this.map.flyTo(this.curPos,this.map.getZoom()+1)
@@ -112,7 +105,7 @@ var appViti = new Vue({
       setView: function(pos,zoom) {
         this.map.setView(pos,zoom?zoom:this.map.getZoom())
       },
-      addLayers : function(wmsLayers) {
+      addLayers: function(wmsLayers) {
         console.log('Adding WMS layers from ',wmsLayers)
         wmsOverlays={}
 
@@ -123,21 +116,10 @@ var appViti = new Vue({
         console.log("Adding WMS overlays ",wmsOverlays)
         L.control.layers(null, wmsOverlays).addTo(this.map);
       },
-      mapMoveEnd: function(event) {
-        console.debug('mapMoveEnd evt:',event)
-        this.sendToNodered(event.type,{'pos':event.target._lastCenter, 'zoom':event.target._zoom})
-      },
-      mapZoomEnd: function(event) {
-        console.debug('mapZoomEnd evt:',event)
-        this.sendToNodered(event.type,{'pos':event.target._lastCenter, 'zoom':event.target._zoom})
-      },
-      mapMove: function(event) {
-        console.debug('mapMove evt:',event)
-        this.sendToNodered(event.type,{'pos':event.target._lastCenter, 'zoom':event.target._zoom})
-      },
-      mapClick: function(event) {
-        console.debug('mapClick evt:',event)
-        this.sendToNodered(event.type,{'pos':event.latlng, 'zoom':event.target._zoom})
+      mapEvent: function(event) {
+        console.debug('mapEvent evt:',event)
+        var eventName='map'+event.type.charAt(0).toUpperCase() + event.type.slice(1)
+        this.sendToNodered(eventName,{'pos':event.target._lastCenter, 'zoom':event.target._zoom})
       },
       setRefPointMarker: function (pos) {
         if (this.refPointMarker) {
@@ -165,6 +147,7 @@ var appViti = new Vue({
          * e.g. uibuilder.start('uib', '/nr/uibuilder/vendor/socket.io') // change to use your paths/names
          */
         uibuilder.start()
+        console.log("UIBuilder events=",uibuilder.events)
 
         // Keep track of vueApp from this scope
         var vueApp = this
@@ -174,8 +157,15 @@ var appViti = new Vue({
 
         // ACt on messages received from Node-RED backend
         // If msg changes - msg is updated when a standard msg is received from Node-RED over Socket.IO
-        uibuilder.onChange('msg', function(msg){
-            if(msg.topic=='setView') {
+        uibuilder.onChange('msg', function(msg) {
+            if('pairsError' in msg) {
+              console.log(`PAIRS returned error for ${msg.topic}: ${msg.payload}`)
+            }
+
+            if(msg.topic=='init') {
+              // ask for the list of layers
+              vueApp.initLayers()
+            } else if(msg.topic=='setView') {
               vueApp.setView(msg.payload.pos,msg.payload.zoom)
             } else if (msg.topic=='flyTo') {
               vueApp.flyTo(msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
@@ -183,32 +173,36 @@ var appViti = new Vue({
               vueApp.addlayers(msg.payload.layers)
             } else if (msg.topic=='setRefPointMarker') {
               vueApp.setRefPointMarker(msg.payload.pos)
-            } else if (msg.topic=='getLayers') {
-              // Set the Query position
-              vueApp.qryPos={"lat":msg.payload.data[0].latitude, "lng":msg.payload.data[0].longitude}
+            } else if (msg.topic=='initLayers') {
+              // We got the details list of layers (array in msg.payload)
+              vueApp.layersDict=msg.payload.reduce(
+                function(dict,layer,index) {
+                  dict[layer.id]=layer
+                  return dict},
+                  {})
+            } else if (msg.topic=='loadLayers') {
+              if(!('pairsError' in msg)) {
+                // Set the Query position
+                vueApp.qryPos={"lat":msg.payload.data[0].latitude, "lng":msg.payload.data[0].longitude}
 
-              console.log('Got layers',msg.payload.data)
-              // first group all the layers by layer ID and flatten Min-Mean-Max
-              let layersFlat=msg.payload.data.reduce(function(acc,layer) {
-                if(!(layer.layerId in acc)) {
-                	acc[layer.layerId]={name: layer.layerName, id:layer.layerId, dataset: layer.dataset}
-                }
-                // lat=layer.latitude
-                // lng=layer.longitude
-                acc[layer.layerId][layer.aggregation]=parseFloat(layer.value)
-                return acc
-              },{})
+                console.debug('Got layers',msg.payload.data)
 
-              console.log(layersFlat)
-              console.debug(Object.keys(layersFlat))
-              vueApp.qryLayers=layersFlat
+                // first group all the layers by layer ID and flatten Min-Mean-Max
+                let layersFlat=msg.payload.data.reduce(function(acc,layer) {
+                  if(!(layer.layerId in acc)) {
+                  	acc[layer.layerId]={name: layer.layerName, id:layer.layerId, dataset: layer.dataset}
+                  }
+                  // lat=layer.latitude
+                  // lng=layer.longitude
+                  acc[layer.layerId][layer.aggregation]=parseFloat(layer.value)
+                  return acc
+                },{})
 
-              vueApp.layersListHTML=Object.keys(layersFlat).map(function(layerId) {
-                  var layer=layersFlat[layerId]
-                  return `<tr><td>${layer.name}</td><td>${layer.Min.toFixed(2)}</td><td>${layer.Mean.toFixed(2)}</td><td>${layer.Max.toFixed(2)}</td><td> <input type="range" min="${layer.Min}" value="${layer.Mean}" max="${layer.Max}" class="slider" id="layer_${layer.layerId}"></td></tr>`
-              }).join('')
-              vueApp.pageWait=false
-              //layerListHTML=`<table style="color:green;line-height: 80%;">${layerListHTML}</table>`
+                vueApp.qryLayers=layersFlat
+              }
+
+              // in any case, cancel the wait
+              vueApp.qryRunning=false
             } else {
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
             }
@@ -242,13 +236,10 @@ var appViti = new Vue({
 
         vueApp.setView(vueApp.initPos,vueApp.initZoom)
 
-        vueApp.map.on('moveend',vueApp.mapMoveEnd)
-        vueApp.map.on('zoomend',vueApp.mapZoomEnd)
-        vueApp.map.on('move',vueApp.mapMove)
-        vueApp.map.on('click',vueApp.mapClick)
-
-    	  // addMapClick(cScope,map,mapid)
-        //
+        vueApp.map.on('moveend',vueApp.mapEvent)
+        vueApp.map.on('zoomend',vueApp.mapEvent)
+        vueApp.map.on('move',vueApp.mapEvent)
+        vueApp.map.on('click',vueApp.mapEvent)
 
     } // --- End of mounted hook --- //
 

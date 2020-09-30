@@ -57,13 +57,23 @@
 </head>
 <body>
   <div id="appViti" v-cloak>
-    <b-container id="appViti_container_1">
+    <b-container id="appViti_pageSel">
+      <!--
+      <b-form-input id="pageSel" type="range" class="slider" slider-ticks="[1, 2, 3, 4]" data-slider-ticks-snap-bounds="30" data-slider-ticks-labels='[1,2,3,4]'/>
+    -->
+      <b-form-input id="pageSel" type="range" class="slider" min=1 max=4 v-model="curPage"/>
+    </b-container>
+    <!--
+    <input type="range" v-bind:min="l.Min" v-bind:value="l.Mean" v-bind:max="l.Max" class="slider" v-bind:id="'slider-'+l.layerID"></input></td>
+  -->
+    <b-container id="appViti_container_1" v-if="curPage==1">
       <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
-      <h1>PAIRS Viti Xplorer v0.5 page 1</h1>
+      <h1>PAIRS Viti Xplorer v0.5 page 1/{{curPage}}</h1>
 
       <!-- Map view to get started -->
       <div id="vitimapid" style="width: 100%; height: 400px;"></div>
-      <b-overlay :show="pageWait" rounded="sm">
+
+      <b-overlay :show="qryRunning" rounded="sm">
       <b-form inline class="border p-3 m-2">
         <b-row>
           <label for="curLat">Latitude</label>
@@ -72,21 +82,56 @@
           <b-form-input v-model.number="curPos.lng" id="curLng" type="number" maxlength=10></b-form-input>
           <b-button id="btn_goTo" pill variant="primary" v-on:click="moveTo">Go!</b-button>
         </b-row>
-        <b-row>
+        <b-row  v-if="layersDict">
           <label for="startDay">start day</label>
           <b-form-input v-model="startDay" type="date" id="startDay" placeholder="start Day"></b-form-input>
           <label for="endDay">end day</label>
           <b-form-input v-model="endDay" type="date" id="endDay" placeholder="end Day"></b-form-input>
-          <b-button id="btn_getLayers" pill variant="primary" v-on:click="getLayers">Get Layers</b-button>
+          <b-button id="btn_loadLayers" pill variant="primary" v-on:click="loadLayers">Load Layers</b-button>
         </b-row>
       </b-form>
       </b-overlay>
     </b-container>
 
-    <b-container id="appViti_container_2">
+    <b-container id="appViti_container_2" v-if="curPage==1">
       <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
-      <h1>PAIRS Viti Xplorer v0.5 page 2</h1>
-      <p v-if="qryPos">Query results at latitude: {{qryPos.lat}} Longitude: {{qryPos.lng}}</p>
+      <h1>PAIRS Viti Xplorer v0.6 page 2</h1>
+      <p v-if="qryPos">Query results at latitude: {{qryPos.lat.toFixed(4)}} Longitude: {{qryPos.lng.toFixed(4)}}</p>
+      <table v-if="qryLayers" id="layersListTable" style="color:green;line-height: 80%;">
+        <thead><tr>
+          <th>Name</th><th>Min</th><th>Mean</th><th>Max</th>
+          <th>description_short</th>
+          <!-- <th>description_long</th> -->
+          <th>datatype</th><th>level</th><th>rating</th>
+          <!-- <th>permanence</th><th>type</th> Seems to always be R and true -->
+          <th>units</th>
+          <!-- <th>unit</th> always same as units or unspecified-->
+          <th>Range<th>
+        </tr></thead>
+      <tbody>
+        <tr v-for="l in qryLayers" v-b-tooltip.hover v-bind:title="layersDict[l.id].description_long" data-placement="top">
+          <td>{{l.name}}</td><td>{{l.Min.toFixed(2)}}</td><td>{{l.Mean.toFixed(2)}}</td><td>{{l.Max.toFixed(2)}}</td>
+          <td>{{layersDict[l.id].description_short}}</td>
+          <!-- <td>{{layersDict[l.id].description_long}}</td> -->
+          <td>{{layersDict[l.id].datatype}}</td>
+          <!--
+          <td>{{layersDict[l.id]['level']}}</td>
+          <td>{{layersDict[l.id]['rating']}}</td>
+        -->
+          <td>{{layersDict[l.id].permanence}}</td>
+          <td>{{layersDict[l.id].type}}</td>
+          <td>{{layersDict[l.id].units}}</td>
+          <!-- <td>{{layersDict[l.id]['unit']}}</td> -->
+          <td><input type="range" v-bind:min="l.Min" v-bind:value="l.Mean" v-bind:max="l.Max" class="slider" v-bind:id="'slider-'+l.layerID"></input></td>
+        </tr>
+      </tbody>
+      </table>
+    </b-container>
+    <br/>
+    <b-container id="appViti_container_3" v-if="curPage==3">
+      <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
+      <h1>PAIRS Viti Xplorer v0.1 page 3</h1>
+      <p v-if="qryPos">Query results at latitude: {{qryPos.lat.toFixed(4)}} Longitude: {{qryPos.lng.toFixed(4)}}</p>
       <table v-if="qryLayers" id="layersListTable" style="color:green;line-height: 80%;">
         <thead>
         <tr><th>Name</th><th>Min</th><th>Mean</th><th>Max</th><th>Range<th></tr>
