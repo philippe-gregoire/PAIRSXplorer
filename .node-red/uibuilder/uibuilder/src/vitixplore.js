@@ -28,6 +28,8 @@ const INIT_LAT = 47.45
 const INIT_LNG = 3.5
 const INIT_ZOOM = 5
 
+const ZERO_C_IN_K = -273.15
+
 const MONTHS_BACK = 6
 
 const DEFAULT_FLYTO_SEC = 2
@@ -37,6 +39,8 @@ console.debug("Registering Vue2Leaflet components")
 Vue.component('l-map', window.Vue2Leaflet.LMap);
 Vue.component('l-tilelayer', window.Vue2Leaflet.LTileLayer);
 Vue.component('l-marker', window.Vue2Leaflet.LMarker);
+
+// Vue.use()
 
 // eslint-disable-next-line no-unused-vars
 var appViti = new Vue({
@@ -57,6 +61,9 @@ var appViti = new Vue({
         mapCenter   : {lat : INIT_LAT, lng : INIT_LNG},
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
+        // -- Slider selction
+        so: 0.33, // slider offset ratio
+        sx: 0.5,  // slider extremes ratio
         // -- Misc
         feVersion   : '',
         socketConnectedState : false,
@@ -87,6 +94,12 @@ var appViti = new Vue({
         },
     }, // --- End of computed --- //
     methods: {
+      slideStart: function() {
+        console.log("Slide Start")
+      },
+      slideStop: function() {
+        console.log("Slide Stop")
+      },
       sendToNodered: function(topic,payload) {
         uibuilder.send( {'topic': topic, 'payload': payload} )
       },
@@ -103,9 +116,9 @@ var appViti = new Vue({
       moveTo: function(event) {
         this.map.flyTo(this.refPos,this.map.getZoom()+1)
       },
-      onMapReady: function(event) {
+      onMapReady: function(mapRef) {
         console.log(`On map ready`,event)
-        this.map = this.$refs[PAIRS_MAPID].mapObject
+        this.map = this.$refs[mapRef].mapObject
         this.map.on('moveend',this.mapEvent)
         this.map.on('zoomend',this.mapEvent)
         this.map.on('move',this.mapEvent)
@@ -216,15 +229,43 @@ var appViti = new Vue({
                 // first group all the layers by layer ID and flatten Min-Mean-Max
                 let layersFlat=msg.payload.data.reduce(function(acc,layer) {
                   if(!(layer.layerId in acc)) {
-                  	acc[layer.layerId]={name: layer.layerName, id:layer.layerId, dataset: layer.dataset}
+                    // First time we encounter this layerID, add it to the dict
+                  	acc[layer.layerId]={"name": layer.layerName, "id":layer.layerId, "dataset": layer.dataset}
+
+                    // append attributes from layersDict
+                    const LAYERS_ATTR=['description_short','description_long','datatype','units']
+                    LAYERS_ATTR.forEach(attribute => acc[layer.layerId][attribute]=vueApp.layersDict[layer.layerId][attribute])
                   }
-                  // lat=layer.latitude
-                  // lng=layer.longitude
-                  acc[layer.layerId][layer.aggregation]=parseFloat(layer.value)
+                  var value=parseFloat(layer.value)
+                  // convert units
+
+                  if(acc[layer.layerId].units=='K') {
+                    value=value+ZERO_C_IN_K
+                    acc[layer.layerId].convUnits='C'
+                  } else if(acc[layer.layerId].units=='kg m-2 s-1') {
+                    value=value*1000
+                    acc[layer.layerId].convUnits='g m-2 s-1'
+                  } else if(acc[layer.layerId].units=='J m-2') {
+                    value=value/1000000
+                    acc[layer.layerId].convUnits='MJ m-2'
+                  } else {
+                    acc[layer.layerId].convUnits=acc[layer.layerId].units
+                  }
+
+                  // Pivot the layer.aggregation as columns (attributes)
+                  acc[layer.layerId][layer.aggregation]=value
+
                   return acc
                 },{})
 
+                // Store the layers
                 vueApp.qryLayers=layersFlat
+
+                // Adjust units (K to C)
+
+
+                // switch to second page
+                vueApp.curPage=2
               }
 
               // in any case, cancel the wait

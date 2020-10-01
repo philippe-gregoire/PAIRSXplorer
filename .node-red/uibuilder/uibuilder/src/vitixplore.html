@@ -57,108 +57,198 @@
 </head>
 <body>
   <div id="appViti" v-cloak>
-    <b-container id="appViti_pageSel">
-      <!--
-      <b-form-input id="pageSel" type="range" class="slider" slider-ticks="[1, 2, 3, 4]" data-slider-ticks-snap-bounds="30" data-slider-ticks-labels='[1,2,3,4]'/>
-    -->
-      <b-form-input id="pageSel" type="range" class="slider" min=1 max=4 v-model:value="curPage"/>
-<br/>
-      <!-- <input id="ex1" type="text" data-slider-ticks="[0, 100, 200, 300, 400]" data-slider-ticks-snap-bounds="30" data-slider-ticks-labels='["$0", "$100", "$200", "$300", "$400"]'/> -->
-    </b-container>
-    <b-container>
-      <b-form-input id="pageSel2" data-slider-ticks="[1, 2, 3, 4]" data-slider-ticks-labels="[1, 2, 3, 4]" v-bind:data-slider-value="curPage"/>
-      <!-- <b-form-input data-provide="slider" id="ex1" type="text" data-slider-ticks="[1, 2,3,4]"
-      data-slider-ticks-snap-bounds="1" data-slider-ticks-labels='[1,2, 3, 4]' v-model="curPage"/> -->
+    <b-container id="appViti_pageSel" class="menu">
+      <!-- <b-row>
+        <b-form-input id="pageSel" type="range" class="slider" min=1 max=4 v-model:value="curPage" />
+      </b-row> -->
+      <b-row>
+        <b-col></b-col>
+        <b-col cols="10" class="menu">
+          <b-form-slider class="menu-titles" style="width: 100%;"
+                v-model:value="curPage" :min="1" :max="4" :step="1"
+                :ticks='[1, 2, 3, 4]' :ticks-labels="['Location', 'Layers Details','Filters & Region', 'Result']" tooltip="hide"></b-form-slider>
+        </b-col>
+        <b-col></b-col>
+      </b-row>
+      <!-- <b-row>
+        <b-col></b-col>
+        <b-col cols="10" class="menu">
+          <div class="menu-titles">
+            <div>
+              <p>Location</p>
+              <center>
+                <div class="cercleViolet"></div>
+              </center>
+            </div>
+            <div>
+              <p>Filters & Region</p>
+              <center>
+                <div class="cercleGris"></div>
+              </center>
+            </div>
+            <div>
+              <p>Result</p>
+              <center>
+                <div class="cercleGris"></div>
+              </center>
+            </div>
+          </div>
+        </b-col>
+        <b-col></b-col>
+      </b-row> -->
     </b-container>
 
-    <b-container id="appViti_container_1" v-if="curPage==1">
-      <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
-      <p>DEBUG: mapCenter:{{mapCenter}} mapZoom:{{mapZoom}} refPos:{{refPos}} socket:{{socketConnectedState}}</p>
-      <h1>PAIRS Viti Xplorer v0.5 page 1/{{curPage}}</h1>
-
-      <!-- Map view to get started -->
-      <div id="app" style="width: 100%;  height: 400px;">
-        <l-map ref="vitiMap" @ready="onMapReady(this)">
-          <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
-          <!--
-          <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker>
-        -->
-        </l-map>
-      </div>
-<!--
-      <div id="vitimapid" style="width: 100%; height: 400px;"></div>
--->
+    <b-container id="appViti_container_1" v-if="curPage==1" class="border">
+      <b-row>
+        <!-- <b-col></b-col> -->
+        <b-col class="content">
+          <h1 class="title">Location</h1>
+          <h2 class="subtitle">Choose the reference field</h2>
+          <!-- <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img> -->
+          <!-- <p>DEBUG: mapCenter:{{mapCenter}} mapZoom:{{mapZoom}} refPos:{{refPos}} socket:{{socketConnectedState}}</p> -->
+          <!-- <h1>PAIRS Viti Xplorer v0.5 page 1/{{curPage}}</h1> -->
+          <!-- Map view to get started -->
+          <div id="refMap" style="width: 100%;  height: 400px;">
+            <l-map ref="vitiMap" @ready="onMapReady('vitiMap')">
+              <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
+              <!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
+            </l-map>
+          </div>
+        </b-col>
+      </b-row>
       <b-overlay :show="qryRunning" rounded="sm">
-      <b-form inline class="border p-3 m-2">
-        <b-row>
-          <label for="refLat">Latitude</label>
-          <b-form-input v-model.number="refPos.lat" id="refLat" type="number" maxlength=10></b-form-input>
-          <label for="refLng">Longitude</label>
-          <b-form-input v-model.number="refPos.lng" id="refLng" type="number" maxlength=10></b-form-input>
-          <b-button id="btn_goTo" pill variant="primary" v-on:click="moveTo">Zoom to</b-button>
-        </b-row>
-        <b-row  v-if="layersDict">
-          <label for="startDay">start day</label>
-          <b-form-input v-model="startDay" type="date" id="startDay" placeholder="start Day"></b-form-input>
-          <label for="endDay">end day</label>
-          <b-form-input v-model="endDay" type="date" id="endDay" placeholder="end Day"></b-form-input>
-          <b-button id="btn_loadLayers" pill variant="primary" v-on:click="loadLayers" >Compute Layers</b-button>
-        </b-row>
-      </b-form>
+        <b-form inline>
+          <b-row>
+            <b-col cols="2">
+              <label for="refLat">Latitude</label>
+            </b-col><b-col cols="3">
+              <b-form-input v-model.number="refPos.lat" size="sm" id="refLat" type="number" maxlength=10></b-form-input>
+            </b-col><b-col cols="2">
+              <label for="refLng">Longitude</label>
+            </b-col><b-col cols="3">
+              <b-form-input v-model.number="refPos.lng" size="sm" id="refLng" type="number" maxlength=10></b-form-input>
+            </b-col><b-col cols="2">
+              <b-button id="btn_goTo" pill variant="primary" size="sm" v-on:click="moveTo">Zoom to</b-button>
+            </b-col>
+          </b-row>
+          <b-row v-if="layersDict">
+            <b-col cols="2">
+              <label for="startDay">start day</label>
+            </b-col><b-col cols="3">
+              <b-form-input v-model="startDay" type="date" size="sm" id="startDay" placeholder="start Day"></b-form-input>
+            </b-col><b-col cols="2">
+              <label for="endDay">end day</label>
+            </b-col><b-col cols="3">
+              <b-form-input v-model="endDay" type="date" size="sm" id="endDay" placeholder="end Day"></b-form-input>
+            </b-col><b-col cols="2">
+              <b-button id="btn_loadLayers" pill variant="primary" size="sm" v-on:click="loadLayers">Compute Layers</b-button>
+            </b-col>
+          </b-row>
+        </b-form>
       </b-overlay>
-      <div v-if="qryRunning">Computing Layers Min-Mean-Max from {{startDay}} to {{endDay}}</div>
+      <b-row>
+        <div v-if="qryRunning">Computing Layers Min-Mean-Max from {{startDay}} to {{endDay}}</div>
+      </b-row>
     </b-container>
 
     <b-container id="appViti_container_2" v-if="curPage==2">
-      <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
-      <h1>PAIRS Viti Xplorer v0.6 page 2</h1>
+      <!-- <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img> -->
+      <!-- <h1>PAIRS Viti Xplorer v0.6 page 2</h1> -->
+      <p v-if="qryPos==null">No Query has run yet</p>
       <p v-if="qryPos">Query results at latitude: {{qryPos.lat.toFixed(4)}} Longitude: {{qryPos.lng.toFixed(4)}}</p>
       <table v-if="qryLayers" id="layersListTable" style="color:green;line-height: 80%;">
         <thead><tr>
           <th>Name</th><th>Min</th><th>Mean</th><th>Max</th>
           <th>description_short</th>
           <!-- <th>description_long</th> -->
-          <th>datatype</th><th>level</th><th>rating</th>
-          <!-- <th>permanence</th><th>type</th> Seems to always be R and true -->
+          <th>datatype</th>
+          <!-- <th>level</th> -->
+          <!-- <th>rating</th> -->
+          <!-- <th>permanence</th> -->
+          <!-- <th>type</th> Seems to always be R and true -->
           <th>units</th>
           <!-- <th>unit</th> always same as units or unspecified-->
           <th>Range<th>
         </tr></thead>
       <tbody>
-        <tr v-for="l in qryLayers" v-b-tooltip.hover v-bind:title="layersDict[l.id].description_long" data-placement="top">
+        <tr v-for="l in qryLayers" v-b-tooltip.hover v-bind:title="l.description_long" data-placement="top">
           <td>{{l.name}}</td><td>{{l.Min.toFixed(2)}}</td><td>{{l.Mean.toFixed(2)}}</td><td>{{l.Max.toFixed(2)}}</td>
-          <td>{{layersDict[l.id].description_short}}</td>
-          <!-- <td>{{layersDict[l.id].description_long}}</td> -->
-          <td>{{layersDict[l.id].datatype}}</td>
-          <!--
-          <td>{{layersDict[l.id]['level']}}</td>
-          <td>{{layersDict[l.id]['rating']}}</td>
-        -->
-          <td>{{layersDict[l.id].permanence}}</td>
-          <td>{{layersDict[l.id].type}}</td>
-          <td>{{layersDict[l.id].units}}</td>
+          <td>{{l.description_short}}</td>
+          <!-- <td>{{l.description_long}}</td> -->
+          <td>{{l.datatype}}</td>
+          <!-- <td>{{layersDict[l.id]['level']}}</td> -->
+          <!-- <td>{{layersDict[l.id]['rating']}}</td> -->
+          <!-- <td>{{layersDict[l.id].permanence}}</td> -->
+          <!-- <td>{{layersDict[l.id].type}}</td> -->
+          <td>{{l.convUnits}}</td>
           <!-- <td>{{layersDict[l.id]['unit']}}</td> -->
-          <td><input type="range" v-bind:min="l.Min" v-bind:value="l.Mean" v-bind:max="l.Max" class="slider" v-bind:id="'slider-'+l.layerID"></input></td>
+          <td><input type="range" v-bind:min="l.Min" v-bind:value="l.Mean" v-bind:max="l.Max" class="slider" v-bind:id="'slider-'+l.id"></input></td>
         </tr>
       </tbody>
       </table>
     </b-container>
-    <br/>
+
     <b-container id="appViti_container_3" v-if="curPage==3">
-      <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
-      <h1>PAIRS Viti Xplorer v0.1 page 3</h1>
-      <p v-if="qryPos">Query results at latitude: {{qryPos.lat.toFixed(4)}} Longitude: {{qryPos.lng.toFixed(4)}}</p>
-      <table v-if="qryLayers" id="layersListTable" style="color:green;line-height: 80%;">
-        <thead>
-        <tr><th>Name</th><th>Min</th><th>Mean</th><th>Max</th><th>Range<th></tr>
-      </thead>
-      <tbody>
-        <tr v-for="l in qryLayers">
-          <td>{{l.name}}</td><td>{{l.Min.toFixed(2)}}</td><td>{{l.Mean.toFixed(2)}}</td><td>{{l.Max.toFixed(2)}}</td>
-          <td><input type="range" v-bind:min="l.Min" v-bind:value="l.Mean" v-bind:max="l.Max" class="slider" v-bind:id="'slider-'+l.layerID"></input></td>
-        </tr>
-      </tbody>
-      </table>
+      <b-row>
+        <b-col class="content" cols="8">
+          <h1 class="title">Filters</h1><br />
+          <h2 class="subtitle">Here are the characteristics of the field you have selected. Look at the reference values and adjust them</h2>
+        </b-col>
+        <b-col cols="4">
+          <!-- <l-map ref="qryMap" @ready="onMapReady('qryMap')"> -->
+          <l-map ref="qryMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom">
+            <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
+            <l-marker :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
+          </l-map>
+        </b-col>
+      </b-row>
+      <b-row class="criteriasBox">
+        <b-col cols=12>
+          <h3 class="criteriaTitle">Temperature</h3>
+        </b-cols>
+      </b-row>
+      <b-row>
+        <b-form inline>
+          <b-col cols="4" v-for="l in qryLayers" class="criterias">
+            <div class="criteria criteriasBox border">
+              <div class="custom-control custom-checkbox">
+                <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}}</label>
+                <input class="custom-control-input" type="checkbox" :name="'a'+l.id" value="boat" checked>
+              </div>
+              <div class="criteriaUnitCheckBox">{{l.convUnits}}</div>
+              <br/>
+              <center>
+                <!-- <input type="range" :min="l.Min" :max="l.Max" :value="l.Mean" class="custom-range" :id="'select_'+l.id"
+                      v-b-tooltip.hover v-bind:title="l.description_long" data-placement="top"> -->
+              <b-form-slider v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
+                    :value="[l.Mean-(l.Mean-l.Min)*so,l.Mean+(l.Max-l.Mean)*so]"
+                    :min="l.Min-(l.Mean-l.Min)*sx" :max="l.Max+(l.Max-l.Mean)*sx"
+                    :ticks="[l.Min-(l.Mean-l.Min)*sx,l.Min,l.Mean,l.Max,l.Max+(l.Max-l.Mean)*sx]"
+                    :ticks-labels="['<','Min', 'Mean','Max','>']"
+                    :ticks-positions="[0,l.Min*100/((l.Max-l.Min)*(1+sx)),l.Mean*100/((l.Max-l.Min)*(1+sx)),l.Max*100/((l.Max-l.Min)*(1+sx)),100]"
+                    :step="(l.Max-l.Min)/100"
+                    :precision="2">
+              </b-form-slider>
+              <!-- precision -->
+              <!-- :ticks-positions="[0,25,50,75,100]" -->
+              <!-- handle='triangle' -->
+            </center>
+              <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(4)}} < {{l.Mean.toFixed(4)}} > {{l.Max.toFixed(4)}}] Unit : {{l.convUnits}}</p>
+            </div>
+          </b-col>
+        </b-form>
+      </b-row>
+      <b-row>
+        <b-col cols=8>
+          <center>
+            <button class="button">Validate</button>
+          </center>
+        </b-col>
+      </b-row>
+    </b-container>
+
+    <b-container id="appViti_container_4" v-if="curPage==4">
+
     </b-container>
   </div>
 
@@ -174,6 +264,9 @@
   <script src="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.js"></script>
 
   <script src="../uibuilder/vendor/bootstrap-slider/dist/bootstrap-slider.js"></script>
+
+  <script src="../uibuilder/vendor/vue-bootstrap-slider/dist/vue-bootstrap-slider.js"></script>
+  <!-- <script src="../uibuilder/vendor/vue-bootstrap-slider/es/form-slider.js"></script> -->
 
   <!-- leaflet package needs to be installed in uibuilder library -->
   <script src="../uibuilder/vendor/leaflet/dist/leaflet.js"></script>
