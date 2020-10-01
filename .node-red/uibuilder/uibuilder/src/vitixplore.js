@@ -22,7 +22,7 @@
 const PAIRS_HOST='pairs.res.ibm.com'
 const PAIRS_PORT=8080
 const PAIRS_WMS_AUTH='jGn23qJeqcCVeFaRot2duWirS6bl052bxLjdSisZWVjlSadbmAWAfc30SUd9L-GxPBIZ-TulkhNL1LAl-J_Sjmf-j7TUEqpIHj4kZ1flCBHmOs6aNmw_qkT1YrtYhYLDmmJktFoRfpfW9GeCaD41Ed21bVw2XOWyBLHVn4kf43rMqI326lp7vxJGGjmZlXjtBFfUFvhoh7gYEZgnWB-mk-506RyWVqQ3rc4J0AusaRRbh6xg_D4DXbjSqqO4q9ft1SY8xNjiqAQO4Nde0QcEHdY_DU54WheQP_vmw8a_C4Q5KSNlQ4oA_X4A3XXcHiMjtLszKAi3hCa0jvj3MmLAm0xyhA1OhNgKWCkUHG53wIee7FqRKSeMfjQEHDpLVxUVWL2L99ZYxO-vt8gL2UA6y68yExwlVnVQMOe3yL-nfflwM_Jo8QPK46gC5ogbmEhr9xJFswwGG7BcUNdnXMAFADBmVoCfl6KpEW4wvXjBfYy7fWED93Tmsq1SdPMX_gIPEfkvT2ZTG_iL-4i_eCa91OffwkQlu0FON0hioVTtdgtZ-fHFfxn9A7lL0NOqV2yTRel1ZFue93HYI3ZWYSRZSdZJjt3mSX7lLDXtzD2iCSraSI3gG8wZyRO8gBu4ttA7wF3qrbneBbxWnpMwX1EHv2n9N4h9DglgfwZZob54U4I'
-const PAIRS_MAPID='vitimapid'
+const PAIRS_MAPID='vitiMap'
 
 const INIT_LAT = 47.45
 const INIT_LNG = 3.5
@@ -32,17 +32,20 @@ const MONTHS_BACK = 6
 
 const DEFAULT_FLYTO_SEC = 2
 
+// Register l-map components
+console.debug("Registering Vue2Leaflet components")
+Vue.component('l-map', window.Vue2Leaflet.LMap);
+Vue.component('l-tilelayer', window.Vue2Leaflet.LTileLayer);
+Vue.component('l-marker', window.Vue2Leaflet.LMarker);
+
 // eslint-disable-next-line no-unused-vars
 var appViti = new Vue({
     el: '#appViti',
     data: {
         curPage     : 1,
-        initPos     : {lat : INIT_LAT, lng :INIT_LNG},
-        initZoom    : INIT_ZOOM,
         layersDict  : null, // Dict of layers indexed by layerID
         // ---- Current position and dates
-        curPos      : {lat : null, lng : null},
-        curZoom     : null,
+        refPos      : {lat : INIT_LAT, lng : INIT_LNG},
         startDay    : new Date(new Date()-1000*3600*24*30.5*MONTHS_BACK).toISOString().split("T")[0],  // About 6 months back
         endDay      : new Date().toISOString().split("T")[0],
         ///############## Query
@@ -51,6 +54,8 @@ var appViti = new Vue({
         qryLayers   : null,
         // ---- Map variables
         map         : null,
+        mapCenter   : {lat : INIT_LAT, lng : INIT_LNG},
+        mapZoom     : INIT_ZOOM,
         refPointMarker: null,
         // -- Misc
         feVersion   : '',
@@ -92,11 +97,30 @@ var appViti = new Vue({
         this.sendToNodered('initLayers',{})
       },
       loadLayers: function(event) {
-        this.sendToNodered('loadLayers',{'pos': this.curPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
+        this.sendToNodered('loadLayers',{'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
         this.qryRunning=true
       },
       moveTo: function(event) {
-        this.map.flyTo(this.curPos,this.map.getZoom()+1)
+        this.map.flyTo(this.refPos,this.map.getZoom()+1)
+      },
+      onMapReady: function(event) {
+        console.log(`On map ready`,event)
+        this.map = this.$refs[PAIRS_MAPID].mapObject
+        this.map.on('moveend',this.mapEvent)
+        this.map.on('zoomend',this.mapEvent)
+        this.map.on('move',this.mapEvent)
+        this.map.on('click',this.mapEvent)
+
+        this.setView(this.mapCenter,this.mapZoom)
+        this.setRefPointMarker(this.refPos)
+
+        // var nitroLayer=newPAIRSLayer(L,'geoserver1',0.000000,0.0001000,4,'1588089600_03312498ESASentinel5PL2-NitrogendioxideTropospheric5042415856992000001588291200000-Mean')
+        // var populLayer=newPAIRSLayer(L,'geoserver06',0,655350,92,'1588046400_35972570GlobalpopulationSEDAC-Globalpopulationdensity-01_01_2020T000000')
+
+        var overlayMaps = {
+            // "Nitro": nitroLayer,
+            // "Popul": populLayer
+        }
       },
       /** Helper shortcut methods **/
       flyTo: function(pos,zoom,duration) {
@@ -118,8 +142,11 @@ var appViti = new Vue({
       },
       mapEvent: function(event) {
         console.debug('mapEvent evt:',event)
+        // keep track of last center and zoom position
+        this.mapCenter=this.map.getCenter()
+        this.mapZoom=this.map.getZoom()
         var eventName='map'+event.type.charAt(0).toUpperCase() + event.type.slice(1)
-        this.sendToNodered(eventName,{'pos':event.target._lastCenter, 'zoom':event.target._zoom})
+        this.sendToNodered(eventName,{'pos':('latlng' in event)?event.latlng:this.mapCenter, 'zoom':this.mapZoom})
       },
       setRefPointMarker: function (pos) {
         if (this.refPointMarker) {
@@ -129,7 +156,7 @@ var appViti = new Vue({
 
         let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#fe2244" cx="10" cy="10" r="9"/><circle fill="#ffffbf" cx="10" cy="10" r="5"/></svg>'
         this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
-        this.curPos=pos
+        this.refPos=pos
       }
     }, // --- End of methods --- //
 
@@ -147,7 +174,6 @@ var appViti = new Vue({
          * e.g. uibuilder.start('uib', '/nr/uibuilder/vendor/socket.io') // change to use your paths/names
          */
         uibuilder.start()
-        console.log("UIBuilder events=",uibuilder.events)
 
         // Keep track of vueApp from this scope
         var vueApp = this
@@ -208,11 +234,11 @@ var appViti = new Vue({
             }
         })
 
-        // // If Socket.IO connects/disconnects, we get true/false here
-        // uibuilder.onChange('ioConnected', function(newVal){
-        //     //console.info('[indexjs:uibuilder.onChange:ioConnected] Socket.IO Connection Status Changed to:', newVal)
-        //     vueApp.socketConnectedState = newVal
-        // })
+        // If Socket.IO connects/disconnects, we get true/false here
+        uibuilder.onChange('ioConnected', function(connState){
+            //console.info('[indexjs:uibuilder.onChange:ioConnected] Socket.IO Connection Status Changed to:', newVal)
+            vueApp.socketConnectedState = connState
+        })
         // // If Server Time Offset changes
         // uibuilder.onChange('serverTimeOffset', function(newVal){
         //     //console.info('[indexjs:uibuilder.onChange:serverTimeOffset] Offset of time between the browser and the server has changed to:', newVal)
@@ -221,25 +247,6 @@ var appViti = new Vue({
 
         //###################### PAIRS Map stuff
         initPAIRS(L,PAIRS_HOST,PAIRS_PORT,PAIRS_WMS_AUTH)
-
-        // var nitroLayer=newPAIRSLayer(L,'geoserver1',0.000000,0.0001000,4,'1588089600_03312498ESASentinel5PL2-NitrogendioxideTropospheric5042415856992000001588291200000-Mean')
-        // var populLayer=newPAIRSLayer(L,'geoserver06',0,655350,92,'1588046400_35972570GlobalpopulationSEDAC-Globalpopulationdensity-01_01_2020T000000')
-
-        var overlayMaps = {
-            // "Nitro": nitroLayer,
-            // "Popul": populLayer
-        }
-
-        vueApp.map=createOpenStreetMap(L,PAIRS_MAPID,overlayMaps)
-        vueApp.curPos=vueApp.initPos
-        vueApp.curZoom=vueApp.initZoom
-
-        vueApp.setView(vueApp.initPos,vueApp.initZoom)
-
-        vueApp.map.on('moveend',vueApp.mapEvent)
-        vueApp.map.on('zoomend',vueApp.mapEvent)
-        vueApp.map.on('move',vueApp.mapEvent)
-        vueApp.map.on('click',vueApp.mapEvent)
 
     } // --- End of mounted hook --- //
 
