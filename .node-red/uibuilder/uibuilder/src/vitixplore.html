@@ -49,14 +49,11 @@
     <link type="text/css" rel="stylesheet" href="../uibuilder/vendor/bootstrap/dist/css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.css" />
 
-    <link type="text/css" rel="stylesheet" href="./vitixplore.css" media="all">
+    <link rel="stylesheet" href="../uibuilder/vendor/leaflet/dist/leaflet.css" />
 
-    <link rel="stylesheet" href="//unpkg.com/leaflet/dist/leaflet.css" />
-    <!--
-      <link type="text/css" rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-            integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-     crossorigin=""/>
-    -->
+    <link rel="stylesheet" href="../uibuilder/vendor/bootstrap-slider/dist/css/bootstrap-slider.css" />
+
+    <link type="text/css" rel="stylesheet" href="./vitixplore.css" media="all">
 </head>
 <body>
   <div id="appViti" v-cloak>
@@ -64,11 +61,16 @@
       <!--
       <b-form-input id="pageSel" type="range" class="slider" slider-ticks="[1, 2, 3, 4]" data-slider-ticks-snap-bounds="30" data-slider-ticks-labels='[1,2,3,4]'/>
     -->
-      <b-form-input id="pageSel" type="range" class="slider" min=1 max=4 v-model="curPage"/>
+      <b-form-input id="pageSel" type="range" class="slider" min=1 max=4 v-model:value="curPage"/>
+<br/>
+      <!-- <input id="ex1" type="text" data-slider-ticks="[0, 100, 200, 300, 400]" data-slider-ticks-snap-bounds="30" data-slider-ticks-labels='["$0", "$100", "$200", "$300", "$400"]'/> -->
     </b-container>
-    <!--
-    <input type="range" v-bind:min="l.Min" v-bind:value="l.Mean" v-bind:max="l.Max" class="slider" v-bind:id="'slider-'+l.layerID"></input></td>
-  -->
+    <b-container>
+      <b-form-input id="pageSel2" data-slider-ticks="[1, 2, 3, 4]" data-slider-ticks-labels="[1, 2, 3, 4]" v-bind:data-slider-value="curPage"/>
+      <!-- <b-form-input data-provide="slider" id="ex1" type="text" data-slider-ticks="[1, 2,3,4]"
+      data-slider-ticks-snap-bounds="1" data-slider-ticks-labels='[1,2, 3, 4]' v-model="curPage"/> -->
+    </b-container>
+
     <b-container id="appViti_container_1" v-if="curPage==1">
       <b-img src="./images/node-blue-192x192.png" rounded left v-bind="imgProps" alt="Blue Node-RED" class="mt-1 mr-2"></b-img>
       <p>DEBUG: mapCenter:{{mapCenter}} mapZoom:{{mapZoom}} refPos:{{refPos}} socket:{{socketConnectedState}}</p>
@@ -160,16 +162,6 @@
     </b-container>
   </div>
 
-  <!--
-  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" crossorigin=""
-     integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==">
-  </script>
--->
-  <script src="//unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="//unpkg.com/vue2-leaflet"></script>
-
-  <script src="./pairs.js"></script>
-
   <!-- These MUST be in the right order. Note no leading / -->
   <!-- REQUIRED: Socket.IO is loaded only once for all instances
                    Without this, you don't get a websocket connection -->
@@ -181,10 +173,18 @@
   <!-- <script src="../uibuilder/vendor/vue/dist/vue.runtime.min.js"></script>   prod version without component compiler -->
   <script src="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.js"></script>
 
+  <script src="../uibuilder/vendor/bootstrap-slider/dist/bootstrap-slider.js"></script>
+
+  <!-- leaflet package needs to be installed in uibuilder library -->
+  <script src="../uibuilder/vendor/leaflet/dist/leaflet.js"></script>
+  <script src="../uibuilder/vendor/vue2-leaflet/dist/vue2-leaflet.min.js"></script>
+
   <!-- REQUIRED: Sets up Socket listeners and the msg object -->
   <!-- <script src="./uibuilderfe.js"></script>   //dev version -->
   <script src="./uibuilderfe.min.js"></script> <!--    //prod version -->
+
   <!-- OPTIONAL: You probably want this. Put your custom code here -->
+  <script src="./pairs.js"></script>
   <script src="./vitixplore.js"></script>
 
 </body>

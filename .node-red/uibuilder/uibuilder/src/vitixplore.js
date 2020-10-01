@@ -248,6 +248,9 @@ var appViti = new Vue({
         //###################### PAIRS Map stuff
         initPAIRS(L,PAIRS_HOST,PAIRS_PORT,PAIRS_WMS_AUTH)
 
+        // init Slider
+        var slider = new Slider('#pageSel2')
+
     } // --- End of mounted hook --- //
 
 }) // --- End of appViti --- //
