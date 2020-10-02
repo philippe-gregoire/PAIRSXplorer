@@ -62,13 +62,13 @@ body {
 	padding: 2%;
 }
 
-.button {
+.button_score {
 	background: #633CEA 0% 0% no-repeat padding-box;
-	border-radius: 5px !important;
+	/* border-radius: 5px !important; */
 	color : white;
 	border: 0px;
-	width: 30%;
-	height: 40px;
+	/*width: 30%;*/
+	/* height: 40px; */
 	margin: 10px 0px;
 }
 

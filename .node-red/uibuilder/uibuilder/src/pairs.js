@@ -162,3 +162,46 @@ function createOpenStreetMap(L,mapid,overlayMaps) {
 
   return map
 }
+
+/* Convert a value to a human-readable unit
+  the unit denomination is taken from dictUnits[fromUnit] and the converted one to dictUnits[toUnit]
+   Returns the new value,  */
+function convertUnits(value,dictUnits,fromUnit,toUnit) {
+  if(dictUnits[fromUnit]=='K') {
+    value=value+ZERO_C_IN_K
+    dictUnits[toUnit]='C'
+  } else if(dictUnits[fromUnit]=='kg m-2 s-1') {
+    value=value*1000
+    dictUnits[toUnit]='g m-2 s-1'
+  } else if(dictUnits[fromUnit]=='J m-2') {
+    value=value/1000000
+    dictUnits[toUnit]='MJ m-2'
+  } else {
+    dictUnits[toUnit]=dictUnits[fromUnit]
+  }
+
+  return value
+}
+
+/* Get back a value to its non-human form */
+function unConvertUnits(value,humanUnit) {
+  if(humanUnit=='C') {
+    value=value-ZERO_C_IN_K
+  } else if(humanUnit=='g m-2 s-1') {
+    value=value/1000
+  } else if(humanUnit=='MJ m-2') {
+    value=value*1000000
+  }
+
+  return value
+}
+
+function capitalize(str,breakChars) {
+  var cap = str[0].toUpperCase()
+  for (var i = 1; i < str.length; i++) {
+    cap += (breakChars.includes(str[i-1]) && (i<str.length-2) && !(breakChars.includes(str[i+1]) || breakChars.includes(str[i+2])))
+      ? str[i].toUpperCase()
+      : str[i].toLowerCase()
+  }
+  return cap.replace(/_/g,' ').replace(/d /,"d'")
+}
