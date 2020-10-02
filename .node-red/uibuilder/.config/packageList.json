@@ -1,0 +1,12 @@
+[
+  "vue",
+  "bootstrap",
+  "bootstrap-vue",
+  "socket.io",
+  "jquery",
+  "vue-slider-component",
+  "vue-bootstrap-slider",
+  "bootstrap-slider",
+  "leaflet",
+  "vue2-leaflet"
+]
