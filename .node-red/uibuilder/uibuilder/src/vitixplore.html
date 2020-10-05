@@ -83,6 +83,17 @@
           <h1 class="title">Location</h1>
           <h2 class="subtitle">Choose the reference field</h2>
 
+          <b-row v-if="aoisDict">
+            <b-col cols="5">
+              <p>Area of interest</p>
+            </b-col>
+            <b-col cols="5">
+              <b-form-select v-model="refAOI">
+                <b-form-select-option v-for="aoi in aoisDict" :value="aoi.id">{{aoi.name}}</b-form-select-option>
+              </b-form-select>
+            </b-col>
+          </b-row>
+
           <div id="refMap" style="width: 100%;  height: 400px;">
             <l-map ref="vitiMap" @ready="onMapReady('vitiMap')">
               <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
@@ -118,16 +129,6 @@
               <b-form-input v-model="endDay" type="date" size="sm" id="endDay" placeholder="end Day"></b-form-input>
             </b-col><b-col cols="2"></b-col>
             <b-button id="btn_loadLayers" pill variant="primary" size="sm" v-on:click="loadLayers" class="button">Compute Layers</b-button>
-          </b-row>
-          <b-row v-if="aoisDict">
-            <b-col cols="2">
-              <p>Area of interest</p>
-            </b-col><b-col cols="5">
-              <b-form-select v-model="refAOI">
-                <b-form-select-option v-for="aoi in aoisDict" :value="aoi.id">{{aoi.name}}</b-form-select-option>
-              </b-form-select>
-            </b-col><b-col cols="5">
-            </b-col>
           </b-row>
         </b-form>
       </b-overlay>

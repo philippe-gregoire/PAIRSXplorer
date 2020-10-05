@@ -10,6 +10,7 @@
         "node-red-contrib-web-worldmap": "~2.5.3",
         "node-red-dashboard": "~2.23.4",
         "vue-bootstrap-slider": "^2.1.8",
+        "vue-slider-component": "^3.2.5",
         "vue2-leaflet": "^2.5.2"
     }
 }
