@@ -76,30 +76,7 @@ body {
 	display: flex ;
 	justify-content: space-around;
 }
-.slider-handle, .slider-tick.round.in-selection {
-	background: #633CEA;
-	height: 12px;
-	width: 12px;
-	opacity: 1;
-	box-shadow: none;
-}
-.slider-tick {
-	background: #D9DBE5;
-	height: 12px;
-	width: 12px;
-	opacity: 1;
-	box-shadow: none;
-}
 
-
-.slider.slider-horizontal .slider-track {
-	background: #D9DBE5;
-	height: 2px;
-	box-shadow: none;
-}
-.slider-selection.tick-slider-selection {
-	background: #633CEA;
-}
 .custom-control-input {
 	z-index: 1;
 	top: 1rem;
@@ -138,6 +115,7 @@ body {
 	content: '';
 	position: absolute;
 }
+
 .custom-control-label:before {
   background-color: white;
 }
@@ -152,6 +130,30 @@ body {
 	width: 100%;
 }
 
+
+.slider-handle, .slider-tick.round.in-selection {
+	background: #633CEA;
+	height: 12px;
+	width: 12px;
+	opacity: 1;
+	box-shadow: none;
+}
+.slider-tick {
+	background: #D9DBE5;
+	height: 12px;
+	width: 12px;
+	opacity: 1;
+	box-shadow: none;
+}
+
+.slider.slider-horizontal .slider-track {
+	background: #D9DBE5;
+	height: 2px;
+	box-shadow: none;
+}
+.slider-selection.tick-slider-selection {
+	background: #633CEA;
+}
 
 /* -- TITLES & FONTS-- */
 

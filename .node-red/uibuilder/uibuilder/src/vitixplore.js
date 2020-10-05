@@ -386,3 +386,15 @@ var appViti = new Vue({
 }) // --- End of appViti --- //
 
 // EOF
+
+
+// JQuery
+
+$('#Checkbox1, #Checkbox2').on('change', function () {
+
+    if ($('#Checkbox1').is(':checked') && $('#Checkbox2').is(':checked')) {
+        $('#circle').css('background-color', '#999');
+    } else {
+        $('#circle').css('background-color', 'transparent');
+    }
+});

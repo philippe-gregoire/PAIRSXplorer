@@ -2,14 +2,9 @@
   "vue",
   "bootstrap",
   "bootstrap-vue",
-<<<<<<< HEAD
   "jquery",
   "socket.io",
-=======
-  "socket.io",
-  "jquery",
   "vue-slider-component",
->>>>>>> e833d56184f07aa8e065c787e73728bf54f9edda
   "vue-bootstrap-slider",
   "bootstrap-slider",
   "leaflet",
