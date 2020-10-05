@@ -268,14 +268,17 @@ var appViti = new Vue({
         this.refPos=pos
       },
       getResults: function () {
+        // Missing aggregation
         var UDF = "";
         var alias = "";
 
-        for (const property in this.criterias) {
-          alias = property;
-          console.log(alias)
-          UDF += "(( $" + alias + " >= " + this.criterias[property][0] + " && $" + alias + " <= "+ this.criterias[property][1] + ") ? 1 : 0 ) + " 
+        for (var i = 0; i < this.checkedLayers.length; i++) {
+          alias = this.checkedLayers[i];
+          if (this.criterias[alias]) {
+            UDF += "(( $" + alias + " >= " + this.criterias[alias][0] + " && $" + alias + " <= "+ this.criterias[alias][1] + ") ? 1 : 0 ) + "         
+          }
         }
+      
         console.log(UDF)
         this.sendToNodered('getResults', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': (this.checkedLayers), 'UDF': UDF})
         // console.log(this.checkedLayers)
