@@ -1,0 +1,15 @@
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "bootstrap-slider": "^11.0.2",
+        "leaflet": "^1.7.1",
+        "node-red-contrib-uibuilder": "~2.0.8",
+        "node-red-contrib-web-worldmap": "~2.5.3",
+        "node-red-dashboard": "~2.23.4",
+        "vue-bootstrap-slider": "^2.1.8",
+        "vue2-leaflet": "^2.5.2"
+    }
+}

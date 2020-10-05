@@ -13,6 +13,7 @@
 .syntax-highlight > .number {color:#70aeff;}
 .syntax-highlight > .boolean {color:#b993ff;}
 
+/* -- General -- */
 body {
 	background-color: #F8F8F8;
 	width: 100%;
@@ -20,48 +21,25 @@ body {
 .parameters {
 	justify-content: space-around !important;
 }
-
 .row {
 	width: 100%;
 	margin: 5px 0;
 	justify-content: center;
-}
-.menu {
-	background-color: white;
-	margin-top: 20px;
-	font: normal normal 600 20px/25px IBM Plex Sans;
-	color: #212121;
-	opacity: 1;
-	font-size: 1em;
-	padding: 2%;
-}
-.menu-titles {
-	display: flex ;
-	justify-content: space-around;
-}
-
-.cercleViolet {
-    width: 12px;
-    height: 12px;
-    border-radius: 20px;
-	/*position: absolute;*/
-    background: #633CEA 0% 0% no-repeat padding-box;
-    z-index: 99;
-}
-.cercleGris {
-    width: 12px;
-    height: 12px;
-    border-radius: 20px;
-	/*position: absolute;*/
-    background: #D9DBE5 0% 0% no-repeat padding-box;
-    z-index: 99;
 }
 .content {
 	background-color: white;
 	margin-top: 20px;
 	padding: 2%;
 }
-
+.stepButton {
+	background: #633CEA 0% 0% no-repeat padding-box;
+	border-radius: 5px !important;
+	color : white;
+	border: 0px;
+	width: 30%;
+	height: 40px;
+	margin: 10px 0px;
+}
 .button {
 	background: #633CEA 0% 0% no-repeat padding-box;
 	border-radius: 5px !important;
@@ -71,6 +49,62 @@ body {
 	height: 40px;
 	margin: 10px 0px;
 }
+.btn-primary.focus, .btn-primary:focus {
+	background: #633CEA 0% 0% no-repeat padding-box;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+    background-color: #633ceae6;
+}
+.smallButton {
+	background: #633CEA 0% 0% no-repeat padding-box;
+	border-radius: 5px !important;
+	color : white;
+	border: 0px;
+}
+/* -- Menu Selection / Etapes -- */
+
+.menu {
+	background-color: white;
+	margin-top: 20px;
+	font: normal normal 600 20px/25px IBM Plex Sans;
+	color: #212121;
+	opacity: 1;
+	font-size: 1em;
+	padding: 1%;
+}
+.menu-titles {
+	display: flex ;
+	justify-content: space-around;
+}
+.slider-handle, .slider-tick.round.in-selection {
+	background: #633CEA;
+	height: 12px;
+	width: 12px;
+	opacity: 1;
+	box-shadow: none;
+}
+.slider-tick {
+	background: #D9DBE5;
+	height: 12px;
+	width: 12px;
+	opacity: 1;
+	box-shadow: none;
+}
+
+.slider.slider-horizontal .slider-track {
+	background: #D9DBE5;
+	height: 2px;
+	box-shadow: none;
+}
+.slider-selection.tick-slider-selection {
+	background: #633CEA;
+}
+.custom-control-input {
+	z-index: 1;
+	top: 1rem;
+}
+
+/* --Criterias -- */
 
 .criterias {
 	display: flex;
@@ -78,45 +112,35 @@ body {
 	flex-wrap: wrap;
 	width: 100%;
 }
-
 .criteria {
-	width: 100%;
-	margin: 0 1.5%
+	width: 30%;
+	margin: 0 1.5%;
+	border-bottom: 1px solid #F8F8F8;
 }
-
 .criteriasBox {
 	border: 1px solid #D9DBE5;
 	border-radius: 5px;
 	opacity: 1;
 	margin: 10px;
 }
-
 .custom-checkbox .custom-control-input:checked~.custom-control-label::before {
-  background-color: #633CEA;
+	background-color: #633CEA;
+	content: '';
+	position: absolute;
 }
 .custom-control-label:before {
   background-color: white;
 }
-
-input[type=range]::-webkit-slider-runnable-track {
-  width: 300px;
-  height: 2px;
-  border: none;
-  border-radius: 3px
+.criteriaSlider {
+	width: 90% !important;
 }
-
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  border: none;
-  height: 20px;
-  width: 20px;
-  border-radius: 510%;
-  background: #633CEA;
-  border: 2px solid #633CEA;
-  margin-top: -9px;
-  cursor: pointer
+.criteria .slider-tick-label {
+	font-size: 0.8em;
+	color: #83858F;
 }
-
+.slider.slider-horizontal {
+	width: 100%;
+}
 
 
 /* -- TITLES & FONTS-- */
@@ -148,15 +172,16 @@ input[type=range]::-webkit-slider-thumb {
 }
 .criteriaNameCheckBox {
 	text-align: left;
-	font: normal normal bold 1.1em IBM Plex Sans;
+	font: normal normal normal 0.9em IBM Plex Sans;
 	/*font: normal normal normal 18px/23px IBM Plex Sans;*/
 	letter-spacing: 0px;
 	color: #212121;
 	opacity: 1;
+	margin-top: 15px;
 }
 .criteriaUnitCheckBox {
 	text-align: right;
-	font: normal normal bold italic 1.2em IBM Plex Sans;
+	font: normal normal bold italic 0.9em IBM Plex Sans;
 	/*font: normal normal normal 18px/23px IBM Plex Sans;*/
 	letter-spacing: 0px;
 	color: #212121;
@@ -164,13 +189,11 @@ input[type=range]::-webkit-slider-thumb {
 }
 .criteriaRefValue {
 	text-align: left;
-	font: normal normal normal 0.9em IBM Plex Sans;
+	font: normal normal normal 0.8em IBM Plex Sans;
 	/*font: normal normal normal 12px/15px IBM Plex Sans;*/
 	letter-spacing: 0px;
 	color: #212121;
 	opacity: 1;
+	color: #83858F;
 }
 
-.slider.slider-horizontal {
-  width: 100%;
-}

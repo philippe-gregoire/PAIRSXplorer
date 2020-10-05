@@ -61,9 +61,12 @@ var appViti = new Vue({
         mapCenter   : {lat : INIT_LAT, lng : INIT_LNG},
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
-        // -- Slider selction
+        // -- Slider selection
         so: 0.33, // slider offset ratio
         sx: 0.5,  // slider extremes ratio
+        // -- Layer selection
+        checkedLayers: [],
+        layersValue: [],
         // -- Misc
         feVersion   : '',
         socketConnectedState : false,
@@ -170,6 +173,10 @@ var appViti = new Vue({
         let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#fe2244" cx="10" cy="10" r="9"/><circle fill="#ffffbf" cx="10" cy="10" r="5"/></svg>'
         this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
         this.refPos=pos
+      },
+      getResults: function () {
+        console.log(this.checkedLayers)
+        console.log(this.layersValue)
       }
     }, // --- End of methods --- //
 
