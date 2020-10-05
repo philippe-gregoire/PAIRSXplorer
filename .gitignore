@@ -1,3 +1,9 @@
 .DS_Store
 .vscode
 .node-red/uibuilder/uibuilder/src/uibuilder.appcache
+.node-red/node_modules/
+node_modules/
+.node-red/uibuilder/.config/*.js
+.node-red/uibuilder/uibuilder/src/.*
+package-lock.json
+.node-red/.config.json*

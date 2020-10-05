@@ -91,6 +91,7 @@ body {
 	box-shadow: none;
 }
 
+
 .slider.slider-horizontal .slider-track {
 	background: #D9DBE5;
 	height: 2px;
@@ -102,6 +103,15 @@ body {
 .custom-control-input {
 	z-index: 1;
 	top: 1rem;
+}
+.button_score {
+	background: #633CEA 0% 0% no-repeat padding-box;
+	/* border-radius: 5px !important; */
+	color : white;
+	border: 0px;
+	/*width: 30%;*/
+	/* height: 40px; */
+	margin: 10px 0px;
 }
 
 /* --Criterias -- */

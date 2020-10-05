@@ -28,9 +28,11 @@ const INIT_LAT = 47.45
 const INIT_LNG = 3.5
 const INIT_ZOOM = 5
 
+const AOIS_CATEGORY = 'FRA'
+
 const ZERO_C_IN_K = -273.15
 
-const MONTHS_BACK = 6
+const MONTHS_BACK = 1
 
 const DEFAULT_FLYTO_SEC = 2
 
@@ -48,10 +50,13 @@ var appViti = new Vue({
     data: {
         curPage     : 1,
         layersDict  : null, // Dict of layers indexed by layerID
+        aoisDict    : null,
+        test: {l:{Min:20,Mean:50,Max:100},so:0.20,sx:0.5},
         // ---- Current position and dates
         refPos      : {lat : INIT_LAT, lng : INIT_LNG},
         startDay    : new Date(new Date()-1000*3600*24*30.5*MONTHS_BACK).toISOString().split("T")[0],  // About 6 months back
         endDay      : new Date().toISOString().split("T")[0],
+        refAOI      : null,
         ///############## Query
         qryRunning  : false, // true while query is running
         qryPos      : null,
@@ -61,12 +66,12 @@ var appViti = new Vue({
         mapCenter   : {lat : INIT_LAT, lng : INIT_LNG},
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
-        // -- Slider selection
-        so: 0.33, // slider offset ratio
-        sx: 0.5,  // slider extremes ratio
-        // -- Layer selection
-        checkedLayers: [],
-        layersValue: [],
+        // -- Criteria selection
+        critOff: 0.2, // slider offset ratio
+        critExt: 0.5,  // slider extent ratio
+        // Criteria slider values, will be a dict keyed by layer ID with a Low-Up array each
+        criterias   : null,
+        critDigits  : 2,
         // -- Misc
         feVersion   : '',
         socketConnectedState : false,
@@ -112,9 +117,95 @@ var appViti = new Vue({
       initLayers: function() {
         this.sendToNodered('initLayers',{})
       },
+      initializedLayers: function(layers) {
+        // We got the details list of layers (array in msg.payload)
+        this.layersDict=layers.reduce(function(dict,layer,index) {
+          dict[layer.id]=layer
+          return dict},
+          {})
+      },
+      loadAOIs: function(AOICategory) {
+        this.sendToNodered('loadAOIs',AOIS_CATEGORY)
+      },
+      loadedAOIs: function(aois) {
+        // console.debug("loadAOIs",msg.payload)
+        // We got the details list of AOIs, put them in a dict
+        this.aoisDict=aois.reduce(function(dict,aoi,index) {
+          // Adjust name
+          if(aoi.name.startsWith(AOIS_CATEGORY+'_')) {
+            aoi.name=aoi.name.slice(1+AOIS_CATEGORY.length)
+          }
+          aoi.name=capitalize(aoi.name,"-_")
+          dict[aoi.id]=aoi
+          return dict},
+          {})
+          console.debug("AOISDiect",this.aoisDict)
+      },
       loadLayers: function(event) {
         this.sendToNodered('loadLayers',{'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
         this.qryRunning=true
+      },
+      loadedLayers: function(layers,pairsError) {
+        if(!pairsError) {
+          console.debug('Got layers',layers)
+
+          // Set the Query position
+          this.qryPos={"lat":layers[0].latitude, "lng":layers[0].longitude}
+
+          // first group all the layers by layer ID and flatten Min-Mean-Max
+          const _layersDict=this.layersDict
+          this.qryLayers=layers.reduce(function(acc,layer) {
+            if(!(layer.layerId in acc)) {
+              // First time we encounter this layerID, add it to the dict
+              acc[layer.layerId]={"name": layer.layerName, "id":layer.layerId, "dataset": layer.dataset}
+
+              // append attributes from layersDict
+              const LAYERS_ATTR=['description_short','description_long','datatype','units']
+              LAYERS_ATTR.forEach(attribute => acc[layer.layerId][attribute]=_layersDict[layer.layerId][attribute])
+            }
+            // convert units
+            acc[layer.layerId][layer.aggregation]=convertUnits(parseFloat(layer.value),acc[layer.layerId],'units','humanUnits')
+
+            return acc
+          },{})
+
+          this.initCriterias(this.critOff,this.critExt)
+
+          // switch to second page
+          this.curPage=2
+        }
+
+        // in any case, cancel the wait
+        this.qryRunning=false
+      },
+      initCriterias: function(offset,extent) {
+        if(this.qryLayers!=null) {
+          const _this=this
+          this.criterias=Object.keys(this.qryLayers).reduce(function(acc,layerId){
+            acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Low','Up'],offset,extent)
+            return acc
+          },{})
+        } else {
+          this.criterias=null
+        }
+      },
+      critChange: function(layerId,critIndex,value) {
+        var criterias=this.criterias
+        const _this=this
+        console.log(`critChange ${layerId}[${critIndex}] value=${value} criterias[layerId]=${criterias[layerId]}`)
+        Vue.nextTick(function () {
+          console.log(`nextTick critChange ${layerId}[${critIndex}] value=${value} criterias[layerId]=${criterias[layerId]}`)
+          criterias[layerId][critIndex]=parseFloat(value)
+          _this.criterias=criterias
+          console.log(`critChange new ${_this.criterias[layerId]}`)
+          // const event = new Event('input')
+          // var refid=`c${critIndex}_${layerId}`
+          // var ref=this.$refs[refid]
+          // console.log('looking up ref ',refid, ' got ', ref)
+          // ref.value = 'something'
+          // ref.dispatchEvent(event)
+          _this.test.z=value
+        })
       },
       moveTo: function(event) {
         this.map.flyTo(this.refPos,this.map.getZoom()+1)
@@ -177,6 +268,40 @@ var appViti = new Vue({
       getResults: function () {
         console.log(this.checkedLayers)
         console.log(this.layersValue)
+      },
+      slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Low,  Mean, Up, Max, Sup
+        const critDigits=this.critDigits
+        function _f(p) {
+          switch(p) {
+            case 'Inf':
+              return (layer.Min-(layer.Mean-layer.Min)*extent)
+            case 'Min':
+              return layer.Min
+            case 'Low':
+              return (layer.Mean-(layer.Mean-layer.Min)*offset)
+            case 'Mean':
+              return layer.Mean
+            case 'Up':
+              return (layer.Mean+(layer.Max-layer.Mean)*offset)
+            case 'Max':
+              return layer.Max
+            case 'Sup':
+              return (layer.Max+(layer.Max-layer.Mean)*extent)
+            default:
+              console.log(`Invalid call to slPos(${layer},${pos},${offset},${extent})`)
+              return -1
+            }
+          }
+
+        // if it's an array, map for each element of the array
+        var slPos=(Array.isArray(pos))?pos.map(_f):_f(pos)
+
+        // if normalize has been asked, get every thing in the 0-normalize range
+        if(normalize) {
+          // We assume the elements are in order
+          slPos=slPos.map(v => normalize*((v-slPos[0])/(slPos[slPos.length-1]-slPos[0])))
+        }
+        return slPos
       }
     }, // --- End of methods --- //
 
@@ -204,86 +329,47 @@ var appViti = new Vue({
         // ACt on messages received from Node-RED backend
         // If msg changes - msg is updated when a standard msg is received from Node-RED over Socket.IO
         uibuilder.onChange('msg', function(msg) {
-            if('pairsError' in msg) {
-              console.log(`PAIRS returned error for ${msg.topic}: ${msg.payload}`)
-            }
+          const pairsError='pairsError' in msg
 
-            if(msg.topic=='init') {
+          if(pairsError) {
+            console.log(`PAIRS returned error for ${msg.topic}: ${msg.payload}`)
+          }
+
+          switch(msg.topic) {
+            case 'init':
               // ask for the list of layers
               vueApp.initLayers()
-            } else if(msg.topic=='setView') {
+              vueApp.loadAOIs(AOIS_CATEGORY)
+              break;
+            case 'setView':
               vueApp.setView(msg.payload.pos,msg.payload.zoom)
-            } else if (msg.topic=='flyTo') {
+              break;
+            case 'flyTo':
               vueApp.flyTo(msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
-            } else if (msg.topic=='addLayers') {
+              break;
+            case 'addLayers':
               vueApp.addlayers(msg.payload.layers)
-            } else if (msg.topic=='setRefPointMarker') {
+              break;
+            case 'setRefPointMarker':
               vueApp.setRefPointMarker(msg.payload.pos)
-            } else if (msg.topic=='initLayers') {
-              // We got the details list of layers (array in msg.payload)
-              vueApp.layersDict=msg.payload.reduce(
-                function(dict,layer,index) {
-                  dict[layer.id]=layer
-                  return dict},
-                  {})
-            } else if (msg.topic=='loadLayers') {
-              if(!('pairsError' in msg)) {
-                // Set the Query position
-                vueApp.qryPos={"lat":msg.payload.data[0].latitude, "lng":msg.payload.data[0].longitude}
-
-                console.debug('Got layers',msg.payload.data)
-
-                // first group all the layers by layer ID and flatten Min-Mean-Max
-                let layersFlat=msg.payload.data.reduce(function(acc,layer) {
-                  if(!(layer.layerId in acc)) {
-                    // First time we encounter this layerID, add it to the dict
-                  	acc[layer.layerId]={"name": layer.layerName, "id":layer.layerId, "dataset": layer.dataset}
-
-                    // append attributes from layersDict
-                    const LAYERS_ATTR=['description_short','description_long','datatype','units']
-                    LAYERS_ATTR.forEach(attribute => acc[layer.layerId][attribute]=vueApp.layersDict[layer.layerId][attribute])
-                  }
-                  var value=parseFloat(layer.value)
-                  // convert units
-
-                  if(acc[layer.layerId].units=='K') {
-                    value=value+ZERO_C_IN_K
-                    acc[layer.layerId].convUnits='C'
-                  } else if(acc[layer.layerId].units=='kg m-2 s-1') {
-                    value=value*1000
-                    acc[layer.layerId].convUnits='g m-2 s-1'
-                  } else if(acc[layer.layerId].units=='J m-2') {
-                    value=value/1000000
-                    acc[layer.layerId].convUnits='MJ m-2'
-                  } else {
-                    acc[layer.layerId].convUnits=acc[layer.layerId].units
-                  }
-
-                  // Pivot the layer.aggregation as columns (attributes)
-                  acc[layer.layerId][layer.aggregation]=value
-
-                  return acc
-                },{})
-
-                // Store the layers
-                vueApp.qryLayers=layersFlat
-
-                // Adjust units (K to C)
-
-
-                // switch to second page
-                vueApp.curPage=2
-              }
-
-              // in any case, cancel the wait
-              vueApp.qryRunning=false
-            } else {
+              break;
+            case 'initLayers':
+              vueApp.initializedLayers(msg.payload)
+              break;
+            case 'loadAOIs':
+              vueApp.loadedAOIs(msg.payload,pairsError)
+              break;
+            case 'loadLayers':
+              vueApp.loadedLayers(msg.payload.data,pairsError)
+              break;
+            default:
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
-            }
+              break;
+          }
         })
 
         // If Socket.IO connects/disconnects, we get true/false here
-        uibuilder.onChange('ioConnected', function(connState){
+        uibuilder.onChange('ioConnected', function(connState) {
             //console.info('[indexjs:uibuilder.onChange:ioConnected] Socket.IO Connection Status Changed to:', newVal)
             vueApp.socketConnectedState = connState
         })
@@ -295,10 +381,6 @@ var appViti = new Vue({
 
         //###################### PAIRS Map stuff
         initPAIRS(L,PAIRS_HOST,PAIRS_PORT,PAIRS_WMS_AUTH)
-
-        // init Slider
-        var slider = new Slider('#pageSel2')
-
     } // --- End of mounted hook --- //
 
 }) // --- End of appViti --- //
