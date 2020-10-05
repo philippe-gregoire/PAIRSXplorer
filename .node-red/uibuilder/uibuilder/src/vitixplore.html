@@ -73,7 +73,7 @@
         </b-col>
         <b-col></b-col>
       </b-row>
-      
+
     </b-container>
 
     <b-container id="appViti_container_1" v-if="curPage==1" class="content">
@@ -83,7 +83,7 @@
           <h1 class="title">Location</h1>
           <h2 class="subtitle">Choose the reference field</h2>
 
-          <b-row v-if="aoisDict">
+<!--           <b-row v-if="aoisDict">
             <b-col cols="5">
               <p>Area of interest</p>
             </b-col>
@@ -92,7 +92,7 @@
                 <b-form-select-option v-for="aoi in aoisDict" :value="aoi.id">{{aoi.name}}</b-form-select-option>
               </b-form-select>
             </b-col>
-          </b-row>
+          </b-row> -->
 
           <div id="refMap" style="width: 100%;  height: 400px;">
             <l-map ref="vitiMap" @ready="onMapReady('vitiMap')">
@@ -219,9 +219,9 @@
         </b-col>
         <b-col cols="4">
           <!-- <l-map ref="qryMap" @ready="onMapReady('qryMap')"> -->
-          <l-map ref="qryMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" v-if="qryPos!=null">
+          <l-map ref="qryMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom">
             <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
-            <l-marker :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
+            <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
           </l-map>
         </b-col>
       </b-row>
@@ -236,7 +236,7 @@
             <!-- <b-col cols="4" v-for="l in qryLayers" class="criterias"> -->
               <div class="criteria" v-for="l in qryLayers">
                 <div class="custom-control custom-checkbox">
-                  <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model="checkedLayers">
+                  <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
                   <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</label>
                 </div>
                 <!-- <div class="criteriaUnitCheckBox">{{l.convUnits}}</div> -->
@@ -244,11 +244,12 @@
                 <center>
                   <!-- <input type="range" :min="l.Min" :max="l.Max" :value="l.Mean" class="custom-range" :id="'select_'+l.id"
                         v-b-tooltip.hover v-bind:title="l.description_long" data-placement="top"> -->
-                <p class="criteriaRefValue">{{criterias[l.id]}}</p>
+                <p class="criteriaRefValue">{{criteriasRange[l.id]}} {{criteriasCheck[l.id]}}</p>
 
-                <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id" 
+                <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
+                    v-bind:disabled="!criteriasCheck[l.id]"
                     v-bind:min="slPos(l,'Inf',critOff,critExt)"
-                    v-model:value="criterias[l.id]"
+                    v-model:value="criteriasRange[l.id]"
                     v-bind:max="slPos(l,'Sup',critOff,critExt)"
                     v-bind:ticks="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt)"
                     :ticks-labels="['Inf','Min', 'Mean','Max','Sup']"
@@ -267,7 +268,7 @@
           </b-form>
         </b-row>
       </b-row>
-
+     <br>
       <b-row>
         <b-col cols="12">
           <h1 class="title">Select Area of interest</h1>
@@ -275,10 +276,10 @@
             <b-form-select-option v-for="aoi in aoisDict" :value="aoi.id">{{aoi.name}}</b-form-select-option>
           </b-form-select>
 
-          <div id="refMap" style="width: 100%;  height: 400px;">
-            <l-map ref="vitiMap" @ready="onMapReady('vitiMap')">
+          <div id="aoiSelMap" style="width: 100%;  height: 400px;">
+            <l-map ref="aoiSelMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('aoiSelMap')">
               <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
-              <!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
+              <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
             </l-map>
           </div>
           <!-- <b-row>
@@ -298,7 +299,7 @@
       <b-row>
         <b-col cols=8>
           <center>
-            <button class="button" v-on:click="getResults">Validate</button>
+            <button :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Validate</button>
           </center>
         </b-col>
       </b-row>
@@ -306,7 +307,22 @@
     </b-container>
 
     <b-container id="appViti_container_4" v-if="curPage===4">
+      <b-row>
+        <!-- <b-col></b-col> -->
+        <b-col >
+          <h1 class="title">Scoring Results</h1>
+          <b-overlay :show="scoringInProgress" rounded="sm">
+            <h2 class="subtitle">Scoring Query Running</h2>
+          </b-overlay>
 
+          <div id="scoringMap" style="width: 100%;  height: 400px;">
+            <l-map ref="scoringMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('scoringMap')">
+              <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
+              <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
+            </l-map>
+          </div>
+        </b-col>
+      </b-row>
     </b-container>
   </div>
 

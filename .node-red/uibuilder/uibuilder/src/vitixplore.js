@@ -66,11 +66,15 @@ var appViti = new Vue({
         mapCenter   : {lat : INIT_LAT, lng : INIT_LNG},
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
+        // Scoring query management
+        mapScoring  : null,
+        scoringInProgress : false,
         // -- Criteria selection
         critOff: 0.2, // slider offset ratio
         critExt: 0.5,  // slider extent ratio
         // Criteria slider values, will be a dict keyed by layer ID with a Low-Up array each
-        criterias   : null,
+        criteriasRange   : null,
+        criteriasCheck   : null,
         critDigits  : 2,
         // -- Misc
         feVersion   : '',
@@ -117,7 +121,7 @@ var appViti = new Vue({
       initLayers: function() {
         this.sendToNodered('initLayers',{})
       },
-      initializedLayers: function(layers) {
+      initializedLayers: function(layers,pairsError) {
         // We got the details list of layers (array in msg.payload)
         this.layersDict=layers.reduce(function(dict,layer,index) {
           dict[layer.id]=layer
@@ -127,7 +131,7 @@ var appViti = new Vue({
       loadAOIs: function(AOICategory) {
         this.sendToNodered('loadAOIs',AOIS_CATEGORY)
       },
-      loadedAOIs: function(aois) {
+      loadedAOIs: function(aois,pairsError) {
         // console.debug("loadAOIs",msg.payload)
         // We got the details list of AOIs, put them in a dict
         this.aoisDict=aois.reduce(function(dict,aoi,index) {
@@ -142,7 +146,7 @@ var appViti = new Vue({
           console.debug("AOISDiect",this.aoisDict)
       },
       loadLayers: function(event) {
-        this.sendToNodered('loadLayers',{'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
+        this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
         this.qryRunning=true
       },
       loadedLayers: function(layers,pairsError) {
@@ -181,23 +185,28 @@ var appViti = new Vue({
       initCriterias: function(offset,extent) {
         if(this.qryLayers!=null) {
           const _this=this
-          this.criterias=Object.keys(this.qryLayers).reduce(function(acc,layerId){
+          this.criteriasRange=Object.keys(this.qryLayers).reduce(function(acc,layerId){
             acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Low','Up'],offset,extent)
             return acc
           },{})
+          this.criteriasCheck=Object.keys(this.qryLayers).reduce(function(acc,layerId){
+            acc[layerId]=true
+            return acc
+          },{})
         } else {
-          this.criterias=null
+          this.criteriasRange=null
+          this.criteriasCheck=null
         }
       },
       critChange: function(layerId,critIndex,value) {
-        var criterias=this.criterias
+        var criteriasRange=this.criteriasRange
         const _this=this
-        console.log(`critChange ${layerId}[${critIndex}] value=${value} criterias[layerId]=${criterias[layerId]}`)
+        console.log(`critChange ${layerId}[${critIndex}] value=${value} criteriasRange[layerId]=${criteriasRange[layerId]}`)
         Vue.nextTick(function () {
-          console.log(`nextTick critChange ${layerId}[${critIndex}] value=${value} criterias[layerId]=${criterias[layerId]}`)
-          criterias[layerId][critIndex]=parseFloat(value)
-          _this.criterias=criterias
-          console.log(`critChange new ${_this.criterias[layerId]}`)
+          console.log(`nextTick critChange ${layerId}[${critIndex}] value=${value} criteriasRange[layerId]=${criteriasRange[layerId]}`)
+          criteriasRange[layerId][critIndex]=parseFloat(value)
+          _this.criteriasRange=criteriasRange
+          console.log(`critChange new ${_this.criteriasRange[layerId]}`)
           // const event = new Event('input')
           // var refid=`c${critIndex}_${layerId}`
           // var ref=this.$refs[refid]
@@ -212,15 +221,19 @@ var appViti = new Vue({
       },
       onMapReady: function(mapRef) {
         console.log(`On map ready`,event)
-        this.map = this.$refs[mapRef].mapObject
-        this.map.on('moveend',this.mapEvent)
-        this.map.on('zoomend',this.mapEvent)
-        this.map.on('move',this.mapEvent)
-        this.map.on('click',this.mapEvent)
+        if(mapRef==='vitiMap') {
+          this.map = this.$refs[mapRef].mapObject
+          this.map.on('moveend',this.mapEvent)
+          this.map.on('zoomend',this.mapEvent)
+          this.map.on('move',this.mapEvent)
+          this.map.on('click',this.mapEvent)
 
-        this.setView(this.mapCenter,this.mapZoom)
-        this.setRefPointMarker(this.refPos)
-
+          this.setView(this.mapCenter,this.mapZoom)
+          this.setRefPointMarker(this.refPos)
+        } else if(mapRef==='scoringMap') {
+          this.mapScoring=this.$refs[mapRef].mapObject
+          //this.setView(this.mapCenter,this.mapZoom)
+        }
         // var nitroLayer=newPAIRSLayer(L,'geoserver1',0.000000,0.0001000,4,'1588089600_03312498ESASentinel5PL2-NitrogendioxideTropospheric5042415856992000001588291200000-Mean')
         // var populLayer=newPAIRSLayer(L,'geoserver06',0,655350,92,'1588046400_35972570GlobalpopulationSEDAC-Globalpopulationdensity-01_01_2020T000000')
 
@@ -241,6 +254,7 @@ var appViti = new Vue({
         wmsOverlays={}
 
         wmsLayers.forEach(function(layer) {
+
           wmsOverlays[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,layer.colorTableId,layer.name)
         })
 
@@ -265,9 +279,44 @@ var appViti = new Vue({
         this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
         this.refPos=pos
       },
-      getResults: function () {
-        console.log(this.criterias)
-        console.log(this.layersValue)
+      launchScoringQuery: function () {
+        // Make a dictioary with low-up-enabled values
+        const _this=this
+        const layers=Object.keys(this.criteriasRange)
+
+        // var scoringData=layers.reduce(function(acc,layerId) {
+        //   console.log(acc)
+        //   acc[layerId]={'id':layerId,
+        //                 'low':_this.criteriasRange[layerId][0],
+        //                 'up':_this.criteriasRange[layerId][1],
+        //                 'enabled':_this.criteriasCheck[layerId]}
+        //   return acc
+        // },{})
+        //
+        // this.sendToNodered('scoringQuery',{'aoi':this.refAOI,'startDay':this.startDay,'endDay':this.endDay,'data':scoringData})
+        // console.log(this.criteriasRange)
+        // console.log(this.criteriasCheck)
+        // console.log(scoringData)
+
+        // Missing aggregation
+        var UDF = layers.reduce(function(udf,layerId) {
+          if (_this.criteriasCheck[layerId]) {
+            udf += "(( $" + layerId + " >= " + _this.criteriasRange[layerId][0] + " && $" + layerId + " <= "+ _this.criteriasRange[layerId][1] + ") ? 1 : 0 ) + "
+          }
+          return udf
+        },"")
+
+        console.log(UDF)
+        this.scoringInProgress=true
+        this.sendToNodered('getResults', {'pos': this.refPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
+
+        this.curPage=4
+      },
+      receiveResults: function (payload,pairsError) {
+        if(pairsError===null) {
+            console.log('PAIRS returned payload',payload)
+        }
+        this.scoringInProgress=false
       },
       slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Low,  Mean, Up, Max, Sup
         const critDigits=this.critDigits
@@ -292,11 +341,14 @@ var appViti = new Vue({
               return -1
             }
           }
+        function _rnd(p) {
+          return  Math.round(_f(p) * (10**critDigits)) / (10**critDigits)
+        }
 
         // if it's an array, map for each element of the array
-        var slPos=(Array.isArray(pos))?pos.map(_f):_f(pos)
+        var slPos=(Array.isArray(pos))?pos.map(_rnd):_rnd(pos)
 
-        // if normalize has been asked, get every thing in the 0-normalize range
+        // if normalize has been asked, get every thing in the 0-normalize range (for the positions)
         if(normalize) {
           // We assume the elements are in order
           slPos=slPos.map(v => normalize*((v-slPos[0])/(slPos[slPos.length-1]-slPos[0])))
@@ -332,7 +384,7 @@ var appViti = new Vue({
           const pairsError='pairsError' in msg
 
           if(pairsError) {
-            console.log(`PAIRS returned error for ${msg.topic}: ${msg.payload}`)
+            console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg.payload)
           }
 
           switch(msg.topic) {
@@ -348,19 +400,22 @@ var appViti = new Vue({
               vueApp.flyTo(msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
               break;
             case 'addLayers':
-              vueApp.addlayers(msg.payload.layers)
+              vueApp.addlayers(msg.payload.layers,pairsError)
               break;
             case 'setRefPointMarker':
               vueApp.setRefPointMarker(msg.payload.pos)
               break;
             case 'initLayers':
-              vueApp.initializedLayers(msg.payload)
+              vueApp.initializedLayers(msg.payload,pairsError)
               break;
             case 'loadAOIs':
               vueApp.loadedAOIs(msg.payload,pairsError)
               break;
             case 'loadLayers':
               vueApp.loadedLayers(msg.payload.data,pairsError)
+              break;
+            case 'getResults':
+              vueApp.receiveResults(msg.payload,pairsError)
               break;
             default:
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
