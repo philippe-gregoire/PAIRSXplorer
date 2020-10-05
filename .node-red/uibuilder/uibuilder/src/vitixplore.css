@@ -130,6 +130,9 @@ body {
 	width: 100%;
 }
 
+.active {
+	background: black;
+}
 
 .slider-handle, .slider-tick.round.in-selection {
 	background: #633CEA;

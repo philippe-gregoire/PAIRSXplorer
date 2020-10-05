@@ -83,7 +83,7 @@
           <h1 class="title">Location</h1>
           <h2 class="subtitle">Choose the reference field</h2>
 
-          <b-row v-if="aoisDict">
+<!--           <b-row v-if="aoisDict">
             <b-col cols="5">
               <p>Area of interest</p>
             </b-col>
@@ -92,7 +92,7 @@
                 <b-form-select-option v-for="aoi in aoisDict" :value="aoi.id">{{aoi.name}}</b-form-select-option>
               </b-form-select>
             </b-col>
-          </b-row>
+          </b-row> -->
 
           <div id="refMap" style="width: 100%;  height: 400px;">
             <l-map ref="vitiMap" @ready="onMapReady('vitiMap')">
@@ -236,7 +236,7 @@
             <!-- <b-col cols="4" v-for="l in qryLayers" class="criterias"> -->
               <div class="criteria" v-for="l in qryLayers">
                 <div class="custom-control custom-checkbox">
-                  <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model="checkedLayers">
+                  <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model="checkedLayers" > 
                   <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</label>
                 </div>
                 <!-- <div class="criteriaUnitCheckBox">{{l.convUnits}}</div> -->
@@ -267,7 +267,7 @@
           </b-form>
         </b-row>
       </b-row>
-
+     <br>
       <b-row>
         <b-col cols="12">
           <h1 class="title">Select Area of interest</h1>

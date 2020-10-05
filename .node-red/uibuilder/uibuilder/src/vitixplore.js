@@ -69,6 +69,7 @@ var appViti = new Vue({
         // -- Criteria selection
         critOff: 0.2, // slider offset ratio
         critExt: 0.5,  // slider extent ratio
+        checkedLayers  : [],
         // Criteria slider values, will be a dict keyed by layer ID with a Low-Up array each
         criterias   : null,
         critDigits  : 2,
@@ -142,7 +143,8 @@ var appViti = new Vue({
           console.debug("AOISDiect",this.aoisDict)
       },
       loadLayers: function(event) {
-        this.sendToNodered('loadLayers',{'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
+        this.checkedLayers = Object.keys(this.layersDict);
+        this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
         this.qryRunning=true
       },
       loadedLayers: function(layers,pairsError) {
@@ -170,7 +172,6 @@ var appViti = new Vue({
           },{})
 
           this.initCriterias(this.critOff,this.critExt)
-
           // switch to second page
           this.curPage=2
         }
@@ -241,6 +242,7 @@ var appViti = new Vue({
         wmsOverlays={}
 
         wmsLayers.forEach(function(layer) {
+
           wmsOverlays[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,layer.colorTableId,layer.name)
         })
 
@@ -266,8 +268,20 @@ var appViti = new Vue({
         this.refPos=pos
       },
       getResults: function () {
-        console.log(this.criterias)
-        console.log(this.layersValue)
+        var UDF = "";
+        var alias = "";
+
+        for (const property in this.criterias) {
+          alias = property;
+          console.log(alias)
+          UDF += "(( $" + alias + " >= " + this.criterias[property][0] + " && $" + alias + " <= "+ this.criterias[property][1] + ") ? 1 : 0 ) + " 
+        }
+        console.log(UDF)
+        this.sendToNodered('getResults', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': (this.checkedLayers), 'UDF': UDF})
+        // console.log(this.checkedLayers)
+      },
+      receiveResults: function () {
+        console.log('ok')
       },
       slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Low,  Mean, Up, Max, Sup
         const critDigits=this.critDigits
@@ -361,6 +375,9 @@ var appViti = new Vue({
               break;
             case 'loadLayers':
               vueApp.loadedLayers(msg.payload.data,pairsError)
+              break;
+            case 'getResults':
+              vueApp.receiveResults(msg.payload.data,pairsError)
               break;
             default:
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
