@@ -37,7 +37,7 @@ const MONTHS_BACK = 1
 const DEFAULT_FLYTO_SEC = 2
 
 const SIMUL_QUERYID = '1601956800_33355820'
-const DEFAULT_COLORMAPID = 16
+const DEFAULT_COLORTABLEID = 4
 
 // Register l-map components
 console.debug("Registering Vue2Leaflet components")
@@ -70,13 +70,16 @@ var appViti = new Vue({
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
         // Scoring query management
-        mapScoring    : null,
+        scoringMap    : null,
         scoringInProgress : false,
         scoringStatus : null,
         scoringStart  : null,
+        scoringSince  : null,
         scoringReady  : null,
-        scoringRect   : null,
+        scoringBounds : null,
         scoringPercent: null,
+        queryJobs     : null,
+        selQueryJob   : null,
         // -- Criteria selection
         critOff: 0.2, // slider offset ratio
         critExt: 0.5,  // slider extent ratio
@@ -239,8 +242,10 @@ var appViti = new Vue({
           this.setView(this.mapCenter,this.mapZoom)
           this.setRefPointMarker(this.refPos)
         } else if(mapRef==='scoringMap') {
-          this.mapScoring=this.$refs[mapRef].mapObject
-          //this.setView(this.mapCenter,this.mapZoom)
+          this.scoringMap=this.$refs[mapRef].mapObject
+          if(this.selQueryJob!=null) {
+            this.flyToBounds(this.scoringMap,this.selQueryJob)
+          }
         }
         // var nitroLayer=newPAIRSLayer(L,'geoserver1',0.000000,0.0001000,4,'1588089600_03312498ESASentinel5PL2-NitrogendioxideTropospheric5042415856992000001588291200000-Mean')
         // var populLayer=newPAIRSLayer(L,'geoserver06',0,655350,92,'1588046400_35972570GlobalpopulationSEDAC-Globalpopulationdensity-01_01_2020T000000')
@@ -251,8 +256,19 @@ var appViti = new Vue({
         }
       },
       /** Helper shortcut methods **/
-      flyTo: function(pos,zoom,duration) {
-        this.map.flyTo(pos,zoom?zoom:this.map.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
+      flyTo: function(map,pos,zoom,duration) {
+        map.flyTo(pos,zoom?zoom:this.map.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
+      },
+      flyToBounds: function(map,queryJob,duration) {
+        if('neLat' in queryJob) {
+          const bounds=[[queryJob.neLat,queryJob.neLon],[queryJob.swLat,queryJob.swLon]]
+          console.log(`Flying to bounds ${bounds}`)
+          map.flyToBounds(bounds,{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
+          return bounds
+        } else {
+          console.log('no neLat in ', queryJob)
+          return null
+        }
       },
       setView: function(pos,zoom) {
         this.map.setView(pos,zoom?zoom:this.map.getZoom())
@@ -283,16 +299,11 @@ var appViti = new Vue({
             this.refPointMarker=null
         }
 
-        let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#fe2244" cx="10" cy="10" r="9"/><circle fill="#ffffbf" cx="10" cy="10" r="5"/></svg>'
+        let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="10" cy="10" r="9"/><circle fill="#B03050" cx="10" cy="10" r="5"/></svg>'
         this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
         this.refPos=pos
       },
       launchScoringQuery: function () {
-        // Simulation
-        this.sendToNodered('scoringLayers',SIMUL_QUERYID)
-        this.curPage=4
-        return
-
         // Make a dictioary with low-up-enabled values
         const _this=this
         const layers=Object.keys(this.criteriasRange)
@@ -315,22 +326,44 @@ var appViti = new Vue({
           }
           return udf
         },"")
-
-        console.log(UDF)
-        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi':this.refAOI,'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
+        UDF=UDF.slice(0,-3)
+        console.log("UDF=",UDF)
         this.scoringInProgress=true
+        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi':this.refAOI, 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
 
         // this.sendToNodered('getResults', {'pos': this.qryPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
-        this.curPage=4
+        this.curPage=3
       },
       progressScoringQuery: function(progress,pairsError) {
         console.debug("progressScoringQuery",progress,pairsError)
         this.scoringStatus=progress.status
-        this.scoringStart=new Date(progress.start)
+        this.scoringStart=progress.start
+        this.scoringSince=Date.now()-progress.start
         this.scoringReady=progress.ready
-        this.scoringRect=[progress.neLat,progress.swLat,progress.neLon,progress.swLon]
         this.scoringPercent=progress.exPercent
-        this.scoringInProgress=false
+
+        const newBounds=[[progress.neLat,progress.neLon],[progress.swLat,progress.swLon]]
+        // If this is a query not ready yet, animate the map now, otherwise it will be animated later
+        if(newBounds!=this.scoringBounds && !progress.ready) {
+          // do a long flyover
+          this.flyToBounds(this.scoringMap,progress,3)
+        }
+        this.scoringBounds=newBounds
+
+        if(['Initializing','Queued','Running','Writing'].includes(progress.status)) {
+          // still running
+        } else {
+          if(progress.status==='Succeeded') {
+            // Now get the WMS layers and add them to map
+            this.sendToNodered('scoringLayers',progress.id)
+          } else if(progress.status==='Failed' || progress.status==="FailedConversion") {
+            console.log("Failed Query Job")
+          } else {
+            // unknown status
+            console.log("Unknown QueryJob Status",progress.status)
+          }
+          this.scoringInProgress=false
+        }
       },
       receiveResults: function(payload,pairsError) {
         if(pairsError===null) {
@@ -345,13 +378,31 @@ var appViti = new Vue({
       scoringLayers: function(dataLayers,pairsError) {
         console.log(dataLayers)
         //const layer=function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,opacity)
-        const wmsOverlays=dataLayers.reduce(function(acc,layer) {
-          acc[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORMAPID,layer.name)
-          return acc
-        },{})
+        const _this=this
+        const wmsControl=dataLayers.reduce(function(control,layer) {
+          const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layer.name)
+          control.addOverlay(newLayer,layer.datalayer)
+          _this.scoringMap.addLayer(newLayer)
+          return control
+        },L.control.layers())
 
-        console.log("Adding WMS overlays ",wmsOverlays)
-        L.control.layers(null, wmsOverlays).addTo(this.mapScoring);
+        console.log("Adding overlays")
+        wmsControl.addTo(this.scoringMap)
+
+        this.flyToBounds(this.scoringMap,this.selQueryJob)
+      },
+      listQueryJobs: function() {
+        this.sendToNodered('listQueryJobs',null)
+      },
+      listedQueryJobs: function(queryJobs,pairsError) {
+        // Process list of listQueryJobs
+        this.queryJobs=queryJobs.queryJobList
+      },
+      showQueryJob: function() {
+        // Existing query, inject it to the query process
+        this.scoringInProgress=true
+        this.sendToNodered('scoringQuery',{'id':this.selQueryJob.id})
+        this.curPage=3
       },
       slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Low,  Mean, Up, Max, Sup
         const critDigits=this.critDigits
@@ -427,12 +478,13 @@ var appViti = new Vue({
               // ask for the list of layers
               vueApp.initLayers()
               vueApp.loadAOIs(AOIS_CATEGORY)
+              vueApp.listQueryJobs()
               break;
             case 'setView':
               vueApp.setView(msg.payload.pos,msg.payload.zoom)
               break;
             case 'flyTo':
-              vueApp.flyTo(msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
+              vueApp.flyTo(this.map,msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
               break;
             case 'addLayers':
               vueApp.addlayers(msg.payload.layers,pairsError)
@@ -457,6 +509,10 @@ var appViti = new Vue({
               break;
             case 'scoringLayers':
               vueApp.scoringLayers(msg.payload,pairsError)
+              break;
+            case 'listQueryJobs':
+              vueApp.listedQueryJobs(msg.payload,pairsError)
+              break;
             default:
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
               break;

@@ -273,7 +273,7 @@
         <b-col cols="12">
           <h1 class="title">Select Area of interest</h1>
           <b-form-select v-model="refAOI">
-            <b-form-select-option v-for="aoi in aoisDict" :value="aoi.id">{{aoi.name}}</b-form-select-option>
+            <b-form-select-option v-for="aoi in aoisDict" :value="aoi" v-bind:key="'refAOI_'+aoi.id">{{aoi.name}}</b-form-select-option>
           </b-form-select>
 
           <div id="aoiSelMap" style="width: 100%;  height: 400px;">
@@ -297,24 +297,33 @@
       </b-row>
 
       <b-row>
-        <b-col cols=8>
+        <b-col cols=6>
+          <b-form-select v-model="selQueryJob">
+            <!-- <b-form-select-option v-for="qj in queryJobs" v-if="qj.ready" :value="qj.id">{{qj.nickname}}</b-form-select-option> -->
+            <b-form-select-option v-for="qj in queryJobs" v-if="qj.status!='Failed'" :value="qj" v-bind:key="'selQJ_'+qj.id">[{{qj.status}}]: {{qj.nickname}}</b-form-select-option>
+          </b-form-select>
+        </b-col>
+        <b-col cols=2>
+            <button :disabled="selQueryJob===null" class="button" v-on:click="showQueryJob">Show</button>
+        </b-col>
+        <b-col cols=4>
           <center>
-            <button :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Validate</button>
+            <button :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Score</button>
           </center>
         </b-col>
       </b-row>
 
     </b-container>
 
-    <b-container id="appViti_container_4" v-if="curPage===4">
+    <b-container id="appViti_container_result" v-if="curPage===3">
       <b-row>
         <!-- <b-col></b-col> -->
         <b-col >
-          <h1 class="title">Scoring Results</h1>
+          <h1 class="title">Scoring {{scoringInProgress?'in progress':'Results'}}</h1>
           <b-overlay :show="scoringInProgress" rounded="sm">
-            <h2 class="subtitle">Scoring Query Running</h2>
+            <h2 class="subtitle"  v-if="scoringInProgress">Scoring Query Running</h2>
           </b-overlay>
-          <h2 class="subtitle" v-if="scoringInProgress">{{scoringPercent}}% status: {{scoringStatus}} {{scoringStart}} ready: {{scoringReady}} rect={{scoringRect}}</h2>
+          <h2 class="subtitle" v-if="scoringInProgress">{{scoringStatus}} {{scoringPercent}}% {{Math.round((scoringSince)/1000)}} s</h2>
 
           <div id="scoringMap" style="width: 100%;  height: 400px;">
             <l-map ref="scoringMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('scoringMap')">
