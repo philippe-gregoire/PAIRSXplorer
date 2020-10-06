@@ -31,7 +31,8 @@ pairsFuncs= {
         bbox_b=(zpow-y)*EPSG[proj]['dy']/zpow
 
         // Make-up the style layer descriptor and encode it
-        var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&colorTableId=${colorTableId}&no_data=-1&property=value&layer=pairs:${layerName}`
+        // var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&colorTableId=${colorTableId}&no_data=-1&property=value&layer=pairs:${layerName}`
+        var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&no_data=-1&property=value&layer=pairs:${layerName}`
         sldEnc=encodeURIComponent(sld)
 
         // Finally build the full URL

@@ -36,6 +36,9 @@ const MONTHS_BACK = 1
 
 const DEFAULT_FLYTO_SEC = 2
 
+const SIMUL_QUERYID = '1601956800_33355820'
+const DEFAULT_COLORMAPID = 16
+
 // Register l-map components
 console.debug("Registering Vue2Leaflet components")
 Vue.component('l-map', window.Vue2Leaflet.LMap);
@@ -67,8 +70,13 @@ var appViti = new Vue({
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
         // Scoring query management
-        mapScoring  : null,
+        mapScoring    : null,
         scoringInProgress : false,
+        scoringStatus : null,
+        scoringStart  : null,
+        scoringReady  : null,
+        scoringRect   : null,
+        scoringPercent: null,
         // -- Criteria selection
         critOff: 0.2, // slider offset ratio
         critExt: 0.5,  // slider extent ratio
@@ -220,7 +228,7 @@ var appViti = new Vue({
         this.map.flyTo(this.refPos,this.map.getZoom()+1)
       },
       onMapReady: function(mapRef) {
-        console.log(`On map ready`,event)
+        console.log(`On map ready`,mapRef)
         if(mapRef==='vitiMap') {
           this.map = this.$refs[mapRef].mapObject
           this.map.on('moveend',this.mapEvent)
@@ -280,43 +288,70 @@ var appViti = new Vue({
         this.refPos=pos
       },
       launchScoringQuery: function () {
+        // Simulation
+        this.sendToNodered('scoringLayers',SIMUL_QUERYID)
+        this.curPage=4
+        return
+
         // Make a dictioary with low-up-enabled values
         const _this=this
         const layers=Object.keys(this.criteriasRange)
 
-        // var scoringData=layers.reduce(function(acc,layerId) {
-        //   console.log(acc)
-        //   acc[layerId]={'id':layerId,
-        //                 'low':_this.criteriasRange[layerId][0],
-        //                 'up':_this.criteriasRange[layerId][1],
-        //                 'enabled':_this.criteriasCheck[layerId]}
-        //   return acc
-        // },{})
-        //
-        // this.sendToNodered('scoringQuery',{'aoi':this.refAOI,'startDay':this.startDay,'endDay':this.endDay,'data':scoringData})
-        // console.log(this.criteriasRange)
-        // console.log(this.criteriasCheck)
-        // console.log(scoringData)
+        var scoringData=layers.map(function(layerId) {
+          return {'id':layerId,
+                  'low':_this.criteriasRange[layerId][0],
+                  'up':_this.criteriasRange[layerId][1],
+                  'enabled':_this.criteriasCheck[layerId]}
+        })
+
+        console.log(this.criteriasRange)
+        console.log(this.criteriasCheck)
+        console.log(scoringData)
 
         // Missing aggregation
         var UDF = layers.reduce(function(udf,layerId) {
           if (_this.criteriasCheck[layerId]) {
-            udf += "(( $" + layerId + " >= " + _this.criteriasRange[layerId][0] + " && $" + layerId + " <= "+ _this.criteriasRange[layerId][1] + ") ? 1 : 0 ) + "
+            udf += "(( $Mean_" + layerId + " >= " + _this.criteriasRange[layerId][0] + " && $Mean_" + layerId + " <= "+ _this.criteriasRange[layerId][1] + ") ? 1 : 0 ) + "
           }
           return udf
         },"")
 
         console.log(UDF)
+        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi':this.refAOI,'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
         this.scoringInProgress=true
-        this.sendToNodered('getResults', {'pos': this.refPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
 
+        // this.sendToNodered('getResults', {'pos': this.qryPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
         this.curPage=4
       },
-      receiveResults: function (payload,pairsError) {
+      progressScoringQuery: function(progress,pairsError) {
+        console.debug("progressScoringQuery",progress,pairsError)
+        this.scoringStatus=progress.status
+        this.scoringStart=new Date(progress.start)
+        this.scoringReady=progress.ready
+        this.scoringRect=[progress.neLat,progress.swLat,progress.neLon,progress.swLon]
+        this.scoringPercent=progress.exPercent
+        this.scoringInProgress=false
+      },
+      receiveResults: function(payload,pairsError) {
         if(pairsError===null) {
             console.log('PAIRS returned payload',payload)
         }
-        this.scoringInProgress=false
+
+        if(payload.status==='Failed' || payload.status==='Success') {
+          // query completed
+          this.scoringInProgress=false
+        }
+      },
+      scoringLayers: function(dataLayers,pairsError) {
+        console.log(dataLayers)
+        //const layer=function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,opacity)
+        const wmsOverlays=dataLayers.reduce(function(acc,layer) {
+          acc[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORMAPID,layer.name)
+          return acc
+        },{})
+
+        console.log("Adding WMS overlays ",wmsOverlays)
+        L.control.layers(null, wmsOverlays).addTo(this.mapScoring);
       },
       slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Low,  Mean, Up, Max, Sup
         const critDigits=this.critDigits
@@ -414,9 +449,14 @@ var appViti = new Vue({
             case 'loadLayers':
               vueApp.loadedLayers(msg.payload.data,pairsError)
               break;
+            case 'scoringQuery':
+              vueApp.progressScoringQuery(msg.payload,pairsError)
+              break;
             case 'getResults':
               vueApp.receiveResults(msg.payload,pairsError)
               break;
+            case 'scoringLayers':
+              vueApp.scoringLayers(msg.payload,pairsError)
             default:
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
               break;

@@ -314,6 +314,7 @@
           <b-overlay :show="scoringInProgress" rounded="sm">
             <h2 class="subtitle">Scoring Query Running</h2>
           </b-overlay>
+          <h2 class="subtitle" v-if="scoringInProgress">{{scoringPercent}}% status: {{scoringStatus}} {{scoringStart}} ready: {{scoringReady}} rect={{scoringRect}}</h2>
 
           <div id="scoringMap" style="width: 100%;  height: 400px;">
             <l-map ref="scoringMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('scoringMap')">
