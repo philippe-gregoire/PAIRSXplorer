@@ -24,8 +24,6 @@ copy this file to <userDir>/uibuilder/<url>/src.
   <meta name="description" content="PAIRS Viti Xplorer">
 
   <link rel="icon" href="./images/node-blue.ico">
-  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-  <link href="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
   <!-- See https://goo.gl/OOhYW5 -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#3f51b5">
@@ -47,14 +45,17 @@ copy this file to <userDir>/uibuilder/<url>/src.
   <link rel="apple-touch-icon" sizes="192x192" href="./images/manifest/icon-192x192.png">
 -->
 
-<link type="text/css" rel="stylesheet" href="../uibuilder/vendor/bootstrap/dist/css/bootstrap.min.css" />
-<link type="text/css" rel="stylesheet" href="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.css" />
-<link rel = "stylesheet" type = "text / css" href = "custom.css ">
+<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.css" />
+<!-- <link rel="stylesheet" type="text/css" href="custom.css "> -->
 <link rel="stylesheet" href="../uibuilder/vendor/leaflet/dist/leaflet.css" />
 
 <link rel="stylesheet" href="../uibuilder/vendor/bootstrap-slider/dist/css/bootstrap-slider.css" />
 
-<link type="text/css" rel="stylesheet" href="./vitixplore.css" media="all">
+<link rel="stylesheet" href="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css">
+
+<link rel="stylesheet" type="text/css" href="./vitixplore.css" media="all">
 
 
 <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -91,8 +92,8 @@ copy this file to <userDir>/uibuilder/<url>/src.
       <h1 class="title">Location</h1>
       <h2 class="subtitle">Choose the reference field</h2>
 
-        <b-form inline>
-        <b-row>
+
+        <b-row align-v='end'>
           <b-col cols="2">
             <label for="refLat" class="labstyle">Latitude</label>
             <b-form-input v-model.number="refPos.lat" size="xs" id="refLat" type="number" maxlength=10></b-form-input>
@@ -101,20 +102,31 @@ copy this file to <userDir>/uibuilder/<url>/src.
             <label for="refLng" class="labstyle">Longitude</label>
             <b-form-input v-model.number="refPos.lng" size="xs" id="refLng" type="number" maxlength=10></b-form-input>
           </b-col>
+          <b-col cols="1">
+            <b-button style="vertical-align: bottom; display: table-cell; float:none;" id="btn_goTo" pill variant="primary" size="lg" v-on:click="moveTo" class="smallButton">Zoom to</b-button>
+          </b-col>
           <b-col cols="3">
             <label for="startDay">Start day</label>
-            <b-form-datepicker v-model="startDay" id="startDay" size="md" maxlength=10></b-form-datepicker>
+            <b-overlay :show="layersDict===null" spinner-type="grow">
+              <b-form-datepicker v-model="startDay" id="startDay" size="md" maxlength=10></b-form-datepicker>
+            </b-overlay>
           </b-col>
           <b-col cols="3">
             <label for="endDay">End day</label>
-            <b-form-datepicker v-model="endDay" id="endDay" size="md" maxlength=10></b-form-datepicker>
+            <!-- <b-overlay :show="layersDict===null" spinner-type="grow"> -->
+              <b-overlay :show="layersDict===null">
+              <b-form-datepicker v-model="endDay" id="endDay" size="md" maxlength=10></b-form-datepicker>
+              <template v-slot:overlay>
+                <!-- <b-icon icon="stopwatch" font-scale="3" animation="cylon"></b-icon> -->
+                <p>loading layers</p>
+              </template>
+            </b-overlay>
           </b-col>
         </b-row>
 
-
-    <b-row>
+    <!-- <b-row>
       <b-button style="display: block;margin: auto auto;height 25px;" id="btn_goTo" pill variant="primary" size="sm" v-on:click="moveTo" class="smallButton">Zoom to</b-button>
-    </b-row>
+    </b-row> -->
 
     <!--           <b-row v-if="aoisDict">
     <b-col cols="5">
@@ -136,16 +148,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
 </b-col>
 
 
+<b-overlay :show="qryRunning" rounded="sm">
 <b-row>
-<!--b-overlay :show="qryRunning" rounded="sm"-->
-  <b-button style="display: block;margin: auto auto;height 25px;" id="btn_loadLayers" pill variant="primary" size="sm" v-on:click="loadLayers" class="button">Compute Layers</b-button>
-<!--/b-overlay-->
+    <b-button :disabled="layersDict===null" style="display: block;margin: auto auto;height 25px;" id="btn_loadLayers" pill variant="primary" size="sm" v-on:click="loadLayers" class="button">Compute Layers</b-button>
 </b-row>
 <b-row>
-  <b-overlay :show="qryRunning" rounded="sm">
+  <!-- <b-overlay :show="qryRunning" rounded="sm"> -->
     <div v-if="qryRunning">Computing Layers Min-Mean-Max from {{startDay}} to {{endDay}}</div>
-  </b-overlay>
+  <!-- </b-overlay> -->
 </b-row>
+</b-overlay>
 </b-container>
 
 <!--   <b-container id="appViti_container_2" v-if="curPage===2">
@@ -279,20 +291,29 @@ v-bind:ticks-positions="slPos(test.l,['Inf','Min','Mean','Max','Sup'],test.so,te
       </b-form>
     </b-row>
   </b-row>
-  <br>
   <b-row>
-    <b-col cols="12">
+    <b-col cols="8">
       <h1 class="title">Select Area of interest</h1>
       <b-form-select v-model="refAOI">
         <b-form-select-option v-for="aoi in aoisDict" :value="aoi" v-bind:key="'refAOI_'+aoi.id">{{aoi.name}}</b-form-select-option>
       </b-form-select>
-
-      <div id="aoiSelMap" style="width: 100%;  height: 400px;">
+    </b-col>
+    <b-col cols=4>
+      <center>
+        <button :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Score</button>
+      </center>
+    </b-col>
+  </b-row>
+  <b-row>
+    <b-col cols="12">
+        <div id="aoiSelMap" style="width: 100%;  height: 400px;">
         <l-map ref="aoiSelMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('aoiSelMap')">
           <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
           <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
         </l-map>
       </div>
+    </b-col>
+  </b-row>
       <!-- <b-row>
       <b-col cols=8> -->
       <!--    <center>
@@ -304,23 +325,23 @@ v-bind:ticks-positions="slPos(test.l,['Inf','Min','Mean','Max','Sup'],test.so,te
     <!-- </b-col>
   </b-row> -->
 
-</b-col>
-</b-row>
+<!-- </b-col>
+</b-row> -->
 
 <b-row>
+  <b-col cols=2>
+    <b-form-checkbox v-model="qrySelAll">All Queries</b-form-checkbox>
+  </b-col>
   <b-col cols=6>
     <b-form-select v-model="selQueryJob">
-      <!-- <b-form-select-option v-for="qj in queryJobs" v-if="qj.ready" :value="qj.id">{{qj.nickname}}</b-form-select-option> -->
-      <b-form-select-option v-for="qj in queryJobs" v-if="qj.status!='Failed'" :value="qj" v-bind:key="'selQJ_'+qj.id">[{{qj.status}}]: {{qj.nickname}}</b-form-select-option>
+      <b-form-select-option v-for="qj in queryJobs" v-if="qrySelAll || !qj.status.startsWith('Failed')" :value="qj" v-bind:key="'selQJ_'+qj.id">[{{qj.status}}]: {{qj.nickname}}</b-form-select-option>
     </b-form-select>
   </b-col>
   <b-col cols=2>
     <button :disabled="selQueryJob===null" class="button" v-on:click="showQueryJob">Show</button>
   </b-col>
-  <b-col cols=4>
-    <center>
-      <button :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Score</button>
-    </center>
+  <b-col cols=2>
+    <button :disabled="selQueryJob===null" class="button" v-on:click="deleteQueryJob">Del</button>
   </b-col>
 </b-row>
 

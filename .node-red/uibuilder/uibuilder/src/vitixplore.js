@@ -24,8 +24,8 @@ const PAIRS_PORT=8080
 const PAIRS_WMS_AUTH='jGn23qJeqcCVeFaRot2duWirS6bl052bxLjdSisZWVjlSadbmAWAfc30SUd9L-GxPBIZ-TulkhNL1LAl-J_Sjmf-j7TUEqpIHj4kZ1flCBHmOs6aNmw_qkT1YrtYhYLDmmJktFoRfpfW9GeCaD41Ed21bVw2XOWyBLHVn4kf43rMqI326lp7vxJGGjmZlXjtBFfUFvhoh7gYEZgnWB-mk-506RyWVqQ3rc4J0AusaRRbh6xg_D4DXbjSqqO4q9ft1SY8xNjiqAQO4Nde0QcEHdY_DU54WheQP_vmw8a_C4Q5KSNlQ4oA_X4A3XXcHiMjtLszKAi3hCa0jvj3MmLAm0xyhA1OhNgKWCkUHG53wIee7FqRKSeMfjQEHDpLVxUVWL2L99ZYxO-vt8gL2UA6y68yExwlVnVQMOe3yL-nfflwM_Jo8QPK46gC5ogbmEhr9xJFswwGG7BcUNdnXMAFADBmVoCfl6KpEW4wvXjBfYy7fWED93Tmsq1SdPMX_gIPEfkvT2ZTG_iL-4i_eCa91OffwkQlu0FON0hioVTtdgtZ-fHFfxn9A7lL0NOqV2yTRel1ZFue93HYI3ZWYSRZSdZJjt3mSX7lLDXtzD2iCSraSI3gG8wZyRO8gBu4ttA7wF3qrbneBbxWnpMwX1EHv2n9N4h9DglgfwZZob54U4I'
 const PAIRS_MAPID='vitiMap'
 
-const INIT_LAT = 47.45
-const INIT_LNG = 3.5
+const INIT_LAT = 49.0808 //47.45
+const INIT_LNG = 3.9621 // 3.5
 const INIT_ZOOM = 5
 
 const AOIS_CATEGORY = 'FRA'
@@ -80,6 +80,7 @@ var appViti = new Vue({
         scoringPercent: null,
         queryJobs     : null,
         selQueryJob   : null,
+        qrySelAll     : false,
         // -- Criteria selection
         critOff: 0.2, // slider offset ratio
         critExt: 0.5,  // slider extent ratio
@@ -197,7 +198,7 @@ var appViti = new Vue({
         if(this.qryLayers!=null) {
           const _this=this
           this.criteriasRange=Object.keys(this.qryLayers).reduce(function(acc,layerId){
-            acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Low','Up'],offset,extent)
+            acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Lower','Upper'],offset,extent)
             return acc
           },{})
           this.criteriasCheck=Object.keys(this.qryLayers).reduce(function(acc,layerId){
@@ -260,7 +261,7 @@ var appViti = new Vue({
         map.flyTo(pos,zoom?zoom:this.map.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
       },
       flyToBounds: function(map,queryJob,duration) {
-        if('neLat' in queryJob) {
+        if(queryJob!=null && 'neLat' in queryJob) {
           const bounds=[[queryJob.neLat,queryJob.neLon],[queryJob.swLat,queryJob.swLon]]
           console.log(`Flying to bounds ${bounds}`)
           map.flyToBounds(bounds,{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
@@ -309,9 +310,10 @@ var appViti = new Vue({
         const layers=Object.keys(this.criteriasRange)
 
         var scoringData=layers.map(function(layerId) {
+          const humanUnits=_this.qryLayers[layerId].humanUnits
           return {'id':layerId,
-                  'low':_this.criteriasRange[layerId][0],
-                  'up':_this.criteriasRange[layerId][1],
+                  'lower':unConvertUnits(_this.criteriasRange[layerId][0],humanUnits),
+                  'upper':unConvertUnits(_this.criteriasRange[layerId][1],humanUnits),
                   'enabled':_this.criteriasCheck[layerId]}
         })
 
@@ -320,14 +322,18 @@ var appViti = new Vue({
         console.log(scoringData)
 
         // Missing aggregation
-        var UDF = layers.reduce(function(udf,layerId) {
-          if (_this.criteriasCheck[layerId]) {
-            udf += "(( $Mean_" + layerId + " >= " + _this.criteriasRange[layerId][0] + " && $Mean_" + layerId + " <= "+ _this.criteriasRange[layerId][1] + ") ? 1 : 0 ) + "
+        var UDF = scoringData.reduce(function(udf,scoring) {
+          if (_this.criteriasCheck[scoring.id]) {
+            udf += "(( $Mean_" + scoring.id + " >= " + scoring.lower +
+                    " && $Mean_" + scoring.id + " <= "+ scoring.upper + ") ? 1 : 0 ) + "
           }
           return udf
         },"")
+
+        // remove trailing " + "
         UDF=UDF.slice(0,-3)
         console.log("UDF=",UDF)
+
         this.scoringInProgress=true
         this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi':this.refAOI, 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
 
@@ -365,6 +371,9 @@ var appViti = new Vue({
           this.scoringInProgress=false
         }
       },
+      deletedQuery: function(payload,pairsError) {
+        // Reload the Queries list
+      },
       receiveResults: function(payload,pairsError) {
         if(pairsError===null) {
             console.log('PAIRS returned payload',payload)
@@ -380,9 +389,12 @@ var appViti = new Vue({
         //const layer=function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,opacity)
         const _this=this
         const wmsControl=dataLayers.reduce(function(control,layer) {
-          const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layer.name)
-          control.addOverlay(newLayer,layer.datalayer)
-          _this.scoringMap.addLayer(newLayer)
+          const layerName=layer.name
+          const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName)
+          const layerDesc=layer.datalayer.split('[')[0]
+          control.addOverlay(newLayer,layerDesc)
+          // make only the scoring layer visible
+          if(layerDesc=='scoring') _this.scoringMap.addLayer(newLayer)
           return control
         },L.control.layers())
 
@@ -404,7 +416,17 @@ var appViti = new Vue({
         this.sendToNodered('scoringQuery',{'id':this.selQueryJob.id})
         this.curPage=3
       },
-      slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Low,  Mean, Up, Max, Sup
+      deleteQueryJob: function() {
+        // Invalidate current list
+        this.queryJobs=null
+        this.sendToNodered('deleteQueryJob',this.selQueryJob.id)
+        this.selQueryJob=null
+      },
+      deletedQueryJob: function() {
+        // Reload QueryJobs List
+        this.listQueryJobs()
+      },
+      slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Lower,  Mean, Upper, Max, Sup
         const critDigits=this.critDigits
         function _f(p) {
           switch(p) {
@@ -412,11 +434,11 @@ var appViti = new Vue({
               return (layer.Min-(layer.Mean-layer.Min)*extent)
             case 'Min':
               return layer.Min
-            case 'Low':
+            case 'Lower':
               return (layer.Mean-(layer.Mean-layer.Min)*offset)
             case 'Mean':
               return layer.Mean
-            case 'Up':
+            case 'Upper':
               return (layer.Mean+(layer.Max-layer.Mean)*offset)
             case 'Max':
               return layer.Max
@@ -512,6 +534,9 @@ var appViti = new Vue({
               break;
             case 'listQueryJobs':
               vueApp.listedQueryJobs(msg.payload,pairsError)
+              break;
+            case 'deleteQueryJob':
+              vueApp.deletedQueryJob(msg.payload,pairsError)
               break;
             default:
               console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
