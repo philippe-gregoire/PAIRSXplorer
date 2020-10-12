@@ -49,7 +49,7 @@ body {
 	height: 40px;
 	margin: 10px 0px;
 }
-.btn-primary.focus, .btn-primary:focus {
+.btn-primary.focus, .btn-primary:focus, .btn-primary.disabled, .btn-primary:disabled {
 	background: #633CEA 0% 0% no-repeat padding-box;
 }
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
@@ -60,7 +60,20 @@ body {
 	border-radius: 5px !important;
 	color : white;
 	border: 0px;
+	font-size: 0.9em;
+	padding: 10%;
+
 }
+
+#appViti_container_1, .form-control {
+	font-size: 0.95em;
+}
+
+.subContent {
+	margin-top: 4%;
+	margin-bottom: 2%;
+}
+
 /* -- Menu Selection / Etapes -- */
 
 .menu {
@@ -212,10 +225,10 @@ body {
 	color: #83858F;
 }
 
-.btnCompute{
-			display: flex;
-	    margin:0 auto;
-	    align-items:center;
+.btnCompute {
+	display: flex;
+	margin:0 auto;
+	align-items:center;
 }
 
 .labstyle{
