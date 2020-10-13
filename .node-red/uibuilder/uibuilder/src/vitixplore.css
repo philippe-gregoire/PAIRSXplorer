@@ -61,8 +61,9 @@ body {
 	color : white;
 	border: 0px;
 	font-size: 0.9em;
-	padding: 10%;
-
+	padding: 5%;
+	height: calc(1.5em + .75rem + 2px);
+	width: 100%;
 }
 
 #appViti_container_1, .form-control {
@@ -71,7 +72,14 @@ body {
 
 .subContent {
 	margin-top: 2%;
-	margin-bottom: 2%;
+}
+
+.smallText {
+	font-size: 0.9em;
+}
+
+.leftTextAlign {
+	justify-content: left;
 }
 
 /* -- Menu Selection / Etapes -- */
@@ -200,6 +208,7 @@ body {
 	background: #D9DBE5;
 }
 
+
 /* -- TITLES & FONTS-- */
 
 .title {
@@ -218,6 +227,7 @@ body {
 	color: #83858F;
 	opacity: 1;
 }
+
 .criteriaTitle {
 	text-align: center;
 	font: normal normal bold 1.1em IBM Plex Sans;
