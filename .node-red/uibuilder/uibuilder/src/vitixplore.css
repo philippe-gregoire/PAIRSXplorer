@@ -70,7 +70,7 @@ body {
 }
 
 .subContent {
-	margin-top: 4%;
+	margin-top: 2%;
 	margin-bottom: 2%;
 }
 
@@ -104,8 +104,44 @@ body {
 	margin: 10px 0px;
 }
 
-/* --Criterias -- */
+.slider-tick, .slider-tick.round.in-selection, .slider-handle, .slider.slider-horizontal, .slider-track  {
+	opacity: 1;
+	box-shadow: none;
+}
 
+.slider.slider-horizontal .slider-track {
+	background: #D9DBE5;
+	height: 2px;
+}
+.slider-selection.tick-slider-selection {
+	background: #633CEA;
+}
+/* -- Menu -- */
+
+.menu .slider-tick  {
+	background: #D9DBE5;
+	height: 12px;
+	width: 12px;
+}
+.menu .slider-tick.round.in-selection {
+	background: #633CEA;
+	height: 12px;
+	width: 12px;
+}
+
+.menu .slider-handle {
+	background: #633CEA;
+	height: 12px;
+	width: 12px;
+}
+/* -- Criterias -- */
+
+.criteriasBox {
+	border: 1px solid #D9DBE5;
+	border-radius: 5px;
+	opacity: 1;
+	margin: 10px;
+}
 .criterias {
 	display: flex;
 	align-content: stretch;
@@ -117,21 +153,19 @@ body {
 	margin: 0 1.5%;
 	border-bottom: 1px solid #F8F8F8;
 }
-.criteriasBox {
-	border: 1px solid #D9DBE5;
-	border-radius: 5px;
-	opacity: 1;
-	margin: 10px;
-}
+
+/* Checkbox */
 .custom-checkbox .custom-control-input:checked~.custom-control-label::before {
 	background-color: #633CEA;
 	content: '';
 	position: absolute;
 }
-
 .custom-control-label:before {
   background-color: white;
 }
+
+/* Sliders */
+
 .criteriaSlider {
 	width: 90% !important;
 }
@@ -143,32 +177,27 @@ body {
 	width: 100%;
 }
 
-.active {
-	background: black;
+.criteriasBox .slider-handle, .slider-tick.round.in-selection {
+	background: #633CEA;
+	height: 10px;
+	width: 10px;
+}
+.criteriasBox .slider-tick {
+	background: #D9DBE5;
+	height: 10px;
+	width: 10px;
 }
 
-.slider-handle, .slider-tick.round.in-selection {
-	background: #633CEA;
-	height: 12px;
-	width: 12px;
-	opacity: 1;
-	box-shadow: none;
-}
-.slider-tick {
-	background: #D9DBE5;
-	height: 12px;
-	width: 12px;
-	opacity: 1;
-	box-shadow: none;
-}
 
-.slider.slider-horizontal .slider-track {
+/* When checkbox is not selected */
+.slider-disabled .slider-tick.round.in-selection {
 	background: #D9DBE5;
-	height: 2px;
+	height: 10px;
+	width: 10px;
 	box-shadow: none;
 }
-.slider-selection.tick-slider-selection {
-	background: #633CEA;
+.slider-disabled .slider-selection.tick-slider-selection {
+	background: #D9DBE5;
 }
 
 /* -- TITLES & FONTS-- */
