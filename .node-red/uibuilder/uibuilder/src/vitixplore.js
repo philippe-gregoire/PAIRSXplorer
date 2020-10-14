@@ -81,6 +81,7 @@ var appViti = new Vue({
         queryJobs     : null,
         selQueryJob   : null,
         qrySelAll     : false,
+        colorTableId  : DEFAULT_COLORTABLEID,
         // -- Criteria selection
         critOff: 0.2, // slider offset ratio
         critExt: 0.5,  // slider extent ratio
@@ -390,7 +391,8 @@ var appViti = new Vue({
         const _this=this
         const wmsControl=dataLayers.reduce(function(control,layer) {
           const layerName=layer.name
-          const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName)
+          console.debug(`Layer ${layerName}, min=${layer.min}, max=${layer.max}`)
+          const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:_this.colorTableId,layerName)
           const layerDesc=layer.datalayer.split('[')[0]
           control.addOverlay(newLayer,layerDesc)
           // make only the scoring layer visible
