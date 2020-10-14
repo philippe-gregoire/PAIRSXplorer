@@ -47,7 +47,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
   -->
 
   <link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.css" /> 
+  <link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.css" />
 
   <link rel="stylesheet" href="../uibuilder/vendor/leaflet/dist/leaflet.css" />
 
@@ -99,19 +99,19 @@ copy this file to <userDir>/uibuilder/<url>/src.
             <b-overlay :show="layersDict===null">
               <b-form-datepicker v-model="endDay" id="endDay" size="md" maxlength=10></b-form-datepicker>
               <template v-slot:overlay>
-                <b-icon icon="stopwatch" font-scale="3" animation="cylon"></b-icon>
-                <p>loading layers</p>
+                <!-- <b-icon icon="stopwatch" font-scale="3" animation="cylon"></b-icon> -->
+                <p>Loading layers</p>
               </template>
             </b-overlay>
           </b-overlay>
         </b-col>
       </b-row>
-        
+
       <b-row>
         <div id="refMap" style="width: 100%;  height: 400px;">
           <l-map ref="vitiMap" @ready="onMapReady('vitiMap')">
             <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
-            <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker>
+            <!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
           </l-map>
         </div>
       </b-row>
@@ -124,7 +124,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-col cols="5">
           <label for="refLng" class="labstyle">Longitude</label>
           <b-form-input v-model.number="refPos.lng" size="xs" id="refLng" type="number" maxlength=10></b-form-input>
-        </b-col>  
+        </b-col>
         <b-col cols="2">
           <b-button style="vertical-align: bottom; display: table-cell; float:none;" id="btn_goTo" pill variant="primary" size="lg" v-on:click="moveTo" class="smallButton">Zoom to</b-button>
         </b-col>
@@ -172,7 +172,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
               <div class="custom-control custom-checkbox">
                   <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
                   <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</label>
-              </div>              
+              </div>
               <br/>
               <center>
                 <p class="criteriaRefValue">{{criteriasRange[l.id]}} {{criteriasCheck[l.id]}}</p>
@@ -208,7 +208,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
             <button :disabled="refAOI===null" class="smallButton" v-on:click="launchScoringQuery">Score</button>
           </b-col>
         </b-row>
-        
+
         <!-- Select where you want to find similar criterias - Map -->
         <!-- <h2 class="subtitle">Or draw a rectangle on the map of the area of interest</h2> -->
         <b-row>
@@ -221,7 +221,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
             </div>
           </b-col>
         </b-row>
-      
+
         <!-- Select if you want to display previous queries -->
         <b-row class="leftTextAlign subContent"><h2 class="subtitle">Or display a query you've already made</h2></b-row>
         <b-row class="smallText">
