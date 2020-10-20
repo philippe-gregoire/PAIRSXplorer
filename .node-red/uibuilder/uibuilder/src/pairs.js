@@ -66,6 +66,9 @@ function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerNa
 
 /* Set up the map watching to communicate with Node-RED */
 function addMapWatch(cScope,map,mapid,layers,fallBack) {
+
+  console.log('watch')
+
     sendMapDimensions=function(evt) {
         cScope.send({"dimChange" : {'type': evt.type, 'fromMapId': mapid, 'zoom': map.getZoom(), 'pos': map.getCenter()}})
     }
@@ -73,6 +76,7 @@ function addMapWatch(cScope,map,mapid,layers,fallBack) {
     map.on('moveend',sendMapDimensions)
     map.on('zoomend',sendMapDimensions)
     map.on('move',sendMapDimensions)
+
 
     // Debug layers names
     if(layers) {
@@ -141,6 +145,7 @@ function addMapWatch(cScope,map,mapid,layers,fallBack) {
     This will also add a marker
 */
 function addMapClick(cScope,map,mapid) {
+  console.log('click')
   let marker
 	map.on('click', function(evt) {
     cScope.send({"mousePos" :evt.latlng, "fromMapId":mapid});

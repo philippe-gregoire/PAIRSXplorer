@@ -93,6 +93,8 @@ var appViti = new Vue({
         socketConnectedState : false,
         serverTimeOffset     : '[unknown]',
         imgProps             : { width: 75, height: 75 },
+        colorMap: null,
+        allColorMaps: null,
     }, // --- End of data --- //
     computed: {
         hLastRcvd: function() {
@@ -166,7 +168,7 @@ var appViti = new Vue({
           console.debug('Got layers',layers)
 
           // Set the Query position
-          this.qryPos={"lat":layers[0].latitude, "lng":layers[0].longitude}
+          this.qryPos={"lat": layers[0].latitude, "lng":layers[0].longitude}
 
           // first group all the layers by layer ID and flatten Min-Mean-Max
           const _layersDict=this.layersDict
@@ -244,6 +246,8 @@ var appViti = new Vue({
           this.setRefPointMarker(this.refPos)
         } else if(mapRef==='scoringMap') {
           this.scoringMap=this.$refs[mapRef].mapObject
+          this.scoringMap.on('baselayerchange', this.changeLegend);
+
           if(this.selQueryJob!=null) {
             this.flyToBounds(this.scoringMap,this.selQueryJob)
           }
@@ -275,6 +279,8 @@ var appViti = new Vue({
         this.map.setView(pos,zoom?zoom:this.map.getZoom())
       },
       addLayers: function(wmsLayers) {
+        console.log('addLayers')
+
         console.log('Adding WMS layers from ',wmsLayers)
         wmsOverlays={}
 
@@ -287,6 +293,8 @@ var appViti = new Vue({
         L.control.layers(null, wmsOverlays).addTo(this.map);
       },
       mapEvent: function(event) {
+        console.log('event')
+
         console.debug('mapEvent evt:',event)
         // keep track of last center and zoom position
         this.mapCenter=this.map.getCenter()
@@ -384,24 +392,39 @@ var appViti = new Vue({
           this.scoringInProgress=false
         }
       },
-      scoringLayers: function(dataLayers,pairsError) {
-        console.log(dataLayers)
+      scoringLayers: function(colors, dataLayers, pairsError) {
         //const layer=function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,opacity)
         const _this=this
-        const wmsControl=dataLayers.reduce(function(control,layer) {
-          const layerName=layer.name
-          const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName)
-          const layerDesc=layer.datalayer.split('[')[0]
-          control.addOverlay(newLayer,layerDesc)
-          // make only the scoring layer visible
-          if(layerDesc=='scoring') _this.scoringMap.addLayer(newLayer)
-          return control
-        },L.control.layers())
+        _this.allColorMaps = colors;
 
-        console.log("Adding overlays")
-        wmsControl.addTo(this.scoringMap)
+        try {
+          const wmsControl=dataLayers.reduce(function(control,layer) {
+            const layerName=layer.name
+            const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName)
+            const layerDesc=layer.datalayer.split('[')[0]
+            control.addBaseLayer(newLayer,layerDesc)
 
-        this.flyToBounds(this.scoringMap,this.selQueryJob)
+            // make only the scoring layer visible
+            if(layerDesc=='Overall Scoring' || layerDesc=='scoring') {
+              _this.scoringMap.addLayer(newLayer);
+              colors.map(function(color) {
+                if (color.colorTableId == layer.colorTableId) {
+                  _this.colorMap = color.colorMap;
+                }
+              });
+            }
+            return control
+          },L.control.layers())
+
+          console.log("Adding overlays")
+          wmsControl.addTo(this.scoringMap)
+
+          this.flyToBounds(this.scoringMap,this.selQueryJob)
+        } catch (error) {
+          // console.error(error);
+          // expected output: ReferenceError: nonExistentFunction is not defined
+          // Note - error messages will vary depending on browser
+        }
       },
       listQueryJobs: function() {
         this.sendToNodered('listQueryJobs',null)
@@ -413,7 +436,7 @@ var appViti = new Vue({
       showQueryJob: function() {
         // Existing query, inject it to the query process
         this.scoringInProgress=true
-        this.sendToNodered('scoringQuery',{'id':this.selQueryJob.id})
+        this.sendToNodered('scoringQuery', {'id':this.selQueryJob.id})
         this.curPage=3
       },
       deleteQueryJob: function() {
@@ -462,6 +485,16 @@ var appViti = new Vue({
           slPos=slPos.map(v => normalize*((v-slPos[0])/(slPos[slPos.length-1]-slPos[0])))
         }
         return slPos
+      },
+      changeLegend: function(layer) {
+        const _this=this
+        _this.colorMap = null;
+
+        _this.allColorMaps.map(function(color) {
+          if ((color.colorTableId == layer.layer.colorTableId) && (color.name == layer.layer.layerName)) {
+            _this.colorMap = color.colorMap;
+          } 
+        });
       }
     }, // --- End of methods --- //
 
@@ -492,55 +525,57 @@ var appViti = new Vue({
           const pairsError='pairsError' in msg
 
           if(pairsError) {
-            console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg.payload)
+            console.log(`PAIRS returned error for topic=${msg.topic}`)
+            // console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg.payload)
           }
-
+          else {
           switch(msg.topic) {
-            case 'init':
-              // ask for the list of layers
-              vueApp.initLayers()
-              vueApp.loadAOIs(AOIS_CATEGORY)
-              vueApp.listQueryJobs()
-              break;
-            case 'setView':
-              vueApp.setView(msg.payload.pos,msg.payload.zoom)
-              break;
-            case 'flyTo':
-              vueApp.flyTo(this.map,msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
-              break;
-            case 'addLayers':
-              vueApp.addlayers(msg.payload.layers,pairsError)
-              break;
-            case 'setRefPointMarker':
-              vueApp.setRefPointMarker(msg.payload.pos)
-              break;
-            case 'initLayers':
-              vueApp.initializedLayers(msg.payload,pairsError)
-              break;
-            case 'loadAOIs':
-              vueApp.loadedAOIs(msg.payload,pairsError)
-              break;
-            case 'loadLayers':
-              vueApp.loadedLayers(msg.payload.data,pairsError)
-              break;
-            case 'scoringQuery':
-              vueApp.progressScoringQuery(msg.payload,pairsError)
-              break;
-            case 'getResults':
-              vueApp.receiveResults(msg.payload,pairsError)
-              break;
-            case 'scoringLayers':
-              vueApp.scoringLayers(msg.payload,pairsError)
-              break;
-            case 'listQueryJobs':
-              vueApp.listedQueryJobs(msg.payload,pairsError)
-              break;
-            case 'deleteQueryJob':
-              vueApp.deletedQueryJob(msg.payload,pairsError)
-              break;
-            default:
-              console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
-              break;
+              case 'init':
+                // ask for the list of layers
+                vueApp.initLayers()
+                vueApp.loadAOIs(AOIS_CATEGORY)
+                vueApp.listQueryJobs()
+                break;
+              case 'setView':
+                vueApp.setView(msg.payload.pos,msg.payload.zoom)
+                break;
+              case 'flyTo':
+                vueApp.flyTo(this.map,msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
+                break;
+              case 'addLayers':
+                vueApp.addlayers(msg.payload.layers,pairsError)
+                break;
+              case 'setRefPointMarker':
+                vueApp.setRefPointMarker(msg.payload.pos)
+                break;
+              case 'initLayers':
+                vueApp.initializedLayers(msg.payload,pairsError)
+                break;
+              case 'loadAOIs':
+                vueApp.loadedAOIs(msg.payload,pairsError)
+                break;
+              case 'loadLayers':
+                vueApp.loadedLayers(msg.payload.data,pairsError)
+                break;
+              case 'scoringQuery':
+                vueApp.progressScoringQuery(msg.payload,pairsError)
+                break;
+              case 'getResults':
+                vueApp.receiveResults(msg.payload,pairsError)
+                break;
+              case 'scoringLayers':
+                vueApp.scoringLayers(msg.payload,msg.layers,pairsError)
+                break;
+              case 'listQueryJobs':
+                vueApp.listedQueryJobs(msg.payload,pairsError)
+                break;
+              case 'deleteQueryJob':
+                vueApp.deletedQueryJob(msg.payload,pairsError)
+                break;
+              default:
+                console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
+                break;
+            }
           }
         })
 
