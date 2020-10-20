@@ -81,6 +81,7 @@ var appViti = new Vue({
         queryJobs     : null,
         selQueryJob   : null,
         qrySelAll     : false,
+        colorTableId  : DEFAULT_COLORTABLEID,
         // -- Criteria selection
         critOff: 0.2, // slider offset ratio
         critExt: 0.5,  // slider extent ratio
