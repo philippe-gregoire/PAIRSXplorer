@@ -54,6 +54,7 @@ var appViti = new Vue({
         curPage     : 1,
         layersDict  : null, // Dict of layers indexed by layerID
         aoisDict    : null,
+        aoisArray    : [],
         test: {l:{Min:20,Mean:50,Max:100},so:0.20,sx:0.5},
         // ---- Current position and dates
         refPos      : {lat : INIT_LAT, lng : INIT_LNG},
@@ -155,10 +156,15 @@ var appViti = new Vue({
             aoi.name=aoi.name.slice(1+AOIS_CATEGORY.length)
           }
           aoi.name=capitalize(aoi.name,"-_")
-          dict[aoi.id]=aoi
+          dict[aoi.name]=aoi
           return dict},
           {})
-          console.debug("AOISDiect",this.aoisDict)
+
+          // Create an array with the name of the AOIs, so we can sort it alphabetically
+          Object.entries(this.aoisDict).forEach(([key, value], index) => 
+            this.aoisArray[index] = value.name
+          );
+          this.aoisArray.sort(); 
       },
       loadLayers: function(event) {
         this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
@@ -294,7 +300,6 @@ var appViti = new Vue({
         L.control.layers(null, wmsOverlays).addTo(this.map);
       },
       mapEvent: function(event) {
-        console.log('event')
 
         console.debug('mapEvent evt:',event)
         // keep track of last center and zoom position
@@ -326,10 +331,6 @@ var appViti = new Vue({
                   'enabled':_this.criteriasCheck[layerId]}
         })
 
-        console.log(this.criteriasRange)
-        console.log(this.criteriasCheck)
-        console.log(scoringData)
-
         // Missing aggregation
         var UDF = scoringData.reduce(function(udf,scoring) {
           if (_this.criteriasCheck[scoring.id]) {
@@ -344,7 +345,7 @@ var appViti = new Vue({
         console.log("UDF=",UDF)
 
         this.scoringInProgress=true
-        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi':this.refAOI, 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
+        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
 
         // this.sendToNodered('getResults', {'pos': this.qryPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
         this.curPage=3

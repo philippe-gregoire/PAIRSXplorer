@@ -68,7 +68,6 @@ function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerNa
 /* Set up the map watching to communicate with Node-RED */
 function addMapWatch(cScope,map,mapid,layers,fallBack) {
 
-  console.log('watch')
 
     sendMapDimensions=function(evt) {
         cScope.send({"dimChange" : {'type': evt.type, 'fromMapId': mapid, 'zoom': map.getZoom(), 'pos': map.getCenter()}})

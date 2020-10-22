@@ -201,7 +201,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-row>
           <b-col cols="10">
             <b-form-select v-model="refAOI">
-              <b-form-select-option v-for="aoi in aoisDict" :value="aoi" v-bind:key="'refAOI_'+aoi.id">{{aoi.name}}</b-form-select-option>
+              <b-form-select-option v-for="aoi in aoisArray" :value="aoi" v-bind:key="aoi">{{aoi}}</b-form-select-option>
             </b-form-select>
           </b-col>
           <b-col cols="2">
