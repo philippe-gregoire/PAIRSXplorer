@@ -161,10 +161,10 @@ var appViti = new Vue({
           {})
 
           // Create an array with the name of the AOIs, so we can sort it alphabetically
-          Object.entries(this.aoisDict).forEach(([key, value], index) => 
+          Object.entries(this.aoisDict).forEach(([key, value], index) =>
             this.aoisArray[index] = value.name
           );
-          this.aoisArray.sort(); 
+          this.aoisArray.sort();
       },
       loadLayers: function(event) {
         this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
@@ -314,7 +314,7 @@ var appViti = new Vue({
             this.refPointMarker=null
         }
 
-        let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="10" cy="10" r="9"/><circle fill="#B03050" cx="10" cy="10" r="5"/></svg>'
+        let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="10" cy="10" r="9"/><circle fill="#633CEA" cx="10" cy="10" r="5"/></svg>'
         this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
         this.refPos=pos
       },
@@ -495,7 +495,7 @@ var appViti = new Vue({
         _this.allColorMaps.map(function(color) {
           if ((color.colorTableId == layer.layer.colorTableId) && (color.name == layer.layer.layerName)) {
             _this.colorMap = color.colorMap;
-          } 
+          }
         });
       }
     }, // --- End of methods --- //
