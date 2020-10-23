@@ -67,6 +67,8 @@ function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerNa
 
 /* Set up the map watching to communicate with Node-RED */
 function addMapWatch(cScope,map,mapid,layers,fallBack) {
+
+
     sendMapDimensions=function(evt) {
         cScope.send({"dimChange" : {'type': evt.type, 'fromMapId': mapid, 'zoom': map.getZoom(), 'pos': map.getCenter()}})
     }
@@ -74,6 +76,7 @@ function addMapWatch(cScope,map,mapid,layers,fallBack) {
     map.on('moveend',sendMapDimensions)
     map.on('zoomend',sendMapDimensions)
     map.on('move',sendMapDimensions)
+
 
     // Debug layers names
     if(layers) {
@@ -96,10 +99,9 @@ function addMapWatch(cScope,map,mapid,layers,fallBack) {
             if (refPointMarker) {
                 map.removeLayer(refPointMarker);
             }
-            const iconsize=20
 
-            let svgPin = `<svg width="${iconsize}" height="${iconsize}" xmlns="http://www.w3.org/2000/svg"><circle fill="#633CEA" cx="${iconsize/2}" cy="${iconsize/2}" r="${iconsize/2-1}"/><circle fill="#B03050" cx="${iconsize/2}" cy="${iconsize/2}" r="${iconsize/4}"/></svg>`
-            refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: iconsize})}).bindPopup("Ref Point").addTo(map);
+            let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#fe2244" cx="10" cy="10" r="9"/><circle fill="#ffffbf" cx="10" cy="10" r="5"/></svg>'
+            refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(map);
         }
 
         if(msg) {
@@ -143,6 +145,7 @@ function addMapWatch(cScope,map,mapid,layers,fallBack) {
     This will also add a marker
 */
 function addMapClick(cScope,map,mapid) {
+  console.log('click')
   let marker
 	map.on('click', function(evt) {
     cScope.send({"mousePos" :evt.latlng, "fromMapId":mapid});

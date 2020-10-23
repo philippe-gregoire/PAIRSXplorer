@@ -175,7 +175,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
               </div>
               <br/>
               <center>
-                <p class="criteriaRefValue">{{criteriasRange[l.id]}} {{criteriasCheck[l.id]}}</p>
+                <p class="criteriaRefValue">{{criteriasRange[l.id]}}</p>
 
                 <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
                 v-bind:disabled="!criteriasCheck[l.id]"
@@ -189,7 +189,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :precision="critDigits">
                 </b-form-slider>
               </center>
-               <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}] Unit : {{l.humanUnits}}</p>
+               <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]</p>
             </div>
           </b-form>
         </b-row>
@@ -201,7 +201,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-row>
           <b-col cols="10">
             <b-form-select v-model="refAOI">
-              <b-form-select-option v-for="aoi in aoisDict" :value="aoi" v-bind:key="'refAOI_'+aoi.id">{{aoi.name}}</b-form-select-option>
+              <b-form-select-option v-for="aoi in aoisArray" :value="aoi" v-bind:key="aoi">{{aoi}}</b-form-select-option>
             </b-form-select>
           </b-col>
           <b-col cols="2">

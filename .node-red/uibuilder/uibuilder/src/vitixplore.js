@@ -54,6 +54,7 @@ var appViti = new Vue({
         curPage     : 1,
         layersDict  : null, // Dict of layers indexed by layerID
         aoisDict    : null,
+        aoisArray    : [],
         test: {l:{Min:20,Mean:50,Max:100},so:0.20,sx:0.5},
         // ---- Current position and dates
         refPos      : {lat : INIT_LAT, lng : INIT_LNG},
@@ -155,10 +156,15 @@ var appViti = new Vue({
             aoi.name=aoi.name.slice(1+AOIS_CATEGORY.length)
           }
           aoi.name=capitalize(aoi.name,"-_")
-          dict[aoi.id]=aoi
+          dict[aoi.name]=aoi
           return dict},
           {})
-          console.debug("AOISDiect",this.aoisDict)
+
+          // Create an array with the name of the AOIs, so we can sort it alphabetically
+          Object.entries(this.aoisDict).forEach(([key, value], index) =>
+            this.aoisArray[index] = value.name
+          );
+          this.aoisArray.sort();
       },
       loadLayers: function(event) {
         this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
@@ -169,7 +175,7 @@ var appViti = new Vue({
           console.debug('Got layers',layers)
 
           // Set the Query position
-          this.qryPos={"lat":layers[0].latitude, "lng":layers[0].longitude}
+          this.qryPos={"lat": layers[0].latitude, "lng":layers[0].longitude}
 
           // first group all the layers by layer ID and flatten Min-Mean-Max
           const _layersDict=this.layersDict
@@ -294,7 +300,6 @@ var appViti = new Vue({
         L.control.layers(null, wmsOverlays).addTo(this.map);
       },
       mapEvent: function(event) {
-        console.log('event')
 
         console.debug('mapEvent evt:',event)
         // keep track of last center and zoom position
@@ -308,20 +313,9 @@ var appViti = new Vue({
             this.map.removeLayer(this.refPointMarker);
             this.refPointMarker=null
         }
-        const iconsize=26
 
-        // let svgPin = `<svg width="${iconsize}" height="${iconsize}" xmlns="http://www.w3.org/2000/svg">`
-        //             +`<circle fill="#633CEA" cx="${iconsize/2}" cy="${iconsize/2}" r="${iconsize/2-1}"/>`
-        //             +`<circle fill="#B03050" cx="${iconsize/2}" cy="${iconsize/2}" r="${iconsize/4}"/>`
-        //             +`</svg>`
-        let svgPin = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconsize}" height="${iconsize}" viewBox="0 0 ${iconsize} ${iconsize}">`
-                    //+ `<rect width="${iconsize}" height="${iconsize}" rx="${iconsize}/5" ry="10" fill="#f1d1c2"></rect>`
-                    // + `<text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="${iconsize*.7}">&#F347;</text>`
-                    //+`<circle fill="#B03050" cx="${iconsize/2-1}" cy="${iconsize/2+1}" r="${iconsize/2-2}"/>`
-                    + `<text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="${iconsize/2}">🍇</text>`
-                    +`</svg>`
-
-        this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: iconsize})}).bindPopup("Ref Point").addTo(this.map);
+        let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="10" cy="10" r="9"/><circle fill="#633CEA" cx="10" cy="10" r="5"/></svg>'
+        this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
         this.refPos=pos
       },
       launchScoringQuery: function () {
@@ -337,10 +331,6 @@ var appViti = new Vue({
                   'enabled':_this.criteriasCheck[layerId]}
         })
 
-        console.log(this.criteriasRange)
-        console.log(this.criteriasCheck)
-        console.log(scoringData)
-
         // Missing aggregation
         var UDF = scoringData.reduce(function(udf,scoring) {
           if (_this.criteriasCheck[scoring.id]) {
@@ -355,7 +345,7 @@ var appViti = new Vue({
         console.log("UDF=",UDF)
 
         this.scoringInProgress=true
-        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi':this.refAOI, 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
+        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
 
         // this.sendToNodered('getResults', {'pos': this.qryPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
         this.curPage=3
