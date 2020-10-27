@@ -44,6 +44,7 @@ console.debug("Registering Vue2Leaflet components")
 Vue.component('l-map', window.Vue2Leaflet.LMap);
 Vue.component('l-tilelayer', window.Vue2Leaflet.LTileLayer);
 Vue.component('l-marker', window.Vue2Leaflet.LMarker);
+Vue.component('l-rectangle', window.Vue2Leaflet.LRectangle);
 
 // Vue.use()
 
@@ -58,6 +59,7 @@ var appViti = new Vue({
         test: {l:{Min:20,Mean:50,Max:100},so:0.20,sx:0.5},
         // ---- Current position and dates
         refPos      : {lat : INIT_LAT, lng : INIT_LNG},
+        rectanglePos: [],
         startDay    : new Date(new Date()-1000*3600*24*30.5*MONTHS_BACK).toISOString().split("T")[0],  // About 6 months back
         endDay      : new Date().toISOString().split("T")[0],
         refAOI      : null,
@@ -70,6 +72,8 @@ var appViti = new Vue({
         mapCenter   : {lat : INIT_LAT, lng : INIT_LNG},
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
+        rectanglePointMarker: null,
+        rectangle: null,
         // Scoring query management
         scoringMap    : null,
         scoringInProgress : false,
@@ -97,7 +101,10 @@ var appViti = new Vue({
         imgProps             : { width: 75, height: 75 },
         colorMap: null,
         allColorMaps: null,
+        rectangleBtnIsPressed: true,
+        myToggle: false,
     }, // --- End of data --- //
+
     computed: {
         hLastRcvd: function() {
             var msgRecvd = this.msgRecvd
@@ -242,6 +249,7 @@ var appViti = new Vue({
       },
       onMapReady: function(mapRef) {
         console.log(`On map ready`,mapRef)
+        // Tie some map events to a callback function
         if(mapRef==='vitiMap') {
           this.map = this.$refs[mapRef].mapObject
           this.map.on('moveend',this.mapEvent)
@@ -251,9 +259,12 @@ var appViti = new Vue({
 
           this.setView(this.mapCenter,this.mapZoom)
           this.setRefPointMarker(this.refPos)
+        } else if(mapRef==='aoiSelMap') {
+          this.aoiSelMap=this.$refs[mapRef].mapObject
+          this.aoiSelMap.on('click', this.setRectangle)
         } else if(mapRef==='scoringMap') {
           this.scoringMap=this.$refs[mapRef].mapObject
-          this.scoringMap.on('baselayerchange', this.changeLegend);
+          this.scoringMap.on('baselayerchange', this.changeLegend); // If we change the layer display, we call the changeLegend function
 
           if(this.selQueryJob!=null) {
             this.flyToBounds(this.scoringMap,this.selQueryJob)
@@ -302,50 +313,122 @@ var appViti = new Vue({
       mapEvent: function(event) {
 
         console.debug('mapEvent evt:',event)
-        // keep track of last center and zoom position
+        // keep tracks of last center and zoom position
         this.mapCenter=this.map.getCenter()
         this.mapZoom=this.map.getZoom()
         var eventName='map'+event.type.charAt(0).toUpperCase() + event.type.slice(1)
         this.sendToNodered(eventName,{'pos':('latlng' in event)?event.latlng:this.mapCenter, 'zoom':this.mapZoom})
       },
       setRefPointMarker: function (pos) {
+        console.log(pos)
+        // remove marker
         if (this.refPointMarker) {
             this.map.removeLayer(this.refPointMarker);
             this.refPointMarker=null
         }
-
+        // add new marker
         let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="10" cy="10" r="9"/><circle fill="#633CEA" cx="10" cy="10" r="5"/></svg>'
         this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
         this.refPos=pos
       },
+      setRectangle: function (pos) {
+        if (this.rectangleBtnIsPressed) {
+          // TO-DO : pas supposé être là j'imagine
+          this.map=this.$refs['aoiSelMap'].mapObject
+
+          // Step 1 : get first point
+          if ((this.rectanglePos[0] == []) || (this.rectanglePos[0] == undefined)) {
+            this.rectanglePos[0] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
+            let svgPin = '<svg width="4" height="4" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="2" cy="2" r="1"/></svg>'
+            
+            this.rectangleMarker=L.marker([pos.latlng['lat'], pos.latlng['lng']], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);  // add marker to map
+          } 
+          // Step 2 : draw rectangle
+          else if (this.rectangleMarker) {
+            this.map.removeLayer(this.rectangleMarker);
+            this.rectangleMarker=null // remove marker to create a rectangle
+            
+            this.rectanglePos[1] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
+            this.rectangle=L.rectangle([[this.rectanglePos[0].lat, this.rectanglePos[0].lng], [this.rectanglePos[1].lat, this.rectanglePos[1].lng]], {color: "#633CEA", weight: 1}).bindPopup("Ref Point").addTo(this.map); // add rectangle to map
+          } 
+          // Step 3 : reset
+          else if ((this.rectanglePos[0] !== []) && this.rectanglePos[1] !== []) {
+            this.map.removeLayer(this.rectangle);
+            this.rectangle=null
+            this.rectanglePos = []
+          }
+        }
+      },
+      chooseRectangle: function () {
+        if (this.rectangleBtnIsPressed) {
+          console.log("button selected")
+          this.refAOI = null; // If the user chooses a rectangle selection, we remove the aoi
+        } else {
+          console.log("button not selected")
+
+        } 
+      },
+      chooseAoi: function () {
+        // If the user chooses an AOI, we remove the rectangle
+        if(this.rectangleBtnIsPressed) {
+          this.rectangleBtnIsPressed = false;
+
+          // TO-DO : pas supposé être là j'imagine
+          this.map=this.$refs['aoiSelMap'].mapObject
+
+          if (this.rectangleMarker) {
+            this.map.removeLayer(this.rectangleMarker);
+            this.rectangleMarker=null 
+          } else if (this.rectanglePos[0] == undefined) {
+            // added this beacause of an error in the console. Need to fix somewhere else
+          } else if ((this.rectanglePos[0] !== []) && (this.rectanglePos[1] !== [])) {
+            this.map.removeLayer(this.rectangle);
+            this.rectangle=null
+          }
+
+          this.rectanglePos = []; 
+        } 
+      },
       launchScoringQuery: function () {
         // Make a dictioary with low-up-enabled values
         const _this=this
-        const layers=Object.keys(this.criteriasRange)
+
+        const layers=Object.keys(this.criteriasCheck)
 
         var scoringData=layers.map(function(layerId) {
-          const humanUnits=_this.qryLayers[layerId].humanUnits
-          return {'id':layerId,
-                  'lower':unConvertUnits(_this.criteriasRange[layerId][0],humanUnits),
-                  'upper':unConvertUnits(_this.criteriasRange[layerId][1],humanUnits),
-                  'enabled':_this.criteriasCheck[layerId]}
+          // if (_this.criteriasCheck[layerId]) {
+
+            const humanUnits=_this.qryLayers[layerId].humanUnits
+            return {'id':layerId,
+                    'lower':unConvertUnits(_this.criteriasRange[layerId][0],humanUnits),
+                    'upper':unConvertUnits(_this.criteriasRange[layerId][1],humanUnits),
+                    'enabled':_this.criteriasCheck[layerId]}
+          // }
         })
+        // In the function before, we create a new array with parameter from selected layers, if layer not selected we get undefined, we want to remove them from the array
+        scoringData = scoringData.filter(function (el) { return el != null; });
 
         // Missing aggregation
-        var UDF = scoringData.reduce(function(udf,scoring) {
-          if (_this.criteriasCheck[scoring.id]) {
+        var UDF = scoringData.reduce(function(udf,scoring, index) {
+          // if(index == 0) {udf+= "((("}
+          // if (_this.criteriasCheck[scoring.id]) {
             udf += "(( $Mean_" + scoring.id + " >= " + scoring.lower +
                     " && $Mean_" + scoring.id + " <= "+ scoring.upper + ") ? 1 : 0 ) + "
-          }
+          // }
           return udf
         },"")
 
         // remove trailing " + "
         UDF=UDF.slice(0,-3)
-        console.log("UDF=",UDF)
+        // UDF+= ")*100)/" + scoringData.length + ")";
+          // console.log(UDF)
 
+        
+        if (this.rectangle) { this.formatCoordinates() }  
+         
         this.scoringInProgress=true
-        this.sendToNodered('scoringQuery',{'pos':this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
+
+        this.sendToNodered('scoringQuery', {'pos': this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
 
         // this.sendToNodered('getResults', {'pos': this.qryPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
         this.curPage=3
@@ -405,13 +488,19 @@ var appViti = new Vue({
             const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName)
             const layerDesc=layer.datalayer.split('[')[0]
             control.addBaseLayer(newLayer,layerDesc)
+            var colorTableId = layer.colorTableId
 
             // make only the scoring layer visible
             if(layerDesc=='Overall Scoring' || layerDesc=='scoring') {
               _this.scoringMap.addLayer(newLayer);
+              if (colorTableId == undefined) { colorTableId = DEFAULT_COLORTABLEID }
+              // console.log(_this.allColorMaps)
+
               colors.map(function(color) {
-                if (color.colorTableId == layer.colorTableId) {
+                // console.log(if (color.colorTableId == layer.colorTableId))
+                if ((color.colorTableId == colorTableId)  && (color.name == layerName)) {
                   _this.colorMap = color.colorMap;
+                  console.log("_this.colorMap", _this.colorMap)
                 }
               });
             }
@@ -420,7 +509,6 @@ var appViti = new Vue({
 
           console.log("Adding overlays")
           wmsControl.addTo(this.scoringMap)
-
           this.flyToBounds(this.scoringMap,this.selQueryJob)
         } catch (error) {
           // console.error(error);
@@ -450,6 +538,25 @@ var appViti = new Vue({
       deletedQueryJob: function() {
         // Reload QueryJobs List
         this.listQueryJobs()
+      },
+      formatCoordinates: function () {
+
+        // square pos to send to PAIRS = [southernmost latitude, westernmost longitude, northernmost latitude, easternmost longitude]
+        if (this.rectanglePos[0].lat > this.rectanglePos[1].lat) {
+          this.qryPos["rSouth"] = this.rectanglePos[1].lat;
+          this.qryPos["rNorth"] = this.rectanglePos[0].lat;
+        } else {
+          this.qryPos["rSouth"] = this.rectanglePos[0].lat;
+          this.qryPos["rNorth"] = this.rectanglePos[1].lat;
+        }
+
+        if (this.rectanglePos[0].lng > this.rectanglePos[1].lng) {
+          this.qryPos["rWest"] = this.rectanglePos[1].lng;
+          this.qryPos["rEast"] = this.rectanglePos[0].lng;  
+        } else {
+          this.qryPos["rWest"] = this.rectanglePos[0].lng;
+          this.qryPos["rEast"] = this.rectanglePos[1].lng;
+        }
       },
       slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Lower,  Mean, Upper, Max, Sup
         const critDigits=this.critDigits
@@ -549,6 +656,9 @@ var appViti = new Vue({
                 break;
               case 'setRefPointMarker':
                 vueApp.setRefPointMarker(msg.payload.pos)
+                break;
+              case 'setRectangle':
+                vueApp.setRectangle(msg.payload.pos)
                 break;
               case 'initLayers':
                 vueApp.initializedLayers(msg.payload,pairsError)

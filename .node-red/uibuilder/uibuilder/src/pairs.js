@@ -96,6 +96,8 @@ function addMapWatch(cScope,map,mapid,layers,fallBack) {
         let refPointMarker
 
         function setRefPointMarker(pos) {
+        console.log("setRefPointMarker - pairs")
+
             if (refPointMarker) {
                 map.removeLayer(refPointMarker);
             }
