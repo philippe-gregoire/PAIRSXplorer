@@ -103,6 +103,7 @@ var appViti = new Vue({
         allColorMaps: null,
         rectangleBtnIsPressed: true,
         myToggle: false,
+        dataLayers: null,
     }, // --- End of data --- //
 
     computed: {
@@ -481,6 +482,7 @@ var appViti = new Vue({
         //const layer=function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,opacity)
         const _this=this
         _this.allColorMaps = colors;
+        _this.dataLayers = dataLayers;
 
         try {
           const wmsControl=dataLayers.reduce(function(control,layer) {
@@ -499,10 +501,19 @@ var appViti = new Vue({
               colors.map(function(color) {
                 // console.log(if (color.colorTableId == layer.colorTableId))
                 if ((color.colorTableId == colorTableId)  && (color.name == layerName)) {
+                  console.log("aaaa")
+                  color.colorMap.map(function(col) {
+                    console.log(col)
+                    if(col.$.label !== "NO_DATA") {
+                      col.$.label = parseInt((parseFloat(col.$.label)*100)/_this.dataLayers.length)
+                    }
+                  });
                   _this.colorMap = color.colorMap;
                   console.log("_this.colorMap", _this.colorMap)
                 }
               });
+
+            
             }
             return control
           },L.control.layers())
