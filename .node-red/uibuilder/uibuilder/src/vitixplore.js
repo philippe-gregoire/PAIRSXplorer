@@ -501,19 +501,14 @@ var appViti = new Vue({
               colors.map(function(color) {
                 // console.log(if (color.colorTableId == layer.colorTableId))
                 if ((color.colorTableId == colorTableId)  && (color.name == layerName)) {
-                  console.log("aaaa")
                   color.colorMap.map(function(col) {
-                    console.log(col)
                     if(col.$.label !== "NO_DATA") {
                       col.$.label = parseInt((parseFloat(col.$.label)*100)/_this.dataLayers.length)
                     }
                   });
                   _this.colorMap = color.colorMap;
-                  console.log("_this.colorMap", _this.colorMap)
                 }
               });
-
-            
             }
             return control
           },L.control.layers())
