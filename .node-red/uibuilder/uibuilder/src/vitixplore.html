@@ -225,9 +225,9 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-row>
           <b-col cols="12">
             <center>
-              <button v-if="!rectangleBtnIsPressed" :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Run query</button> 
-              <button v-if="rectangleBtnIsPressed" :disabled="rectangle===null" class="button" v-on:click="launchScoringQuery">Run query</button> 
-            </center> 
+              <button v-if="!rectangleBtnIsPressed" :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Run query</button>
+              <button v-if="rectangleBtnIsPressed" :disabled="rectangle===null" class="button" v-on:click="launchScoringQuery">Run query</button>
+            </center>
           </b-col>
         </b-row>
 
@@ -268,10 +268,17 @@ copy this file to <userDir>/uibuilder/<url>/src.
           <h3 class="subtitle">Legend</h3>
           <div v-if="colorMap">
             <div class="legend" v-for="color in colorMap" v-if="color.$.label !== 'NO_DATA'">
-              <div v-bind:style="{background: color.$.color}" class="colorSquare"><span class="legendText">{{ color.$.label }}</span></div>
+              <label class="legend$">NOTE ({{l.humanUnits}})</label>
+              <!--label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</label-->
+              <div v-bind:style="{background: color.$.color}" class="colorSquare" >
+                <span class="legendText" >{{ color.$.label }}</span>
+                <!-- <span class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</span> -->
+              </div>
             </div>
           </div>
-          <div class="noLegend" v-else>Legend not available</div>
+          <div class="noLegend" v-else>Legend not available
+            <!-- <label class="noLegend"  :name="'a'+l.id" :value="l.id"> NOTE : Pas de légende ({{l.humanUnits}})</label> -->
+          </div>
         </b-col>
         <b-col cols="10">
           <div id="scoringMap" style="width: 100%;  height: 600px;">

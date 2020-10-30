@@ -1,0 +1,45 @@
+body{
+    background-color: #d0d7e1;
+}
+h1{
+    text-align: center;
+}
+
+.presentation-image{
+height:30;
+object-fit: contain;
+text-align:left;
+}
+
+.presentation{
+    display:none;
+    background-color: white;
+    height: auto;
+    font: normal normal normal 1em IBM Plex Sans;
+	/*font: normal normal normal 18px/23px IBM Plex Sans;*/
+	letter-spacing: 0px;
+	color: #83858F;
+    opacity: 1;
+    margin: 25px;
+}
+
+.presentation-text{
+    flex-direction: center;
+    text-align: justify;
+    margin: 20px;
+}
+
+.tutorial{
+    display:flex-start;
+    background-color: white;
+    height: auto;
+    font: normal normal normal 1em IBM Plex Sans;
+	/*font: normal normal normal 18px/23px IBM Plex Sans;*/
+	letter-spacing: 0px;
+	color: #83858F;
+    opacity: 1;
+}
+p, ul {
+    margin: 25px;
+}
+

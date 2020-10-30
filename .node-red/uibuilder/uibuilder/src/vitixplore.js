@@ -341,17 +341,17 @@ var appViti = new Vue({
           if ((this.rectanglePos[0] == []) || (this.rectanglePos[0] == undefined)) {
             this.rectanglePos[0] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
             let svgPin = '<svg width="4" height="4" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="2" cy="2" r="1"/></svg>'
-            
+
             this.rectangleMarker=L.marker([pos.latlng['lat'], pos.latlng['lng']], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);  // add marker to map
-          } 
+          }
           // Step 2 : draw rectangle
           else if (this.rectangleMarker) {
             this.map.removeLayer(this.rectangleMarker);
             this.rectangleMarker=null // remove marker to create a rectangle
-            
+
             this.rectanglePos[1] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
             this.rectangle=L.rectangle([[this.rectanglePos[0].lat, this.rectanglePos[0].lng], [this.rectanglePos[1].lat, this.rectanglePos[1].lng]], {color: "#633CEA", weight: 1}).bindPopup("Ref Point").addTo(this.map); // add rectangle to map
-          } 
+          }
           // Step 3 : reset
           else if ((this.rectanglePos[0] !== []) && this.rectanglePos[1] !== []) {
             this.map.removeLayer(this.rectangle);
@@ -367,7 +367,7 @@ var appViti = new Vue({
         } else {
           console.log("button not selected")
 
-        } 
+        }
       },
       chooseAoi: function () {
         // If the user chooses an AOI, we remove the rectangle
@@ -379,7 +379,7 @@ var appViti = new Vue({
 
           if (this.rectangleMarker) {
             this.map.removeLayer(this.rectangleMarker);
-            this.rectangleMarker=null 
+            this.rectangleMarker=null
           } else if (this.rectanglePos[0] == undefined) {
             // added this beacause of an error in the console. Need to fix somewhere else
           } else if ((this.rectanglePos[0] !== []) && (this.rectanglePos[1] !== [])) {
@@ -387,8 +387,8 @@ var appViti = new Vue({
             this.rectangle=null
           }
 
-          this.rectanglePos = []; 
-        } 
+          this.rectanglePos = [];
+        }
       },
       launchScoringQuery: function () {
         // Make a dictioary with low-up-enabled values
@@ -424,9 +424,9 @@ var appViti = new Vue({
         // UDF+= ")*100)/" + scoringData.length + ")";
           // console.log(UDF)
 
-        
-        if (this.rectangle) { this.formatCoordinates() }  
-         
+
+        if (this.rectangle) { this.formatCoordinates() }
+
         this.scoringInProgress=true
 
         this.sendToNodered('scoringQuery', {'pos': this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
@@ -503,7 +503,7 @@ var appViti = new Vue({
                 if ((color.colorTableId == colorTableId)  && (color.name == layerName)) {
                   color.colorMap.map(function(col) {
                     if(col.$.label !== "NO_DATA") {
-                      col.$.label = parseInt((parseFloat(col.$.label)*100)/_this.dataLayers.length)
+                      col.$.label = parseInt((parseFloat(col.$.label)*100)/_this.dataLayers.length) + "humanUnits"
                     }
                   });
                   _this.colorMap = color.colorMap;
@@ -558,7 +558,7 @@ var appViti = new Vue({
 
         if (this.rectanglePos[0].lng > this.rectanglePos[1].lng) {
           this.qryPos["rWest"] = this.rectanglePos[1].lng;
-          this.qryPos["rEast"] = this.rectanglePos[0].lng;  
+          this.qryPos["rEast"] = this.rectanglePos[0].lng;
         } else {
           this.qryPos["rWest"] = this.rectanglePos[0].lng;
           this.qryPos["rEast"] = this.rectanglePos[1].lng;
