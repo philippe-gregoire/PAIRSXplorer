@@ -39,6 +39,7 @@ const DEFAULT_FLYTO_SEC = 2
 const SIMUL_QUERYID = '1601956800_33355820'
 const DEFAULT_COLORTABLEID = 4
 
+
 // Register l-map components
 console.debug("Registering Vue2Leaflet components")
 Vue.component('l-map', window.Vue2Leaflet.LMap);
@@ -104,6 +105,11 @@ var appViti = new Vue({
         rectangleBtnIsPressed: true,
         myToggle: false,
         dataLayers: null,
+        // -- Specific layers values
+        soilTypes : [{ value: "1", text: 'Coarse' }, { value: "2", text: 'Medium' }, { value: "3", text: 'Medium fine' }, { value: "4", text: 'Fine' }, { value: "5", text: 'Very fine' }, { value: "6", text: 'Organic' }, { value: "7", text: 'Tropical organic' }],
+        refSoilType: null,
+        soilClass : [ { value: "0", text: 'Acrisols' },  { value: "1", text: 'Albeluvisols' },  { value: "2", text: 'Alisols' },  { value: "3", text: 'Andosols' },  { value: "4", text: 'Arenosols' },  { value: "5", text: 'Calcisols' },  { value: "6", text: 'Cambisols' },  { value: "7", text: 'Chernozems' }, { value: "8", text: 'Cryosols' }, { value: "9", text: 'Durisols' }, { value: "10", text: 'Ferralsols' }, { value: "11", text: 'Fluvisols' }, { value: "12", text: 'Gleysols' }, { value: "13", text: 'Gypsisols' }, { value: "14", text: 'Histosols' }, { value: "15", text: 'Kastanozems' }, { value: "16", text: 'Leptosols' }, { value: "17", text: 'Lixisols' }, { value: "18", text: 'Luvisols' }, { value: "19", text: 'Nitisols' }, { value: "20", text: 'Phaeozems' }, { value: "21", text: 'Planosols' }, { value: "22", text: 'Plinthosols' }, { value: "23", text: 'Podzols' }, { value: "24", text: 'Regosols' }, { value: "25", text: 'Solonchaks' }, { value: "26", text: 'Solonetz' }, { value: "27", text: 'Stagnosols' }, { value: "28", text: 'Umbrisols' }, { value: "29", text: 'Vertisols' }],
+        refSoilClass: null
     }, // --- End of data --- //
 
     computed: {
@@ -175,12 +181,15 @@ var appViti = new Vue({
           this.aoisArray.sort();
       },
       loadLayers: function(event) {
-        this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
+        console.log("layersDict", this.layersDict)
+        // this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
+        this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': this.layersDict})
         this.qryRunning=true
       },
       loadedLayers: function(layers,pairsError) {
         if(!pairsError) {
           console.debug('Got layers',layers)
+          console.log('Got layers',layers)
 
           // Set the Query position
           this.qryPos={"lat": layers[0].latitude, "lng":layers[0].longitude}
@@ -193,7 +202,7 @@ var appViti = new Vue({
               acc[layer.layerId]={"name": layer.layerName, "id":layer.layerId, "dataset": layer.dataset}
 
               // append attributes from layersDict
-              const LAYERS_ATTR=['description_short','description_long','datatype','units']
+              const LAYERS_ATTR=['description_short','description_long','datatype','units', 'dimensions_description', 'measurement_interval']
               LAYERS_ATTR.forEach(attribute => acc[layer.layerId][attribute]=_layersDict[layer.layerId][attribute])
             }
             // convert units
@@ -201,7 +210,6 @@ var appViti = new Vue({
 
             return acc
           },{})
-
           this.initCriterias(this.critOff,this.critExt)
 
           // switch to second page
@@ -212,10 +220,22 @@ var appViti = new Vue({
         this.qryRunning=false
       },
       initCriterias: function(offset,extent) {
+        console.log("qryLayers", this.qryLayers)
         if(this.qryLayers!=null) {
+
           const _this=this
           this.criteriasRange=Object.keys(this.qryLayers).reduce(function(acc,layerId){
-            acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Lower','Upper'],offset,extent)
+            if ("l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'") {
+              acc[layerId]=_this.slPos(_this.qryLayers[layerId],'Mean',offset,extent)
+            } else {
+              acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Lower','Upper'],offset,extent)
+            }
+            if(layerId == 50450) { 
+              _this.refSoilType = _this.qryLayers[layerId].Mean;
+            }
+            if(layerId == 50511) { 
+              _this.refSoilClass = _this.qryLayers[layerId].Mean;
+            }
             return acc
           },{})
           this.criteriasCheck=Object.keys(this.qryLayers).reduce(function(acc,layerId){
@@ -226,6 +246,7 @@ var appViti = new Vue({
           this.criteriasRange=null
           this.criteriasCheck=null
         }
+        console.log("criteriaRange", this.criteriasRange)
       },
       critChange: function(layerId,critIndex,value) {
         var criteriasRange=this.criteriasRange
@@ -604,6 +625,7 @@ var appViti = new Vue({
       changeLegend: function(layer) {
         const _this=this
         _this.colorMap = null;
+        console.log(_this.qryLayers)
 
         _this.allColorMaps.map(function(color) {
           if ((color.colorTableId == layer.layer.colorTableId) && (color.name == layer.layer.layerName)) {
@@ -641,6 +663,7 @@ var appViti = new Vue({
 
           if(pairsError) {
             console.log(`PAIRS returned error for topic=${msg.topic}`)
+            // console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg)
             // console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg.payload)
           }
           else {
