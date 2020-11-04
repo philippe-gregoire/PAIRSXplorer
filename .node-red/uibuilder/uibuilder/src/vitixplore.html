@@ -38,29 +38,19 @@ copy this file to <userDir>/uibuilder/<url>/src.
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Node-RED UI Builder">
 
-  <!-- Homescreen icons for Apple mobile use if required
-    <link rel="apple-touch-icon" href="./images/manifest/icon-48x48.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="./images/manifest/icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="./images/manifest/icon-96x96.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="./images/manifest/icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="./images/manifest/icon-192x192.png">
-  -->
-
+  <!-- Bootstrap -->
   <link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.css" />
-
-  <link rel="stylesheet" href="../uibuilder/vendor/leaflet/dist/leaflet.css" />
-
   <link rel="stylesheet" href="../uibuilder/vendor/bootstrap-slider/dist/css/bootstrap-slider.css" />
 
-  <link rel="stylesheet" href="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css">
-
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="../uibuilder/vendor/leaflet/dist/leaflet.css" />
+  <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="./vitixplore.css" media="all">
-
+  <!-- JQUERY -->
   <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+
   <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
-  <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
 
   <link rel="stylesheet" type="text/css" href="custom.css ">
 </head>
@@ -177,9 +167,11 @@ copy this file to <userDir>/uibuilder/<url>/src.
               <span v-if="l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'">
                 <span v-if="l.id == 50450">
                   <b-form-select v-model="refSoilType" :options="soilTypes"></b-form-select>
+                  <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
                 </span>
                 <span v-if="l.id == 50511">
                   <b-form-select v-model="refSoilClass" :options="soilClass"></b-form-select>
+                  <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
                 </span>
                 <span v-if="(l.id == 50509) || (l.id == 50497) || (l.id == 50453) || (l.id == 50456) || (l.id == 50496)">
                   <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
@@ -195,7 +187,9 @@ copy this file to <userDir>/uibuilder/<url>/src.
               </span>
               <span v-else>
                 <center>
-                  <p class="criteriaRefValue">{{criteriasRange[l.id]}}</p>
+                  <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]. 
+                    <br>Chosen value :{{criteriasRange[l.id]}} </p>
+                   
                   <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
                     v-bind:disabled="!criteriasCheck[l.id]"
                     v-bind:min="slPos(l,'Inf',critOff,critExt)"
@@ -207,10 +201,81 @@ copy this file to <userDir>/uibuilder/<url>/src.
                     :step="(l.Max-l.Min)/100"
                     :precision="critDigits">
                   </b-form-slider>
-                  <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]</p>
                 </center>
               </span> 
             </div>
+
+            <!-- Version tableau -->
+<!--         <b-table-simple style="width: 100%;" >
+              <b-tr v-for="l in qryLayers"> -->
+
+                <!-- Criteria name -->
+<!--            <b-td colspan="2">
+                  <div class="custom-control custom-checkbox">
+                    <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
+                    <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}}</label>
+                  </div>
+                </b-td> -->
+
+                <!-- Units -->  
+<!--            <b-td colspan="1">
+                  <p>({{l.humanUnits}})</p>  
+                </b-td> -->
+
+                <!-- Reference value -->
+<!--            <b-td colspan="1">
+                  <span v-if="l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'">
+                    <p class="criteriaRefValue">{{l.Mean.toFixed(critDigits)}}</p>
+                  </span>
+                  <span v-else>
+                    <p class="criteriaRefValue">[{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]</p>
+                  </span>
+                </b-td> -->
+
+                <!-- Choose margin -->
+<!--                 <b-td colspan="3">
+                  <span v-if="l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'">
+                    <span v-if="l.id == 50450">
+                      <b-form-select v-model="refSoilType" :options="soilTypes"></b-form-select>
+                    </span>
+                    <span v-if="l.id == 50511">
+                      <b-form-select v-model="refSoilClass" :options="soilClass"></b-form-select>
+                    </span>
+                    <span v-if="(l.id == 50509) || (l.id == 50497) || (l.id == 50453) || (l.id == 50456) || (l.id == 50496)">
+                      <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
+                        v-bind:disabled="!criteriasCheck[l.id]"
+                        v-bind:min="l.Mean-l.Mean*0.5"
+                        v-model:value="criteriasRange[l.id]"
+                        v-bind:max="l.Mean+l.Mean*0.5"
+                        :step="((l.Mean+l.Mean*0.1)-(l.Mean-l.Mean*0.1))/100"
+                        :precision="critDigits">
+                      </b-form-slider>
+                    </span>
+                  </span>
+                  <span v-else>
+                    <center>                     
+                      <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
+                        v-bind:disabled="!criteriasCheck[l.id]"
+                        v-bind:min="slPos(l,'Inf',critOff,critExt)"
+                        v-model:value="criteriasRange[l.id]"
+                        v-bind:max="slPos(l,'Sup',critOff,critExt)"
+                        v-bind:ticks="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt)"
+                        :ticks-labels="['Inf','Min', 'Mean','Max','Sup']"
+                        v-bind:ticks-positions="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt,100)"
+                        :step="(l.Max-l.Min)/100"
+                        :precision="critDigits">
+                      </b-form-slider>
+                    </center>
+                  </span> 
+                </b-td> -->
+
+                <!-- Chosen value -->
+<!--                 <b-td colspan="2">
+                  <p>{{criteriasRange[l.id]}}</p>
+                </b-td>
+ -->
+              <!-- </b-tr> -->
+            <!-- </b-table-simple> -->
           </b-form>
         </b-row>
       </b-row>
@@ -245,9 +310,9 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-row>
           <b-col cols="12">
             <center>
-              <button v-if="!rectangleBtnIsPressed" :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Run query</button> 
-              <button v-if="rectangleBtnIsPressed" :disabled="rectangle===null" class="button" v-on:click="launchScoringQuery">Run query</button> 
-            </center> 
+              <button v-if="!rectangleBtnIsPressed" :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Run query</button>
+              <button v-if="rectangleBtnIsPressed" :disabled="rectangle===null" class="button" v-on:click="launchScoringQuery">Run query</button>
+            </center>
           </b-col>
         </b-row>
 
@@ -286,12 +351,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
       <b-row>
         <b-col class="legendContainer" cols="2">
           <h3 class="subtitle">Legend</h3>
+          <p class="subtitle">{{legendUnit}}</p>
           <div v-if="colorMap">
             <div class="legend" v-for="color in colorMap" v-if="color.$.label !== 'NO_DATA'">
-              <div v-bind:style="{background: color.$.color}" class="colorSquare"><span class="legendText">{{ color.$.label }}</span></div>
+              <div v-bind:style="{background: color.$.color}" class="colorSquare" >
+                <span class="legendText" >{{ color.$.label }}</span>
+              </div>
             </div>
           </div>
-          <div class="noLegend" v-else>Legend not available</div>
+          <div class="noLegend" v-else>Legend not available
+          </div>
         </b-col>
         <b-col cols="10">
           <div id="scoringMap" style="width: 100%;  height: 600px;">
@@ -305,19 +374,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
     </b-container>
   </div>
 
-<!-- These MUST be in the right order. Note no leading /
-REQUIRED: Socket.IO is loaded only once for all instances
+  <!-- These MUST be in the right order. Note no leading /
+  </RP>EQUIRED: Socket.IO is loaded only once for all instances
   Without this, you don't get a websocket connection -->
   <script src="../uibuilder/vendor/socket.io/socket.io.js"></script>
 
   <!-- --- Vendor Libraries - Load in the right order --- -->
-  <script src="../uibuilder/vendor/vue/dist/vue.js"></script> <!-- dev version with component compiler -->
-  <!-- <script src="../uibuilder/vendor/vue/dist/vue.min.js"></script>   prod version with component compiler -->
-  <!-- <script src="../uibuilder/vendor/vue/dist/vue.runtime.min.js"></script>   prod version without component compiler -->
+  <script src="../uibuilder/vendor/vue/dist/vue.js"></script> 
   <script src="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.js"></script>
 
   <script src="../uibuilder/vendor/bootstrap-slider/dist/bootstrap-slider.js"></script>
-
   <script src="../uibuilder/vendor/vue-bootstrap-slider/dist/vue-bootstrap-slider.js"></script>
   <!-- <script src="../uibuilder/vendor/vue-bootstrap-slider/es/form-slider.js"></script> -->
 

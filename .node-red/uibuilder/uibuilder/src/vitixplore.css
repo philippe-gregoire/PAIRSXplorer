@@ -68,7 +68,6 @@ body {
 
 .btn-secondary:not(:disabled):not(.disabled).active, .btn-secondary:not(:disabled):not(.disabled):active, .show>.btn-secondary.dropdown-toggle {
 	background: #633CEA 0% 0% no-repeat padding-box;
-	
 }
 
 #appViti_container_1, .form-control {
@@ -129,7 +128,6 @@ body {
 .slider-selection.tick-slider-selection {
 	background: #633CEA;
 }
-/* -- Menu -- */
 
 .menu .slider-tick  {
 	background: #D9DBE5;

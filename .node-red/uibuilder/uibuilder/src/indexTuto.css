@@ -1,0 +1,171 @@
+
+/* -- General -- */
+body {
+  background-color: #F8F8F8 !important;
+  width: 100%;
+}
+
+.row {
+  width: 100%;
+  margin: 5px 0;
+  justify-content: center;
+}
+
+h1{
+    text-align: center;
+    font: normal normal normal 2em IBM Plex Sans;
+    letter-spacing: 0px;
+    color: #83858F;
+}
+
+.photo-wraper{
+    margin: 10px;
+    width: 100%
+}
+.presentation{
+    display:flex;
+    background-color: white;
+    height: auto;
+    font: normal normal normal 1em IBM Plex Sans;
+	/*font: normal normal normal 18px/23px IBM Plex Sans;*/
+	  letter-spacing: 0px;
+	  color: #83858F;
+    opacity: 1;
+    margin: 25px;
+}
+
+
+.text{
+    margin:25px;
+    text-align: justify;
+}
+
+.tutorial{
+    display:flex;
+    background-color: white;
+    height: auto;
+    font: normal normal normal 1em IBM Plex Sans;
+	/*font: normal normal normal 18px/23px IBM Plex Sans;*/
+	 letter-spacing: 0px;
+	  color: #83858F;
+    opacity: 1;
+    margin: 25px;
+}
+p, ul {
+    margin: 25px;
+}
+.button{
+  display: inline-block;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #633CEA;
+  border-radius: 6px;
+  outline: none;
+  font: normal normal normal 1em IBM Plex Sans;
+}
+/*.div {
+  text-align: center;
+  margin: 25px;
+}
+*/
+
+.content {
+  background-color: white;
+  margin-top: 20px;
+  padding: 2%;
+}
+
+.row {
+  justify-content: left;
+}
+
+/* -- Menu Selection / Etapes -- */
+
+.menu {
+  background-color: white;
+  /*margin-top: 20px;*/
+  font: normal normal 600 20px/25px IBM Plex Sans;
+  color: #212121;
+  opacity: 1;
+  font-size: 1em;
+  /*padding: 1%;*/
+}
+.menu-titles {
+  display: flex ;
+  justify-content: space-around;
+}
+
+.custom-control-input {
+  z-index: 1;
+  top: 1rem;
+}
+.button_score {
+  background: #633CEA 0% 0% no-repeat padding-box;
+  /* border-radius: 5px !important; */
+  color : white;
+  border: 0px;
+  /*width: 30%;*/
+  /* height: 40px; */
+  margin: 10px 0px;
+}
+
+.slider-tick, .slider-tick.round.in-selection, .slider-handle, .slider.slider-horizontal, .slider-track  {
+  opacity: 1;
+  box-shadow: none;
+}
+.slider.slider-horizontal{
+  width: 100% !important;
+}
+.slider.slider-horizontal .slider-track {
+  background: #D9DBE5 !important;
+  height: 2px !important;
+}
+.slider-selection.tick-slider-selection {
+  background: #633CEA !important;
+}
+
+.menu .slider-tick  {
+  background: #D9DBE5 ;
+  height: 12px;
+  width: 12px;
+}
+.menu .slider-tick.round.in-selection {
+  background: #633CEA;
+  height: 12px;
+  width: 12px;
+}
+
+.menu .slider-handle {
+  background: #633CEA;
+  height: 12px;
+  width: 12px;
+}
+
+
+/* -- TITLES & FONTS-- */
+
+.title {
+  text-align: center;
+  font: normal normal bold 1.7em IBM Plex Sans;
+  /*font: normal normal bold 28px/37px IBM Plex Sans;*/
+  letter-spacing: 0px;
+  color: #212121;
+  opacity: 1;
+}
+.stepTitle {
+  text-align: left;
+  font: normal normal bold 1em IBM Plex Sans;
+  /*font: normal normal normal 18px/23px IBM Plex Sans;*/
+  letter-spacing: 0px;
+  opacity: 1;
+  padding: 5% 0 2% 0;
+}
+.subtitle {
+  font: normal normal bold 1em IBM Plex Sans;
+  /*font: normal normal normal 18px/23px IBM Plex Sans;*/
+  letter-spacing: 0px;
+  color: #404146;
+  opacity: 1;
+}

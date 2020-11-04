@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+    <head>  
+        <meta charset="utf-8">
+        <meta lang="en">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+        <title>Viti eXplorer tutorial</title>
+        <link rel="icon" type="image/svg+xml" href="vitiXplorer.svg" />
+
+        <!-- See https://goo.gl/OOhYW5 -->
+        <link rel="manifest" href="./manifest.json">
+        <meta name="theme-color" content="#3f51b5">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <!-- responsive meta tag -->
+        <link rel="stylesheet" type="text/css" href="indexTuto.css" media="all">
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" href="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.css" />
+        <link rel="stylesheet" href="../uibuilder/vendor/bootstrap-slider/dist/css/bootstrap-slider.css" />
+
+    </head>
+    <body>
+        <div id="app" v-cloak>
+            <b-container class="content" >
+                <b-row >
+                    <b-col cols="4">
+                        <img class ="photo-wraper" alt="pairaffiche" src="index_files/tech affiche.png" align="left"/>
+                    </b-col>
+                    <b-col cols="8">                           
+                        <h2>PAIRS Geoscope for Vineyard Discovery</h2>
+                        <p>Version 1.0​</p>
+                        <p>Define a reference plot of land and based on geological and meteorological criteria such as wind, drought, climate, altitude etc. to find new exploitable areas that meet the criteria of excellence of customer's vineyard, using PAIRS capabilities.​
+                        <br>
+                        <br>
+                        IBM PAIRS GEOSCOPE is a platform, specifically designed for massive geospatial-temporal data (maps, satellite, weather, drone, IoT), query and analytics services. It frees up data scientists, developers from the cumbersome processes that dominate conventional geospatial-temporal data acquisition and preparation and provides search-friendly ready access to a rich, diverse, and growing catalog of historical and continuously updated geospatial-temporal information.​
+                        </p> 
+                    </b-col>
+                </b-row>
+            </b-container>
+
+
+            <b-container class="content">
+                <h2 class="title">Tutorial</h2>
+                <p>The 3 blue dots represent the 3 steps required to complete your search for a new exploitable areas and they are the breadcrumbs​</p>
+                
+                <b-row><p class="stepTitle">Step 1 : select your reference field</p></b-row>
+
+                <b-row class="menu">
+                    <b-col></b-col>
+                    <b-col cols="10" class="menu">
+                        <b-form-slider class="menu-titles" style="width: 100%;"
+                            :value="1" :min="1" :max="3" :step="1"
+                            :ticks='[1, 2, 3]' :ticks-labels="['Location','', '']" tooltip="hide">
+                        </b-form-slider>
+                    </b-col>
+                    <b-col></b-col>
+                </b-row>
+                    
+                    <!-- <img src="index_files/slider1.png" align="center"> -->
+                <b-row>
+                    <ul>
+                        <li>Start with the time frame by choosing a start and end date to retrieve data for a reference field (1 month is selected by default)</li>​
+                        <li>Identify the reference vineyard by pointing the source zone on the map</li>
+                        <li>Then press <img src="index_files/computeLayer.png" align="center" height="25">  button to submit your request</li>
+                    </ul>
+                </b-row>
+
+                <b-row><p class="stepTitle">Step 2 : adjust search criterias and select region to explore</p></b-row>
+
+                <b-row class="menu">
+                    <b-col></b-col>
+                    <b-col cols="10" class="menu">
+                        <b-form-slider class="menu-titles" style="width: 100%;"
+                            :value="2" :min="1" :max="3" :step="1"
+                            :ticks='[1, 2, 3]' :ticks-labels="['','Filters & Region', '']" tooltip="hide">
+                        </b-form-slider>
+                    </b-col>
+                    <b-col></b-col>
+                </b-row>
+                <b-row>
+                    <b-col cols="12">
+                        <p class="subtitle">Criterias</p>
+
+                        <p>This page shows the results from your previous request. You can see the characteristics of the field in the text : <i> Ref values : [minimum value found < mean value found > max value found]</i></p>
+
+                        <p>Once you have looked at the results, you can adjust the result by selecting the points and sliding them with the mouse. <img src="index_files/sliderCheck.png" align="center"></p>
+                        <p>They may also be taken out of your query if you deselect them.<img src="index_files/check.png" align="center"></p>
+
+                        <p class="subtitle">Area of search</p>
+                        <p>Select an area of investigation for a new field among two options :</p>
+                        <ul>
+                            <li>Select a French region  <img src="index_files/listCheck.png" align="top"></li>
+                            <li>Click on the rectangle button <img src="index_files/rectangle.png" align="center" height="30"></li>
+                            <ul>
+                                <li>To start drawing your rectangle, click on the first top left angle of your rectangle<img src="index_files/recQuery1.png" align="top" height="100"></li>
+                                <li>Then click on the bottom right to complete it.<img src="index_files/recQuery2.png" align="top" height="100"></li>
+                            </ul>
+                        </ul>
+                        <p class="subtitle">Submit your request by clicking <img src="index_files/runQuery.png" align="center" height="30"></p>
+                    </b-col>
+                </b-row>
+
+                <b-row><p class="stepTitle">Step 3 : display overall results</p></b-row>
+
+                <b-row class="menu">
+                    <b-col></b-col>
+                    <b-col cols="10" class="menu">
+                        <b-form-slider class="menu-titles" style="width: 100%;"
+                            :value="3" :min="1" :max="3" :step="1"
+                            :ticks='[1, 2, 3]' :ticks-labels="['','', 'Result']" tooltip="hide">
+                        </b-form-slider>
+                    </b-col>
+                    <b-col></b-col>
+                </b-row>
+                <b-row>
+                    <p>Scoring in progress is displayed while the calculations are in progress.</p>
+
+                    <p>Scoring result gives the overal information about your request and more detailled data is provided with <img src="index_files/layers.png" align="center">
+                    <br>Select each criteria to have a more specific result.</p>
+                    <p>Result : <img  class="photo-wraper" src="index_files/result.png" align="top" height="300"></p>
+                </b-row>
+                
+            </b-container>
+        </div>
+
+
+<!-- 
+            <div class="presentation">
+                <img class ="photo-wraper" alt="pairaffiche" src="index_files/tech affiche.png" align="left"/>
+                <div class="text">
+                    <h2>PAIRS Geoscope for Vineyard Discovery</h2>
+                    <p>Version 1.0​</p>
+                    <p>Define a reference plot of land and based on geological and meteorological criteria such as wind, drought, climate, altitude etc. to find new exploitable areas that meet the criteria of excellence of customer's vineyard, using PAIRS capabilities.​
+                    <br>
+                    <br>
+                    IBM PAIRS GEOSCOPE is a platform, specifically designed for massive geospatial-temporal data (maps, satellite, weather, drone, IoT), query and analytics services. It frees up data scientists, developers from the cumbersome processes that dominate conventional geospatial-temporal data acquisition and preparation and provides search-friendly ready access to a rich, diverse, and growing catalog of historical and continuously updated geospatial-temporal information.​
+                    </p>
+                </div>
+            </div>
+            <div class="tutorial">
+                <div class="text">
+                    <h2>Tutorial</h2>
+                    <p>The 3 blue dots represent the 3 steps required to complete your search for a new exploitable areas and they are the breadcrumbs​</p>
+
+                    <img src="index_files/slider1.png" align="center">
+                    <ul>
+                        <li>Start with the time frame by choosing a start and end date to retrieve data for a reference field (1 month is selected by default)</li>​
+                        <li>Identify the reference vineyard by pointing the source zone on the map</li>
+                        <li>Then press <img src="index_files/computeLayer.png" align="center" height="25">  button to submit your request</li>
+                    </ul>
+
+                    <img src="index_files/slider2.png" align="center">
+
+                    <p>This is the result of your request that presents the characteristics of the selected field. You can refine the search parameters.</p>
+                    <p>The characteristics retrieved can be adjusted by selecting the points and sliding them with the mouse. <img src="index_files/sliderCheck.png" align="center"></p>
+                    <p>They may also be taken out of your query if you deselect them.<img src="index_files/check.png" align="center"></p>
+
+                    <ul>
+                        <li>Select an area of investigation for a new query among two options :</li>
+                        <ul>
+                            <li>Select a French region	<img src="index_files/listCheck.png" align="top">	or 	Click on the rectangle button <img src="index_files/rectangle.png" align="center" height="30"></li>
+                            <li>Then click on the first top left angle of your rectangle to start the draw <img src="index_files/recQuery1.png" align="top" height="100">click on the bottom right to complete it.<img src="index_files/recQuery2.png" align="top" height="100"></li>
+                        </ul>
+                        <li>Submit your request by clicking <img src="index_files/runQuery.png" align="center" height="30"></li>
+                    </ul>
+
+                    <img src="index_files/slider3.png" align="center">
+
+                    <p>Scoring in progress is displayed while the calculations are in progress</p>
+
+                    <p>Scoring result gives the overal information about your request and more detailled data is provided with <img src="index_files/layers.png" align="center">
+                    <br>Select each criteria to have a more specific result.</p>
+                    <p>Result : <img  class="photo-wraper" src="index_files/result.png" align="top" height="300"></p>
+                </div>
+            </div>
+            <div class="div"><a class="button" href="vitixplore.html" align="center">Get Started</a></div>
+        </div> -->
+
+
+      <!-- These MUST be in the right order. Note no leading / -->
+    <!-- REQUIRED: Socket.IO is loaded only once for all instances
+                     Without this, you don't get a websocket connection -->
+    <script src="../uibuilder/vendor/socket.io/socket.io.js"></script>
+
+    <!-- --- Vendor Libraries - Load in the right order --- -->
+    <script src="../uibuilder/vendor/vue/dist/vue.js"></script> 
+    <script src="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.js"></script>
+
+
+  <script src="../uibuilder/vendor/bootstrap-slider/dist/bootstrap-slider.js"></script>
+  <script src="../uibuilder/vendor/vue-bootstrap-slider/dist/vue-bootstrap-slider.js"></script>
+    <!-- REQUIRED: Sets up Socket listeners and the msg object -->
+    <!-- <script src="./uibuilderfe.js"></script>   //dev version -->
+    <script src="./uibuilderfe.min.js"></script> <!--    //prod version -->
+    <!-- OPTIONAL: You probably want this. Put your custom code here -->
+    <script src="./index.js"></script>
+
+    </body>
+</html>

@@ -105,6 +105,7 @@ var appViti = new Vue({
         rectangleBtnIsPressed: true,
         myToggle: false,
         dataLayers: null,
+        legendUnit: null,
         // -- Specific layers values
         soilTypes : [{ value: "1", text: 'Coarse' }, { value: "2", text: 'Medium' }, { value: "3", text: 'Medium fine' }, { value: "4", text: 'Fine' }, { value: "5", text: 'Very fine' }, { value: "6", text: 'Organic' }, { value: "7", text: 'Tropical organic' }],
         refSoilType: null,
@@ -221,11 +222,12 @@ var appViti = new Vue({
       },
       initCriterias: function(offset,extent) {
         console.log("qryLayers", this.qryLayers)
+        // this.qryLayers = [this.qryLayers]
         if(this.qryLayers!=null) {
 
           const _this=this
           this.criteriasRange=Object.keys(this.qryLayers).reduce(function(acc,layerId){
-            if ("l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'") {
+            if ("l.measurement_interval" == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs') {
               acc[layerId]=_this.slPos(_this.qryLayers[layerId],'Mean',offset,extent)
             } else {
               acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Lower','Upper'],offset,extent)
@@ -362,17 +364,17 @@ var appViti = new Vue({
           if ((this.rectanglePos[0] == []) || (this.rectanglePos[0] == undefined)) {
             this.rectanglePos[0] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
             let svgPin = '<svg width="4" height="4" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="2" cy="2" r="1"/></svg>'
-            
+
             this.rectangleMarker=L.marker([pos.latlng['lat'], pos.latlng['lng']], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);  // add marker to map
-          } 
+          }
           // Step 2 : draw rectangle
           else if (this.rectangleMarker) {
             this.map.removeLayer(this.rectangleMarker);
             this.rectangleMarker=null // remove marker to create a rectangle
-            
+
             this.rectanglePos[1] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
             this.rectangle=L.rectangle([[this.rectanglePos[0].lat, this.rectanglePos[0].lng], [this.rectanglePos[1].lat, this.rectanglePos[1].lng]], {color: "#633CEA", weight: 1}).bindPopup("Ref Point").addTo(this.map); // add rectangle to map
-          } 
+          }
           // Step 3 : reset
           else if ((this.rectanglePos[0] !== []) && this.rectanglePos[1] !== []) {
             this.map.removeLayer(this.rectangle);
@@ -388,7 +390,7 @@ var appViti = new Vue({
         } else {
           console.log("button not selected")
 
-        } 
+        }
       },
       chooseAoi: function () {
         // If the user chooses an AOI, we remove the rectangle
@@ -400,7 +402,7 @@ var appViti = new Vue({
 
           if (this.rectangleMarker) {
             this.map.removeLayer(this.rectangleMarker);
-            this.rectangleMarker=null 
+            this.rectangleMarker=null
           } else if (this.rectanglePos[0] == undefined) {
             // added this beacause of an error in the console. Need to fix somewhere else
           } else if ((this.rectanglePos[0] !== []) && (this.rectanglePos[1] !== [])) {
@@ -408,8 +410,8 @@ var appViti = new Vue({
             this.rectangle=null
           }
 
-          this.rectanglePos = []; 
-        } 
+          this.rectanglePos = [];
+        }
       },
       launchScoringQuery: function () {
         // Make a dictioary with low-up-enabled values
@@ -419,7 +421,6 @@ var appViti = new Vue({
 
         var scoringData=layers.map(function(layerId) {
           // if (_this.criteriasCheck[layerId]) {
-
             const humanUnits=_this.qryLayers[layerId].humanUnits
             return {'id':layerId,
                     'lower':unConvertUnits(_this.criteriasRange[layerId][0],humanUnits),
@@ -429,7 +430,6 @@ var appViti = new Vue({
         })
         // In the function before, we create a new array with parameter from selected layers, if layer not selected we get undefined, we want to remove them from the array
         scoringData = scoringData.filter(function (el) { return el != null; });
-
         // Missing aggregation
         var UDF = scoringData.reduce(function(udf,scoring, index) {
           // if(index == 0) {udf+= "((("}
@@ -445,9 +445,9 @@ var appViti = new Vue({
         // UDF+= ")*100)/" + scoringData.length + ")";
           // console.log(UDF)
 
-        
-        if (this.rectangle) { this.formatCoordinates() }  
-         
+
+        if (this.rectangle) { this.formatCoordinates() }
+
         this.scoringInProgress=true
 
         this.sendToNodered('scoringQuery', {'pos': this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
@@ -508,7 +508,17 @@ var appViti = new Vue({
         try {
           const wmsControl=dataLayers.reduce(function(control,layer) {
             const layerName=layer.name
-            const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName)
+            const layerId=layer.datalayerId
+            
+            if (layerId !== undefined) {
+              var unit = _this.qryLayers[layerId].units
+            } else {
+              var unit = "%"
+            }
+            console.log(unit)
+
+
+            const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName, unit)
             const layerDesc=layer.datalayer.split('[')[0]
             control.addBaseLayer(newLayer,layerDesc)
             var colorTableId = layer.colorTableId
@@ -516,11 +526,10 @@ var appViti = new Vue({
             // make only the scoring layer visible
             if(layerDesc=='Overall Scoring' || layerDesc=='scoring') {
               _this.scoringMap.addLayer(newLayer);
+              
               if (colorTableId == undefined) { colorTableId = DEFAULT_COLORTABLEID }
-              // console.log(_this.allColorMaps)
 
               colors.map(function(color) {
-                // console.log(if (color.colorTableId == layer.colorTableId))
                 if ((color.colorTableId == colorTableId)  && (color.name == layerName)) {
                   color.colorMap.map(function(col) {
                     if(col.$.label !== "NO_DATA") {
@@ -538,7 +547,7 @@ var appViti = new Vue({
           wmsControl.addTo(this.scoringMap)
           this.flyToBounds(this.scoringMap,this.selQueryJob)
         } catch (error) {
-          // console.error(error);
+          console.error(error);
           // expected output: ReferenceError: nonExistentFunction is not defined
           // Note - error messages will vary depending on browser
         }
@@ -579,7 +588,7 @@ var appViti = new Vue({
 
         if (this.rectanglePos[0].lng > this.rectanglePos[1].lng) {
           this.qryPos["rWest"] = this.rectanglePos[1].lng;
-          this.qryPos["rEast"] = this.rectanglePos[0].lng;  
+          this.qryPos["rEast"] = this.rectanglePos[0].lng;
         } else {
           this.qryPos["rWest"] = this.rectanglePos[0].lng;
           this.qryPos["rEast"] = this.rectanglePos[1].lng;
@@ -625,11 +634,16 @@ var appViti = new Vue({
       changeLegend: function(layer) {
         const _this=this
         _this.colorMap = null;
-        console.log(_this.qryLayers)
 
         _this.allColorMaps.map(function(color) {
           if ((color.colorTableId == layer.layer.colorTableId) && (color.name == layer.layer.layerName)) {
             _this.colorMap = color.colorMap;
+            // _this.legendUnit = _this.qryLayers[]
+              console.log("layer", layer)
+              console.log("layer.layer", layer.layer)
+              console.log("layer.layer.units", layer.layer.units)
+              _this.legendUnit = layer.layer.units;
+              console.log(_this.legendUnit)
           }
         });
       }
