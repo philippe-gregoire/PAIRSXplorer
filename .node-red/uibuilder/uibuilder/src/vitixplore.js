@@ -102,7 +102,7 @@ var appViti = new Vue({
         imgProps             : { width: 75, height: 75 },
         colorMap: null,
         allColorMaps: null,
-        rectangleBtnIsPressed: true,
+        rectangleBtnIsPressed: false,
         myToggle: false,
         dataLayers: null,
         legendUnit: null,
@@ -227,7 +227,7 @@ var appViti = new Vue({
 
           const _this=this
           this.criteriasRange=Object.keys(this.qryLayers).reduce(function(acc,layerId){
-            if ("l.measurement_interval" == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs') {
+            if (_this.qryLayers[layerId].measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs') {
               acc[layerId]=_this.slPos(_this.qryLayers[layerId],'Mean',offset,extent)
             } else {
               acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Lower','Upper'],offset,extent)
@@ -510,14 +510,14 @@ var appViti = new Vue({
             const layerName=layer.name
             const layerId=layer.datalayerId
             
-            if (layerId !== undefined) {
-              var unit = _this.qryLayers[layerId].units
-            } else {
-              var unit = "%"
+            if (_this.qryLayers) {
+              if (layerId !== undefined) {
+                var unit = _this.qryLayers[layerId].units
+              } else {
+                var unit = "%"
+              }    
             }
-            console.log(unit)
-
-
+            
             const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName, unit)
             const layerDesc=layer.datalayer.split('[')[0]
             control.addBaseLayer(newLayer,layerDesc)
@@ -526,6 +526,7 @@ var appViti = new Vue({
             // make only the scoring layer visible
             if(layerDesc=='Overall Scoring' || layerDesc=='scoring') {
               _this.scoringMap.addLayer(newLayer);
+              _this.legendUnit = unit;
               
               if (colorTableId == undefined) { colorTableId = DEFAULT_COLORTABLEID }
 
@@ -638,14 +639,10 @@ var appViti = new Vue({
         _this.allColorMaps.map(function(color) {
           if ((color.colorTableId == layer.layer.colorTableId) && (color.name == layer.layer.layerName)) {
             _this.colorMap = color.colorMap;
-            // _this.legendUnit = _this.qryLayers[]
-              console.log("layer", layer)
-              console.log("layer.layer", layer.layer)
-              console.log("layer.layer.units", layer.layer.units)
-              _this.legendUnit = layer.layer.units;
-              console.log(_this.legendUnit)
+            _this.legendUnit = layer.layer.units;
           }
         });
+        console.log(_this.colorMap)
       }
     }, // --- End of methods --- //
 

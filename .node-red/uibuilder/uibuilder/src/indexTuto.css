@@ -143,6 +143,9 @@ p, ul {
   width: 12px;
 }
 
+.slider.slider-disabled .slider-handle {
+  background: #633CEA !important;
+}
 
 /* -- TITLES & FONTS-- */
 

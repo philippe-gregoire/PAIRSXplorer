@@ -188,7 +188,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
               <span v-else>
                 <center>
                   <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]. 
-                    <br>Chosen value :{{criteriasRange[l.id]}} </p>
+                  <br>Chosen value : {{criteriasRange[l.id]}} </p>
                    
                   <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
                     v-bind:disabled="!criteriasCheck[l.id]"

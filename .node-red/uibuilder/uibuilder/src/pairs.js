@@ -8,7 +8,6 @@ const INIT_OPACITY=0.4
 
 pairsFuncs= {
     setPairsData: function(geoServerURLOrID,minColor,maxColor,colorTableId,layerName,units) {
-        console.log('Setting pairs data to ',geoServerURLOrID,minColor,maxColor,colorTableId,layerName,units)
         this.geoServerURL=geoServerURLOrID.startsWith('http')?geoServerURLOrID:`https://${this.pairsHost}:${this.pairsPort}/${geoServerURLOrID}`
         this.minColor=minColor
         this.maxColor=maxColor
@@ -60,13 +59,6 @@ function initPAIRS(L,pairsHost,pairsPort,pairsWMSAuth) {
 /** Create a PAIRS-backed WMS layer */
 function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units,opacity) {
     newLayer=new L.TileLayer.Pairs()
-    console.log("L", L)
-    console.log("geoServerURLOrId", geoServerURLOrId)
-    console.log("minColor", minColor)
-    console.log("maxColor", maxColor)
-    console.log("colorTableId", colorTableId)
-    console.log("layerName", layerName)
-    console.log("units", units)
     newLayer.setPairsData(geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units)
     newLayer.setOpacity(opacity?opacity:INIT_OPACITY)
 
