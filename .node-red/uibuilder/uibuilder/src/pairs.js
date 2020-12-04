@@ -7,13 +7,14 @@ const EPSG={'EPSG:3857':{'dx':20026376.39,'dy':20048966.10}}
 const INIT_OPACITY=0.4
 
 pairsFuncs= {
-    setPairsData: function(geoServerURLOrID,minColor,maxColor,colorTableId,layerName,units) {
+    setPairsData: function(geoServerURLOrID,minColor,maxColor,colorTableId,layerName,units, dataLayer) {
         this.geoServerURL=geoServerURLOrID.startsWith('http')?geoServerURLOrID:`https://${this.pairsHost}:${this.pairsPort}/${geoServerURLOrID}`
         this.minColor=minColor
         this.maxColor=maxColor
         this.colorTableId=colorTableId
         this.layerName=layerName
         this.units=units
+        this.dataLayer=dataLayer
     },
     makePairsURL: function(z,x,y,geoServerURL,minColor,maxColor,colorTableId,layerName) {
         const proj='EPSG:3857'
@@ -57,9 +58,9 @@ function initPAIRS(L,pairsHost,pairsPort,pairsWMSAuth) {
 }
 
 /** Create a PAIRS-backed WMS layer */
-function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units,opacity) {
+function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units,dataLayer,opacity) {
     newLayer=new L.TileLayer.Pairs()
-    newLayer.setPairsData(geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units)
+    newLayer.setPairsData(geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units,dataLayer)
     newLayer.setOpacity(opacity?opacity:INIT_OPACITY)
 
     return newLayer

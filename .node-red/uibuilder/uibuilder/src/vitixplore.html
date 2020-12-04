@@ -155,37 +155,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
             <h3 class="criteriaTitle">Criterias</h3>
           </b-cols>
         </b-row>
-
         <b-row >
           <b-form class="criterias">
-            <div class="criteria" v-for="l in qryLayers">
+            <!-- To-do : find a way to not have 2 for loop to seperate layers with depths and without depths -->
+            <div class="criteria" v-for="l in qryLayers" v-if="!l.dimensions_description">
               <div class="custom-control custom-checkbox">
-                  <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
-                  <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</label>
+                <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
+                <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</label>
               </div>
               <br/>
-              <span v-if="l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'">
-                <span v-if="l.id == 50450">
-                  <b-form-select v-model="refSoilType" :options="soilTypes"></b-form-select>
-                  <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
-                </span>
-                <span v-if="l.id == 50511">
-                  <b-form-select v-model="refSoilClass" :options="soilClass"></b-form-select>
-                  <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
-                </span>
-                <span v-if="(l.id == 50509) || (l.id == 50497) || (l.id == 50453) || (l.id == 50456) || (l.id == 50496)">
-                  <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
-                    v-bind:disabled="!criteriasCheck[l.id]"
-                    v-bind:min="l.Mean-l.Mean*0.5"
-                    v-model:value="criteriasRange[l.id]"
-                    v-bind:max="l.Mean+l.Mean*0.5"
-                    :step="((l.Mean+l.Mean*0.1)-(l.Mean-l.Mean*0.1))/100"
-                    :precision="critDigits">
-                  </b-form-slider>
-                  <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
-                </span>
-              </span>
-              <span v-else>
+              <span v-if="l.Max">
                 <center>
                   <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]. 
                   <br>Chosen value : {{criteriasRange[l.id]}} </p>
@@ -202,80 +181,48 @@ copy this file to <userDir>/uibuilder/<url>/src.
                     :precision="critDigits">
                   </b-form-slider>
                 </center>
-              </span> 
-            </div>
-
-            <!-- Version tableau -->
-<!--         <b-table-simple style="width: 100%;" >
-              <b-tr v-for="l in qryLayers"> -->
-
-                <!-- Criteria name -->
-<!--            <b-td colspan="2">
-                  <div class="custom-control custom-checkbox">
-                    <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
-                    <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}}</label>
-                  </div>
-                </b-td> -->
-
-                <!-- Units -->  
-<!--            <b-td colspan="1">
-                  <p>({{l.humanUnits}})</p>  
-                </b-td> -->
-
-                <!-- Reference value -->
-<!--            <b-td colspan="1">
-                  <span v-if="l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'">
-                    <p class="criteriaRefValue">{{l.Mean.toFixed(critDigits)}}</p>
-                  </span>
-                  <span v-else>
-                    <p class="criteriaRefValue">[{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]</p>
-                  </span>
-                </b-td> -->
-
-                <!-- Choose margin -->
-<!--                 <b-td colspan="3">
-                  <span v-if="l.measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs'">
-                    <span v-if="l.id == 50450">
-                      <b-form-select v-model="refSoilType" :options="soilTypes"></b-form-select>
-                    </span>
-                    <span v-if="l.id == 50511">
-                      <b-form-select v-model="refSoilClass" :options="soilClass"></b-form-select>
-                    </span>
-                    <span v-if="(l.id == 50509) || (l.id == 50497) || (l.id == 50453) || (l.id == 50456) || (l.id == 50496)">
-                      <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
-                        v-bind:disabled="!criteriasCheck[l.id]"
-                        v-bind:min="l.Mean-l.Mean*0.5"
-                        v-model:value="criteriasRange[l.id]"
-                        v-bind:max="l.Mean+l.Mean*0.5"
-                        :step="((l.Mean+l.Mean*0.1)-(l.Mean-l.Mean*0.1))/100"
-                        :precision="critDigits">
-                      </b-form-slider>
-                    </span>
-                  </span>
-                  <span v-else>
-                    <center>                     
-                      <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
-                        v-bind:disabled="!criteriasCheck[l.id]"
-                        v-bind:min="slPos(l,'Inf',critOff,critExt)"
-                        v-model:value="criteriasRange[l.id]"
-                        v-bind:max="slPos(l,'Sup',critOff,critExt)"
-                        v-bind:ticks="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt)"
-                        :ticks-labels="['Inf','Min', 'Mean','Max','Sup']"
-                        v-bind:ticks-positions="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt,100)"
-                        :step="(l.Max-l.Min)/100"
-                        :precision="critDigits">
-                      </b-form-slider>
-                    </center>
-                  </span> 
-                </b-td> -->
-
-                <!-- Chosen value -->
-<!--                 <b-td colspan="2">
-                  <p>{{criteriasRange[l.id]}}</p>
-                </b-td>
- -->
-              <!-- </b-tr> -->
-            <!-- </b-table-simple> -->
+              </span>
+              <span v-if="l.id == 50450">
+                <b-form-select v-model="refSoilType" :options="soilTypes"></b-form-select>
+                <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p> 
+              </span>
+              <span v-if="l.id == 50511">
+                <b-form-select v-model="refSoilClass" :options="soilClass"></b-form-select>
+                <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
+              </span>
+              <span v-if="(l.id == 50453) || (l.id == 50456)">
+                <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
+                  v-bind:disabled="!criteriasCheck[l.id]"
+                  v-bind:ticks="[l.Mean-l*critOff, l.Mean, l.Mean+l.Mean*critOff]"
+                  v-bind:min="l.Mean-l.Mean*critExt"
+                  v-model:value="criteriasRange[l.id]"
+                  v-bind:max="l.Mean+l.Mean*critExt"
+                  :step="((l.Mean+l.Mean*0.1)-(l.Mean-l.Mean*0.1))/100"
+                  :precision="critDigits">
+                </b-form-slider>
+                <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
+              </span>
+            </div> 
+            <div class="criteria" v-for="l in qryLayers" v-if="l.dimensions_description">
+              <div class="custom-control custom-checkbox">
+                <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
+                <label class="custom-control-label criteriaNameCheckBox" :for="'a'+l.id">{{l.name}} ({{l.humanUnits}})</label>
+              </div>
+              <br/>
+              <span v-for="depth in depths">
+                <p class="criteriaRefValue">Ref values : {{l[depth].toFixed(critDigits)}} for depth : {{ depth }}. 
+                <br>Chosen value : {{criteriasRange[l.id][depth]}} </p>
+                <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
+                  v-bind:disabled="!criteriasCheck[l.id]"
+                  v-bind:ticks="[l[depth]-l[depth]*critOff, l[depth], l[depth]+l[depth]*critOff]"
+                  v-bind:min="l[depth]-l[depth]*critExt"
+                  v-model:value="criteriasRange[l.id][depth]"
+                  v-bind:max="l[depth]+l[depth]*critExt"
+                  :step="((l[depth]+l[depth]*0.1)-(l[depth]-l[depth]*0.1))/100"
+                  :precision="critDigits">
+                </b-form-slider>
+              </span>         
+            </div>    
           </b-form>
         </b-row>
       </b-row>
@@ -320,10 +267,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <!-- Select if you want to display previous queries -->
         <b-row class="leftTextAlign subContent"><h2 class="subtitle">Or display a query you've already made</h2></b-row>
         <b-row class="smallText">
-          <b-col cols=2>
-            <b-form-checkbox v-model="qrySelAll">Display failed queries</b-form-checkbox>
-          </b-col>
-          <b-col cols=6>
+          <b-col cols=10>
             <b-form-select v-model="selQueryJob">
               <b-form-select-option v-for="qj in queryJobs" v-if="qrySelAll || !qj.status.startsWith('Failed')" :value="qj" v-bind:key="'selQJ_'+qj.id">[{{qj.status}}]: {{qj.nickname}}</b-form-select-option>
             </b-form-select>
@@ -331,10 +275,17 @@ copy this file to <userDir>/uibuilder/<url>/src.
           <b-col cols=2>
             <button :disabled="selQueryJob===null" class="smallButton" v-on:click="showQueryJob">Show query</button>
           </b-col>
+        </b-row>
+
+        <!-- Debug -->
+        <!-- <b-row>
+          <b-col cols=2>
+            <b-form-checkbox v-model="qrySelAll">Display failed queries</b-form-checkbox>
+          </b-col>
           <b-col cols=2>
             <button :disabled="selQueryJob===null" class="smallButton" v-on:click="deleteQueryJob">Delete query</button>
           </b-col>
-        </b-row>
+        </b-row> -->
 
       </b-row>
     </b-container>
@@ -343,11 +294,13 @@ copy this file to <userDir>/uibuilder/<url>/src.
     <b-container id="appViti_container_result" v-if="curPage===3" class="content">
       <b-row>
         <h1 class="title">Scoring {{scoringInProgress?'in progress':'Results'}}</h1>
+
         <b-overlay :show="scoringInProgress" rounded="sm">
           <h2 class="subtitle"  v-if="scoringInProgress">Scoring Query Running</h2>
         </b-overlay>
         <h2 class="subtitle" v-if="scoringInProgress">{{scoringStatus}} {{scoringPercent}}% {{Math.round((scoringSince)/1000)}} s</h2>
       </b-row>
+      <b-row><p class="subtitle">{{legendName}}</p></b-row>
       <b-row>
         <b-col class="legendContainer" cols="2">
           <h3 class="subtitle">Legend</h3>
@@ -355,7 +308,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
           <div v-if="colorMap">
             <div class="legend" v-for="color in colorMap" v-if="color.$.label !== 'NO_DATA'">
               <div v-bind:style="{background: color.$.color}" class="colorSquare" >
-                <span class="legendText" >{{ color.$.label }}</span>
+                <p class="legendText" >{{ color.$.label }}</p>
               </div>
             </div>
           </div>

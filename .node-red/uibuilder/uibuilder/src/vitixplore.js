@@ -106,11 +106,14 @@ var appViti = new Vue({
         myToggle: false,
         dataLayers: null,
         legendUnit: null,
+        legendName: null,
         // -- Specific layers values
         soilTypes : [{ value: "1", text: 'Coarse' }, { value: "2", text: 'Medium' }, { value: "3", text: 'Medium fine' }, { value: "4", text: 'Fine' }, { value: "5", text: 'Very fine' }, { value: "6", text: 'Organic' }, { value: "7", text: 'Tropical organic' }],
         refSoilType: null,
         soilClass : [ { value: "0", text: 'Acrisols' },  { value: "1", text: 'Albeluvisols' },  { value: "2", text: 'Alisols' },  { value: "3", text: 'Andosols' },  { value: "4", text: 'Arenosols' },  { value: "5", text: 'Calcisols' },  { value: "6", text: 'Cambisols' },  { value: "7", text: 'Chernozems' }, { value: "8", text: 'Cryosols' }, { value: "9", text: 'Durisols' }, { value: "10", text: 'Ferralsols' }, { value: "11", text: 'Fluvisols' }, { value: "12", text: 'Gleysols' }, { value: "13", text: 'Gypsisols' }, { value: "14", text: 'Histosols' }, { value: "15", text: 'Kastanozems' }, { value: "16", text: 'Leptosols' }, { value: "17", text: 'Lixisols' }, { value: "18", text: 'Luvisols' }, { value: "19", text: 'Nitisols' }, { value: "20", text: 'Phaeozems' }, { value: "21", text: 'Planosols' }, { value: "22", text: 'Plinthosols' }, { value: "23", text: 'Podzols' }, { value: "24", text: 'Regosols' }, { value: "25", text: 'Solonchaks' }, { value: "26", text: 'Solonetz' }, { value: "27", text: 'Stagnosols' }, { value: "28", text: 'Umbrisols' }, { value: "29", text: 'Vertisols' }],
-        refSoilClass: null
+        refSoilClass: null,
+        depths: ["0to5cm","5to15cm","15to30cm","30to60cm","60to100cm", "100to200cm"]
+
     }, // --- End of data --- //
 
     computed: {
@@ -182,7 +185,6 @@ var appViti = new Vue({
           this.aoisArray.sort();
       },
       loadLayers: function(event) {
-        console.log("layersDict", this.layersDict)
         // this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
         this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': this.layersDict})
         this.qryRunning=true
@@ -190,7 +192,6 @@ var appViti = new Vue({
       loadedLayers: function(layers,pairsError) {
         if(!pairsError) {
           console.debug('Got layers',layers)
-          console.log('Got layers',layers)
 
           // Set the Query position
           this.qryPos={"lat": layers[0].latitude, "lng":layers[0].longitude}
@@ -201,18 +202,24 @@ var appViti = new Vue({
             if(!(layer.layerId in acc)) {
               // First time we encounter this layerID, add it to the dict
               acc[layer.layerId]={"name": layer.layerName, "id":layer.layerId, "dataset": layer.dataset}
-
               // append attributes from layersDict
               const LAYERS_ATTR=['description_short','description_long','datatype','units', 'dimensions_description', 'measurement_interval']
               LAYERS_ATTR.forEach(attribute => acc[layer.layerId][attribute]=_layersDict[layer.layerId][attribute])
             }
-            // convert units
-            acc[layer.layerId][layer.aggregation]=convertUnits(parseFloat(layer.value),acc[layer.layerId],'units','humanUnits')
 
+            // Store value based on layer 
+            if(layer.property) {
+              var depthProperty = layer.property.split("depth:");
+              acc[layer.layerId][depthProperty[1]]=convertUnits(parseFloat(layer.value),acc[layer.layerId],'units','humanUnits')
+              } else if (layer.aggregation) {
+                acc[layer.layerId][layer.aggregation]=convertUnits(parseFloat(layer.value),acc[layer.layerId],'units','humanUnits') // convert units
+              }
+              else {
+                acc[layer.layerId]["Mean"]=convertUnits(parseFloat(layer.value),acc[layer.layerId],'units','humanUnits') // convert units
+            }
             return acc
           },{})
           this.initCriterias(this.critOff,this.critExt)
-
           // switch to second page
           this.curPage=2
         }
@@ -221,23 +228,26 @@ var appViti = new Vue({
         this.qryRunning=false
       },
       initCriterias: function(offset,extent) {
-        console.log("qryLayers", this.qryLayers)
-        // this.qryLayers = [this.qryLayers]
-        if(this.qryLayers!=null) {
+        // console.log(this.qryLayers)
 
+        if(this.qryLayers!=null) {
           const _this=this
           this.criteriasRange=Object.keys(this.qryLayers).reduce(function(acc,layerId){
-            if (_this.qryLayers[layerId].measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs') {
-              acc[layerId]=_this.slPos(_this.qryLayers[layerId],'Mean',offset,extent)
+            
+            if ((_this.qryLayers[layerId].measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.00 secs') || (_this.qryLayers[layerId].measurement_interval == '0 years 0 mons 0 days 0 hours 0 mins 0.0 secs')) {
+              if (_this.qryLayers[layerId].dimensions_description) {
+                acc[layerId]=_this.slPosDim(_this.qryLayers[layerId], offset,extent)
+              } else {
+                // acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Lower','Upper'],offset,extent)
+                acc[layerId]=_this.slPos(_this.qryLayers[layerId],['MeanLower','MeanUpper'],offset,extent)
+              }
             } else {
               acc[layerId]=_this.slPos(_this.qryLayers[layerId],['Lower','Upper'],offset,extent)
             }
-            if(layerId == 50450) { 
-              _this.refSoilType = _this.qryLayers[layerId].Mean;
-            }
-            if(layerId == 50511) { 
-              _this.refSoilClass = _this.qryLayers[layerId].Mean;
-            }
+
+            if(layerId == 50450) _this.refSoilType = _this.qryLayers[layerId].Mean;
+            if(layerId == 50511) _this.refSoilClass = _this.qryLayers[layerId].Mean;
+          
             return acc
           },{})
           this.criteriasCheck=Object.keys(this.qryLayers).reduce(function(acc,layerId){
@@ -248,7 +258,6 @@ var appViti = new Vue({
           this.criteriasRange=null
           this.criteriasCheck=null
         }
-        console.log("criteriaRange", this.criteriasRange)
       },
       critChange: function(layerId,critIndex,value) {
         var criteriasRange=this.criteriasRange
@@ -355,6 +364,7 @@ var appViti = new Vue({
         this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
         this.refPos=pos
       },
+      // Function to create a rectangle on the map on page 2 - filters and regions
       setRectangle: function (pos) {
         if (this.rectangleBtnIsPressed) {
           // TO-DO : pas supposé être là j'imagine
@@ -383,6 +393,7 @@ var appViti = new Vue({
           }
         }
       },
+      // Triggered when we click on rectangle on page 2 - filters and regions
       chooseRectangle: function () {
         if (this.rectangleBtnIsPressed) {
           console.log("button selected")
@@ -392,6 +403,7 @@ var appViti = new Vue({
 
         }
       },
+      // Triggered when we select an aoi on page 2 - filters and regions
       chooseAoi: function () {
         // If the user chooses an AOI, we remove the rectangle
         if(this.rectangleBtnIsPressed) {
@@ -418,39 +430,62 @@ var appViti = new Vue({
         const _this=this
 
         const layers=Object.keys(this.criteriasCheck)
+        console.log(this.criteriasCheck)
 
+        // Create an array with values selected in sliders on page 2 - filters and regions
         var scoringData=layers.map(function(layerId) {
-          // if (_this.criteriasCheck[layerId]) {
-            const humanUnits=_this.qryLayers[layerId].humanUnits
-            return {'id':layerId,
-                    'lower':unConvertUnits(_this.criteriasRange[layerId][0],humanUnits),
-                    'upper':unConvertUnits(_this.criteriasRange[layerId][1],humanUnits),
-                    'enabled':_this.criteriasCheck[layerId]}
-          // }
+          if (_this.criteriasCheck[layerId]) {
+            const humanUnits=_this.qryLayers[layerId].humanUnits;
+            if (_this.qryLayers[layerId].dimensions_description !== undefined) {
+              var data = {'id': layerId, 'enabled':_this.criteriasCheck[layerId]};
+              _this.depths.map(function (depth) {
+                data[depth] = {
+                  'lower':unConvertUnits(_this.criteriasRange[layerId][depth][0],humanUnits),
+                  'upper':unConvertUnits(_this.criteriasRange[layerId][depth][1],humanUnits)
+                }
+              })
+              return data
+            } else if((layerId == "50450") || (layerId == "50511" )) { 
+              return {
+                'id':layerId,
+                'type': _this.qryLayers[layerId].Mean,
+                'enabled':_this.criteriasCheck[layerId]}
+            } else {
+              return {'id':layerId,
+                'lower':unConvertUnits(_this.criteriasRange[layerId][0],humanUnits),
+                'upper':unConvertUnits(_this.criteriasRange[layerId][1],humanUnits),  
+                'enabled':_this.criteriasCheck[layerId]}
+            }
+          }
         })
+
         // In the function before, we create a new array with parameter from selected layers, if layer not selected we get undefined, we want to remove them from the array
         scoringData = scoringData.filter(function (el) { return el != null; });
-        // Missing aggregation
+        
         var UDF = scoringData.reduce(function(udf,scoring, index) {
-          // if(index == 0) {udf+= "((("}
-          // if (_this.criteriasCheck[scoring.id]) {
+          if(scoring.lower) {
             udf += "(( $Mean_" + scoring.id + " >= " + scoring.lower +
-                    " && $Mean_" + scoring.id + " <= "+ scoring.upper + ") ? 1 : 0 ) + "
-          // }
+                   " && $Mean_" + scoring.id + " <= "+ scoring.upper + ") ? 1 : 0 ) + "
+          } else if (scoring.type) {
+            udf += "(( $Mean_" + scoring.id + " == " + scoring.type + ") ? 1 : 0 ) + "
+          } else {
+            _this.depths.map(function (depth) {
+              udf += "(( $" + depth + "_" + scoring.id + " >= " + scoring[depth].lower +
+                     " && $" + depth + "_" + scoring.id + " <= "+ scoring[depth].upper + ") ? 1 : 0 ) + "
+            })
+          }
           return udf
         },"")
 
         // remove trailing " + "
         UDF=UDF.slice(0,-3)
         // UDF+= ")*100)/" + scoringData.length + ")";
-          // console.log(UDF)
-
 
         if (this.rectangle) { this.formatCoordinates() }
 
         this.scoringInProgress=true
 
-        this.sendToNodered('scoringQuery', {'pos': this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF})
+        this.sendToNodered('scoringQuery', {'pos': this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
 
         // this.sendToNodered('getResults', {'pos': this.qryPos, 'aoi':this.refAOI,'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': layers, 'UDF': UDF})
         this.curPage=3
@@ -507,26 +542,28 @@ var appViti = new Vue({
 
         try {
           const wmsControl=dataLayers.reduce(function(control,layer) {
+            const layerDesc=layer.datalayer.split('[')[0]
             const layerName=layer.name
             const layerId=layer.datalayerId
             
-            if (_this.qryLayers) {
-              if (layerId !== undefined) {
-                var unit = _this.qryLayers[layerId].units
-              } else {
-                var unit = "%"
-              }    
+            if (_this.layersDict) {
+              // if (layerId !== undefined) { var unit = _this.qryLayers[layerId].units } 
+              if (layerId !== undefined) { var unit = _this.layersDict[layerId].units } 
+              else { var unit = "%" }    
             }
+
+            const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName, unit, layerDesc)
             
-            const newLayer=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,('colorTableId' in layer)?layer.colorTableId:DEFAULT_COLORTABLEID,layerName, unit)
-            const layerDesc=layer.datalayer.split('[')[0]
-            control.addBaseLayer(newLayer,layerDesc)
+            if(layer.dimensions) { control.addBaseLayer(newLayer,layerDesc + " (" + layer.dimensions[1]['options'][0] + ")") }
+            else { control.addBaseLayer(newLayer,layerDesc) }
+
             var colorTableId = layer.colorTableId
 
             // make only the scoring layer visible
             if(layerDesc=='Overall Scoring' || layerDesc=='scoring') {
               _this.scoringMap.addLayer(newLayer);
               _this.legendUnit = unit;
+              _this.legendName = layerDesc;
               
               if (colorTableId == undefined) { colorTableId = DEFAULT_COLORTABLEID }
 
@@ -576,8 +613,8 @@ var appViti = new Vue({
         // Reload QueryJobs List
         this.listQueryJobs()
       },
-      formatCoordinates: function () {
-
+      // Coordinates needs to be formated in a certain way when amking a call to PAIRS
+      formatCoordinates: function () { 
         // square pos to send to PAIRS = [southernmost latitude, westernmost longitude, northernmost latitude, easternmost longitude]
         if (this.rectanglePos[0].lat > this.rectanglePos[1].lat) {
           this.qryPos["rSouth"] = this.rectanglePos[1].lat;
@@ -595,8 +632,10 @@ var appViti = new Vue({
           this.qryPos["rEast"] = this.rectanglePos[1].lng;
         }
       },
-      slPos: function(layer, pos,offset,extent,normalize) {  // pos can be Inf, Min, Lower,  Mean, Upper, Max, Sup
+      slPos: function(layer, pos, offset,extent,normalize) {  // pos can be Inf, Min, Lower,  Mean, Upper, Max, Sup
         const critDigits=this.critDigits
+
+        //There are two functions in this function
         function _f(p) {
           switch(p) {
             case 'Inf':
@@ -613,6 +652,10 @@ var appViti = new Vue({
               return layer.Max
             case 'Sup':
               return (layer.Max+(layer.Max-layer.Mean)*extent)
+            case 'MeanLower':
+              return (layer.Mean-layer.Mean*offset)
+            case 'MeanUpper':
+              return (layer.Mean+layer.Mean*offset)
             default:
               console.log(`Invalid call to slPos(${layer},${pos},${offset},${extent})`)
               return -1
@@ -622,9 +665,8 @@ var appViti = new Vue({
           return  Math.round(_f(p) * (10**critDigits)) / (10**critDigits)
         }
 
-        // if it's an array, map for each element of the array
+        // if pos is an array, map for each element of the array
         var slPos=(Array.isArray(pos))?pos.map(_rnd):_rnd(pos)
-
         // if normalize has been asked, get every thing in the 0-normalize range (for the positions)
         if(normalize) {
           // We assume the elements are in order
@@ -632,17 +674,32 @@ var appViti = new Vue({
         }
         return slPos
       },
+      slPosDim: function(layer, offset,extent,normalize) {  
+        const critDigits=this.critDigits
+        var slPos = {}, roundedValue = 0;
+
+        this.depths.map(function (depth) {
+          roundedValue = Math.round(layer[depth]);
+          slPos[depth] = [roundedValue - roundedValue*offset , roundedValue + roundedValue*offset]
+        })
+        return slPos
+      },
       changeLegend: function(layer) {
         const _this=this
         _this.colorMap = null;
 
         _this.allColorMaps.map(function(color) {
+          // console.log("colorTableId", layer.layer.colorTableId)
           if ((color.colorTableId == layer.layer.colorTableId) && (color.name == layer.layer.layerName)) {
             _this.colorMap = color.colorMap;
             _this.legendUnit = layer.layer.units;
+
+            if(layer.layer.dimensions) { _this.legendName = layer.layer.dataLayer + " (" + layer.layer.dimensions[1]['options'][0] + ")" }
+            else { _this.legendName = layer.layer.dataLayer }
+
+            _this.legendName = layer.layer.dataLayer;
           }
         });
-        console.log(_this.colorMap)
       }
     }, // --- End of methods --- //
 
@@ -673,9 +730,8 @@ var appViti = new Vue({
           const pairsError='pairsError' in msg
 
           if(pairsError) {
-            console.log(`PAIRS returned error for topic=${msg.topic}`)
-            // console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg)
-            // console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg.payload)
+            // console.log(`PAIRS returned error for topic=${msg.topic}`)
+            console.log(`PAIRS returned error for topic=${msg.topic}: payload=`,msg.payload)
           }
           else {
           switch(msg.topic) {
