@@ -306,8 +306,8 @@
 		"category": "",
 		"in": [
 			{
-				"x": 40,
-				"y": 180,
+				"x": 20,
+				"y": 140,
 				"wires": [
 					{
 						"id": "664e6cdb.72c354"
@@ -399,6 +399,18 @@
 					{
 						"id": "e4b5f6b5.ac7a98",
 						"port": 1
+					},
+					{
+						"id": "babf9321.715a8",
+						"port": 0
+					},
+					{
+						"id": "5c397cc3.a01284",
+						"port": 0
+					},
+					{
+						"id": "5489d117.7fba7",
+						"port": 0
 					}
 				]
 			},
@@ -509,7 +521,7 @@
 		"in": [
 			{
 				"x": 40,
-				"y": 120,
+				"y": 60,
 				"wires": [
 					{
 						"id": "cfce9bd3.401138"
@@ -519,8 +531,8 @@
 		],
 		"out": [
 			{
-				"x": 840,
-				"y": 300,
+				"x": 940,
+				"y": 400,
 				"wires": [
 					{
 						"id": "1c3a2a7d.41e506",
@@ -529,28 +541,49 @@
 				]
 			},
 			{
-				"x": 400,
-				"y": 340,
+				"x": 940,
+				"y": 100,
 				"wires": [
 					{
 						"id": "38c775d2.44a38a",
 						"port": 1
+					},
+					{
+						"id": "cfce9bd3.401138",
+						"port": 1
+					},
+					{
+						"id": "3523cf98.89d7d",
+						"port": 0
 					}
 				]
 			},
 			{
-				"x": 360,
-				"y": 380,
+				"x": 940,
+				"y": 160,
 				"wires": [
 					{
 						"id": "38c775d2.44a38a",
 						"port": 2
+					},
+					{
+						"id": "cfce9bd3.401138",
+						"port": 2
+					},
+					{
+						"id": "38c775d2.44a38a",
+						"port": 3
 					}
 				]
 			}
 		],
 		"env": [],
-		"color": "#E2D96E"
+		"color": "#E2D96E",
+		"outputLabels": [
+			"result",
+			"debug",
+			"error"
+		]
 	},
 	{
 		"id": "a15ea8b9.f75a28",
@@ -716,6 +749,28 @@
 				"wires": [
 					{
 						"id": "1bb33fa1.10779",
+						"port": "3"
+					},
+					{
+						"id": "1bb33fa1.10779",
+						"port": 4
+					},
+					{
+						"id": "1bb33fa1.10779",
+						"port": 2
+					},
+					{
+						"id": "8922ffb.91e51",
+						"port": 1
+					}
+				]
+			},
+			{
+				"x": 820,
+				"y": 420,
+				"wires": [
+					{
+						"id": "8922ffb.91e51",
 						"port": 1
 					}
 				]
@@ -741,9 +796,20 @@
 				"name": "urlSuffix",
 				"type": "str",
 				"value": ""
+			},
+			{
+				"name": "autoRetry",
+				"type": "bool",
+				"value": "false"
 			}
 		],
 		"color": "#3FADB5",
+		"outputLabels": [
+			"result",
+			"debug",
+			"error",
+			"too many requests"
+		],
 		"icon": "node-red/white-globe.svg"
 	},
 	{
@@ -3274,7 +3340,7 @@
 				"type": "str"
 			}
 		],
-		"x": 170,
+		"x": 130,
 		"y": 300,
 		"wires": [
 			[
@@ -4034,9 +4100,7 @@
 		"x": 810,
 		"y": 120,
 		"wires": [
-			[
-				"a40ebdd0.de77a"
-			]
+			[]
 		]
 	},
 	{
@@ -4378,8 +4442,8 @@
 		"links": [
 			"3624727e.85076e"
 		],
-		"x": 995,
-		"y": 340,
+		"x": 1015,
+		"y": 360,
 		"wires": []
 	},
 	{
@@ -4679,7 +4743,7 @@
 		"type": "debug",
 		"z": "5fed8ae7.8bb5a4",
 		"name": "uibuilder msg data",
-		"active": false,
+		"active": true,
 		"tosidebar": true,
 		"console": false,
 		"tostatus": false,
@@ -5083,7 +5147,7 @@
 		"id": "664e6cdb.72c354",
 		"type": "switch",
 		"z": "45272af4.690614",
-		"name": "",
+		"name": "Check query type",
 		"property": "payload",
 		"propertyType": "msg",
 		"rules": [
@@ -5105,7 +5169,7 @@
 		"repair": false,
 		"outputs": 3,
 		"x": 150,
-		"y": 160,
+		"y": 80,
 		"wires": [
 			[
 				"d51c34e7.201c88"
@@ -5114,8 +5178,7 @@
 				"e4b5f6b5.ac7a98"
 			],
 			[
-				"5b5c0afb.53b1b4",
-				"771a35b3.68008c"
+				"5b5c0afb.53b1b4"
 			]
 		]
 	},
@@ -5184,8 +5247,8 @@
 		"targetType": "full",
 		"statusVal": "",
 		"statusType": "auto",
-		"x": 910,
-		"y": 540,
+		"x": 890,
+		"y": 660,
 		"wires": []
 	},
 	{
@@ -5339,13 +5402,13 @@
 		"type": "function",
 		"z": "3aa70edc.b22322",
 		"name": "Format URL & save data",
-		"func": "msg.name = msg.payload.name; \n\nif ( msg.payload.colorTableId) {\n    msg.colorTableId = msg.payload.colorTableId; \n    msg.payload = \"sld?type=raster&min=\" + msg.payload.min + \"&max=\" + msg.payload.max + \"&colorTableId=\" + msg.colorTableId + \"&no_data=-1\"\n\n} else {\n    msg.colorTableId = 4\n    msg.payload = \"sld?type=raster&min=\" + msg.payload.min + \"&max=\" + msg.payload.max + \"&colorTableId=\" + msg.colorTableId + \"&no_data=-1\"\n\n}\n\n\n\nreturn msg;",
+		"func": "DEFAULT_COLORTABLEID=4\n\n// Default the colorTableId\nmsg.colorTableId= msg.payload.colorTableId ? msg.payload.colorTableId: DEFAULT_COLORTABLEID\n\nmsg.payload = `sld?type=raster&min=${msg.payload.min}&max=${msg.payload.max}&colorTableId=${msg.colorTableId}&no_data=-1`\n\nreturn msg;",
 		"outputs": 1,
 		"noerr": 0,
 		"initialize": "",
 		"finalize": "",
-		"x": 610,
-		"y": 220,
+		"x": 510,
+		"y": 140,
 		"wires": [
 			[
 				"38c775d2.44a38a"
@@ -5360,8 +5423,8 @@
 		"property": "payload",
 		"attr": "",
 		"chr": "",
-		"x": 530,
-		"y": 300,
+		"x": 450,
+		"y": 400,
 		"wires": [
 			[
 				"44dd28e1.7f76b8"
@@ -5402,8 +5465,8 @@
 		"from": "",
 		"to": "",
 		"reg": false,
-		"x": 650,
-		"y": 300,
+		"x": 570,
+		"y": 400,
 		"wires": [
 			[
 				"1c3a2a7d.41e506"
@@ -5422,8 +5485,8 @@
 		"arraySpltType": "len",
 		"stream": false,
 		"addname": "payload.layer",
-		"x": 370,
-		"y": 220,
+		"x": 270,
+		"y": 140,
 		"wires": [
 			[
 				"dc4aae9a.dbb9f"
@@ -5450,12 +5513,11 @@
 		"from": "",
 		"to": "",
 		"reg": false,
-		"x": 130,
-		"y": 220,
+		"x": 470,
+		"y": 20,
 		"wires": [
 			[
-				"7231e4fa.613cfc",
-				"86838a.ccff1c78"
+				"7231e4fa.613cfc"
 			]
 		]
 	},
@@ -5475,8 +5537,8 @@
 		"timeout": "",
 		"count": "",
 		"reduceRight": false,
-		"x": 770,
-		"y": 300,
+		"x": 690,
+		"y": 400,
 		"wires": [
 			[]
 		]
@@ -5492,8 +5554,8 @@
 		"interval": "10",
 		"allowEmptySequence": false,
 		"topics": [],
-		"x": 430,
-		"y": 300,
+		"x": 130,
+		"y": 320,
 		"wires": [
 			[
 				"e23f2ca9.c543b"
@@ -5523,8 +5585,8 @@
 				"type": "str"
 			}
 		],
-		"x": 190,
-		"y": 120,
+		"x": 230,
+		"y": 40,
 		"wires": [
 			[
 				"3523cf98.89d7d"
@@ -5532,22 +5594,6 @@
 			[],
 			[]
 		]
-	},
-	{
-		"id": "86838a.ccff1c78",
-		"type": "debug",
-		"z": "3aa70edc.b22322",
-		"name": "",
-		"active": true,
-		"tosidebar": true,
-		"console": false,
-		"tostatus": false,
-		"complete": "false",
-		"statusVal": "",
-		"statusType": "auto",
-		"x": 320,
-		"y": 180,
-		"wires": []
 	},
 	{
 		"id": "44611078.c536c",
@@ -5912,7 +5958,7 @@
 		"id": "efdcc8ef.167488",
 		"type": "switch",
 		"z": "8fba2998.b92f08",
-		"name": "",
+		"name": "isPOST",
 		"property": "method",
 		"propertyType": "env",
 		"rules": [
@@ -5928,7 +5974,7 @@
 		"checkall": "false",
 		"repair": false,
 		"outputs": 2,
-		"x": 150,
+		"x": 160,
 		"y": 100,
 		"wires": [
 			[
@@ -5977,7 +6023,7 @@
 		"id": "7a579e49.78fa",
 		"type": "switch",
 		"z": "8fba2998.b92f08",
-		"name": "",
+		"name": "isnotAppend",
 		"property": "appendPayloadToURL",
 		"propertyType": "env",
 		"rules": [
@@ -5991,7 +6037,7 @@
 		"checkall": "true",
 		"repair": false,
 		"outputs": 2,
-		"x": 290,
+		"x": 310,
 		"y": 120,
 		"wires": [
 			[
@@ -6011,25 +6057,52 @@
 		"propertyType": "msg",
 		"rules": [
 			{
-				"t": "eq",
+				"t": "btwn",
 				"v": "200",
+				"vt": "num",
+				"v2": "299",
+				"v2t": "num"
+			},
+			{
+				"t": "eq",
+				"v": "429",
 				"vt": "num"
+			},
+			{
+				"t": "eq",
+				"v": "404",
+				"vt": "num"
+			},
+			{
+				"t": "btwn",
+				"v": "400",
+				"vt": "num",
+				"v2": "499",
+				"v2t": "num"
 			},
 			{
 				"t": "else"
 			}
 		],
-		"checkall": "true",
+		"checkall": "false",
 		"repair": false,
-		"outputs": 2,
+		"outputs": 5,
 		"x": 690,
 		"y": 300,
 		"wires": [
+			[],
+			[
+				"8922ffb.91e51"
+			],
+			[],
 			[],
 			[]
 		],
 		"outputLabels": [
 			"ok",
+			"Too Many Requests",
+			"NotFound",
+			"error4XX",
 			"error"
 		]
 	},
@@ -6077,8 +6150,8 @@
 		"topic": "",
 		"payload": "{\t   \"user\":$env(\"PAIRS_USER\"),\t   \"apikey\": $env(\"PAIRS_APIKEY\")\t}",
 		"payloadType": "jsonata",
-		"x": 150,
-		"y": 420,
+		"x": 120,
+		"y": 20,
 		"wires": [
 			[
 				"43183162.173f8"
@@ -6104,8 +6177,8 @@
 		"from": "",
 		"to": "",
 		"reg": false,
-		"x": 360,
-		"y": 380,
+		"x": 330,
+		"y": 20,
 		"wires": [
 			[]
 		]
@@ -6125,14 +6198,20 @@
 				"name": "url",
 				"value": "https://pairs.res.ibm.com/map/",
 				"type": "str"
+			},
+			{
+				"name": "autoRetry",
+				"value": "true",
+				"type": "bool"
 			}
 		],
-		"x": 210,
-		"y": 320,
+		"x": 480,
+		"y": 220,
 		"wires": [
 			[
-				"1d1ae444.99db7c"
+				"e23f2ca9.c543b"
 			],
+			[],
 			[],
 			[]
 		]
@@ -6141,7 +6220,7 @@
 		"id": "5b5c0afb.53b1b4",
 		"type": "switch",
 		"z": "45272af4.690614",
-		"name": "",
+		"name": "Check aoi",
 		"property": "payload.aoi",
 		"propertyType": "msg",
 		"rules": [
@@ -6155,8 +6234,8 @@
 		"checkall": "true",
 		"repair": false,
 		"outputs": 2,
-		"x": 290,
-		"y": 180,
+		"x": 220,
+		"y": 140,
 		"wires": [
 			[
 				"5c397cc3.a01284"
@@ -6254,7 +6333,7 @@
 				"p": "payload"
 			}
 		],
-		"repeat": "",
+		"repeat": "10",
 		"crontab": "",
 		"once": true,
 		"onceDelay": 0.1,
@@ -6300,7 +6379,7 @@
 		"type": "debug",
 		"z": "5fed8ae7.8bb5a4",
 		"name": "result requete",
-		"active": true,
+		"active": false,
 		"tosidebar": true,
 		"console": false,
 		"tostatus": false,
@@ -6308,7 +6387,7 @@
 		"targetType": "msg",
 		"statusVal": "",
 		"statusType": "auto",
-		"x": 1000,
+		"x": 940,
 		"y": 280,
 		"wires": []
 	},
@@ -6334,18 +6413,17 @@
 		"id": "5c397cc3.a01284",
 		"type": "function",
 		"z": "45272af4.690614",
-		"name": "Generate query JSON - rectangle",
-		"func": "var payload = {\n    \"name\": \"VitXplore_\" + msg.payload.aoi.name + \"_[\" + msg.payload.pos.lat + \";\" + msg.payload.pos.lng + \"]_[\" + msg.payload.startDay + \"/\" + msg.payload.endDay + \"]\",\n    \"layers\": [{\"alias\": \"Overall Scoring\", \"expression\": msg.payload.udf }],\n    \"spatial\": { \"type\": \"square\", \"coordinates\": [ msg.payload.pos.rSouth, msg.payload.pos.rWest, msg.payload.pos.rNorth, msg.payload.pos.rEast]},\n    \"temporal\": { \"intervals\": [{ \"start\": msg.payload.startDay + \"T00:00:00Z\", \"end\": msg.payload.endDay + \"T00:00:00Z\" }] }\n};\n\n\nvar depths = [\"0to5cm\",\"5to15cm\",\"15to30cm\",\"30to60cm\",\"60to100cm\", \"100to200cm\"]\n    \nfor (const i in msg.payload.layers) {\n    var layerId = msg.payload.layers[i].id;\n    \n    if ((msg.payload.layerInfo[layerId].measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.00 secs\") || (msg.payload.layerInfo[layerId].measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.0 secs\")) {\n        if (msg.payload.layerInfo[layerId].dimensions_description) {\n            for (var j = 0; j < depths.length; j++) {\n                payload.layers.push({ \"type\": \"raster\", \"id\":layerId, \"alias\": depths[j] + \"_\" + layerId, \"aggregation\": \"Mean\", \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]}, \"dimensions\" : [{\"name\" : \"quantile\", \"value\" : \"mean\"}, {\"name\" : \"depth\", \"value\" : depths[j] }] })\n            }\n        } else {\n            payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"alias\": \"Mean_\" + layerId, \"aggregation\": \"Mean\", \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]} })\n        }\n    } else {\n        payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"alias\": \"Mean_\" + layerId, \"aggregation\": \"Mean\"})\n    }\n}\n\nmsg.payload = payload;\nreturn msg;\n\n\n            ",
+		"name": "Query Name - Rect",
+		"func": "/* generate for rectangle selection query */\nconst pos=msg.payload.pos\n\nmsg.payload[\"name\"]=`VitXplore_Rect[${pos.rSouth};${pos.rWest};${pos.rNorth};${pos.rEast}]_[${msg.payload.startDay}/${msg.payload.endDay}]`\nmsg.payload[\"spatial\"]={ \"type\": \"square\", \"coordinates\": [ pos.rSouth, pos.rWest, pos.rNorth, pos.rEast]}\n\nreturn msg",
 		"outputs": 1,
 		"noerr": 0,
 		"initialize": "",
 		"finalize": "",
-		"x": 500,
-		"y": 160,
+		"x": 410,
+		"y": 100,
 		"wires": [
 			[
-				"e4b5f6b5.ac7a98",
-				"7901606b.79a5e"
+				"5489d117.7fba7"
 			]
 		]
 	},
@@ -6387,18 +6465,17 @@
 		"id": "babf9321.715a8",
 		"type": "function",
 		"z": "45272af4.690614",
-		"name": "Generate query JSON - aoi",
-		"func": "var payload = {\n    \"name\": \"VitXplore_\" + msg.payload.aoi.name + \"_[\" + msg.payload.pos.lat + \";\" + msg.payload.pos.lng + \"]_[\" + msg.payload.startDay + \"/\" + msg.payload.endDay + \"]\",\n    \"layers\": [{\"alias\": \"Overall Scoring\", \"expression\": msg.payload.udf }],\n    \"spatial\": { \"type\": \"poly\", \"aoi\": msg.payload.aoi.id},\n    \"temporal\": { \"intervals\": [{ \"start\": msg.payload.startDay + \"T00:00:00Z\", \"end\": msg.payload.endDay + \"T00:00:00Z\" }] }\n};\n\nvar depths = [\"0to5cm\",\"5to15cm\",\"15to30cm\",\"30to60cm\",\"60to100cm\", \"100to200cm\"]\n    \nfor (const i in msg.payload.layers) {\n    var layerId = msg.payload.layers[i].id;\n    \n    if ((msg.payload.layerInfo[layerId].measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.00 secs\") || (msg.payload.layerInfo[layerId].measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.0 secs\")) {\n        if (msg.payload.layerInfo[layerId].dimensions_description) {\n            for (var j = 0; j < depths.length; j++) {\n                payload.layers.push({ \"type\": \"raster\", \"id\":layerId, \"alias\": depths[j] + \"_\" + layerId, \"aggregation\": \"Mean\", \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]}, \"dimensions\" : [{\"name\" : \"quantile\", \"value\" : \"mean\"}, {\"name\" : \"depth\", \"value\" : depths[j] }] })\n            }\n        } else {\n            payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"alias\": \"Mean_\" + layerId, \"aggregation\": \"Mean\", \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]} })\n        }\n    } else {\n        payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"alias\": \"Mean_\" + layerId, \"aggregation\": \"Mean\"})\n    }\n}\n\nmsg.payload = payload;\nreturn msg;\n\n\n            ",
+		"name": "Query name - AOI",
+		"func": "/* generate for rectangle selection query */\nconst pos=msg.payload.pos\n\nmsg.payload[\"name\"]=`VitXplore_${msg.payload.aoi.name}_[${pos.lat};${pos.lng}]_[${msg.payload.startDay}/${msg.payload.endDay}]`\nmsg.payload[\"spatial\"]= { \"type\": \"poly\", \"aoi\": msg.payload.aoi.id}\n\nreturn msg",
 		"outputs": 1,
 		"noerr": 0,
 		"initialize": "",
 		"finalize": "",
-		"x": 480,
-		"y": 200,
+		"x": 410,
+		"y": 160,
 		"wires": [
 			[
-				"e4b5f6b5.ac7a98",
-				"180d327b.be6dce"
+				"5489d117.7fba7"
 			]
 		]
 	},
@@ -6839,57 +6916,6 @@
 		"wires": []
 	},
 	{
-		"id": "771a35b3.68008c",
-		"type": "debug",
-		"z": "45272af4.690614",
-		"name": "from front",
-		"active": true,
-		"tosidebar": true,
-		"console": false,
-		"tostatus": false,
-		"complete": "payload",
-		"targetType": "msg",
-		"statusVal": "",
-		"statusType": "auto",
-		"x": 350,
-		"y": 60,
-		"wires": []
-	},
-	{
-		"id": "7901606b.79a5e",
-		"type": "debug",
-		"z": "45272af4.690614",
-		"name": "rectangle",
-		"active": true,
-		"tosidebar": true,
-		"console": false,
-		"tostatus": false,
-		"complete": "payload",
-		"targetType": "msg",
-		"statusVal": "",
-		"statusType": "auto",
-		"x": 770,
-		"y": 80,
-		"wires": []
-	},
-	{
-		"id": "180d327b.be6dce",
-		"type": "debug",
-		"z": "45272af4.690614",
-		"name": "aoi",
-		"active": true,
-		"tosidebar": true,
-		"console": false,
-		"tostatus": false,
-		"complete": "payload",
-		"targetType": "msg",
-		"statusVal": "",
-		"statusType": "auto",
-		"x": 780,
-		"y": 140,
-		"wires": []
-	},
-	{
 		"id": "288e21d8.0ec36e",
 		"type": "debug",
 		"z": "45272af4.690614",
@@ -6924,23 +6950,6 @@
 		"wires": []
 	},
 	{
-		"id": "a40ebdd0.de77a",
-		"type": "debug",
-		"z": "b14a35fc.a33548",
-		"name": "layers",
-		"active": true,
-		"tosidebar": true,
-		"console": false,
-		"tostatus": false,
-		"complete": "payload.layers",
-		"targetType": "msg",
-		"statusVal": "",
-		"statusType": "auto",
-		"x": 930,
-		"y": 40,
-		"wires": []
-	},
-	{
 		"id": "2552fcf3.20eca4",
 		"type": "inject",
 		"z": "5fed8ae7.8bb5a4",
@@ -6952,12 +6961,12 @@
 		],
 		"repeat": "",
 		"crontab": "",
-		"once": true,
+		"once": false,
 		"onceDelay": 0.1,
 		"topic": "",
 		"payload": "{\"layers\":[\"16100\",\"16200\",\"16700\",\"49296\",\"49250\",\"49310\",\"49257\",\"49313\",\"49311\",\"49304\",\"49252\",\"49441\"]}",
 		"payloadType": "json",
-		"x": 120,
+		"x": 110,
 		"y": 80,
 		"wires": [
 			[
@@ -6965,5 +6974,73 @@
 			]
 		],
 		"info": "Créer un bug pour la fonction\n\n**Layers :** \n\n16100 : Ground temperature\n16200 : Ground relative humidity\n16700 : Average precipitation\n\n49250 : Precip past 24 h\n49252 : Relative humidity surface\n49257 : Temperature above ground\n49296 : Global elevation\n49304 : Dew point\n49310 : Temperature feels like\n49313 : Wind speed\n49441 : solar radiation\n\n50453 : Standard deviation of orography\n50450 : Soil type \n50456 : Slope of sub grid scale orography \n50463 : Wind Direction\n50496 : pH\n50497 : Soil organic carbon\n50509 : Nitrogen\n50511 : Soil classification most probable class\n\n\n**Non utilisés :**\n49311 : UV index \n49432 : Minimum precipitation rate\n49433 : Maximum precipitation rate\n\n50447 : High vegetation cover\n50498 : Organic carbon density\n50449 : Type of high vegetation\n"
+	},
+	{
+		"id": "5489d117.7fba7",
+		"type": "function",
+		"z": "45272af4.690614",
+		"name": "Setup Query Layers",
+		"func": "/* Setup payload query parameters */\npayload={\"name\":msg.payload.name, \n         \"spatial\":msg.payload.spatial,\n         \"layers\":[{\"alias\": \"Overall Scoring\", \"expression\": msg.payload.udf }],\n         \"temporal\":{ \"intervals\": [{ \"start\": `${msg.payload.startDay}T00:00:00Z`, \"end\": `${msg.payload.endDay}T00:00:00Z` }]}\n        }\n\nconst DEPTHS = [\"0to5cm\",\"5to15cm\",\"15to30cm\",\"30to60cm\",\"60to100cm\", \"100to200cm\"]\n\nfor (const i in msg.payload.layers) {\n    var layerId = msg.payload.layers[i].id\n    var layer=msg.payload.layerInfo[layerId]\n\n    if ((layer.measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.00 secs\") ||\n        (layer.measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.0 secs\")) {\n        /* handle non-temporal layers */\n        \n        if (layer.dimensions_description) {\n            /* Handle layers that have a depth */\n            for (var j = 0; j < DEPTHS.length; j++) {\n                payload.layers.push({ \"type\": \"raster\",\n                                      \"id\":layerId,\n                                      \"alias\": `${DEPTHS[j]}_${layerId}`,\n                                      \"aggregation\": \"Mean\",\n                                      \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]},\n                                      \"dimensions\" : [{\"name\" : \"quantile\", \"value\" : \"mean\"}, {\"name\" : \"depth\", \"value\" : DEPTHS[j] }] })\n            }\n        } else {\n            /* Other non-depth non-temporal layers */\n            payload.layers.push({ \"type\": \"raster\",\n                                  \"id\": layerId,\n                                  \"alias\": `Mean_${layerId}`,\n                                  \"aggregation\": \"Mean\",\n                                  \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]} })\n        }\n    } else {\n        /* handle regular temporal layers, compute mean value */\n        payload.layers.push({ \"type\": \"raster\",\n                              \"id\": layerId,\n                              \"alias\": `Mean_${layerId}`,\n                              \"aggregation\": \"Mean\"})\n    }\n}\n\nmsg.payload=payload\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"initialize": "",
+		"finalize": "",
+		"x": 640,
+		"y": 120,
+		"wires": [
+			[
+				"e4b5f6b5.ac7a98"
+			]
+		]
+	},
+	{
+		"id": "24a751fe.ee12ae",
+		"type": "delay",
+		"z": "8fba2998.b92f08",
+		"name": "Limit 15 msg/sec",
+		"pauseType": "rate",
+		"timeout": "1",
+		"timeoutUnits": "seconds",
+		"rate": "15",
+		"nbRateUnits": "1",
+		"rateUnits": "second",
+		"randomFirst": "1",
+		"randomLast": "5",
+		"randomUnits": "seconds",
+		"drop": false,
+		"x": 270,
+		"y": 300,
+		"wires": [
+			[
+				"618b427e.bb241c"
+			]
+		]
+	},
+	{
+		"id": "8922ffb.91e51",
+		"type": "switch",
+		"z": "8fba2998.b92f08",
+		"name": "",
+		"property": "autoRetry",
+		"propertyType": "env",
+		"rules": [
+			{
+				"t": "true"
+			},
+			{
+				"t": "else"
+			}
+		],
+		"checkall": "false",
+		"repair": false,
+		"outputs": 2,
+		"x": 690,
+		"y": 420,
+		"wires": [
+			[
+				"24a751fe.ee12ae"
+			],
+			[]
+		]
 	}
 ]

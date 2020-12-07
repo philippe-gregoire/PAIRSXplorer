@@ -166,9 +166,9 @@ copy this file to <userDir>/uibuilder/<url>/src.
               <br/>
               <span v-if="l.Max">
                 <center>
-                  <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}]. 
+                  <p class="criteriaRefValue">Ref values : [{{l.Min.toFixed(critDigits)}} < {{l.Mean.toFixed(critDigits)}} > {{l.Max.toFixed(critDigits)}}].
                   <br>Chosen value : {{criteriasRange[l.id]}} </p>
-                   
+
                   <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
                     v-bind:disabled="!criteriasCheck[l.id]"
                     v-bind:min="slPos(l,'Inf',critOff,critExt)"
@@ -184,7 +184,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
               </span>
               <span v-if="l.id == 50450">
                 <b-form-select v-model="refSoilType" :options="soilTypes"></b-form-select>
-                <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p> 
+                <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
               </span>
               <span v-if="l.id == 50511">
                 <b-form-select v-model="refSoilClass" :options="soilClass"></b-form-select>
@@ -202,7 +202,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
                 </b-form-slider>
                 <p class="criteriaRefValue">Ref values : {{l.Mean.toFixed(critDigits)}}</p>
               </span>
-            </div> 
+            </div>
             <div class="criteria" v-for="l in qryLayers" v-if="l.dimensions_description">
               <div class="custom-control custom-checkbox">
                 <input class="custom-control-input" type="checkbox" :name="'a'+l.id" :value="l.id" checked v-model:checked="criteriasCheck[l.id]">
@@ -210,7 +210,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
               </div>
               <br/>
               <span v-for="depth in depths">
-                <p class="criteriaRefValue">Ref values : {{l[depth].toFixed(critDigits)}} for depth : {{ depth }}. 
+                <p class="criteriaRefValue">Ref values : {{l[depth].toFixed(critDigits)}} for depth : {{ humanize(depth) }}.
                 <br>Chosen value : {{criteriasRange[l.id][depth]}} </p>
                 <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
                   v-bind:disabled="!criteriasCheck[l.id]"
@@ -221,8 +221,8 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :step="((l[depth]+l[depth]*0.1)-(l[depth]-l[depth]*0.1))/100"
                   :precision="critDigits">
                 </b-form-slider>
-              </span>         
-            </div>    
+              </span>
+            </div>
           </b-form>
         </b-row>
       </b-row>
@@ -300,20 +300,18 @@ copy this file to <userDir>/uibuilder/<url>/src.
         </b-overlay>
         <h2 class="subtitle" v-if="scoringInProgress">{{scoringStatus}} {{scoringPercent}}% {{Math.round((scoringSince)/1000)}} s</h2>
       </b-row>
-      <b-row><p class="subtitle">{{legendName}}</p></b-row>
       <b-row>
         <b-col class="legendContainer" cols="2">
-          <h3 class="subtitle">Legend</h3>
-          <p class="subtitle">{{legendUnit}}</p>
-          <div v-if="colorMap">
-            <div class="legend" v-for="color in colorMap" v-if="color.$.label !== 'NO_DATA'">
-              <div v-bind:style="{background: color.$.color}" class="colorSquare" >
-                <p class="legendText" >{{ color.$.label }}</p>
+          <div v-if="legend">
+            <h3 class="subtitle">{{legend.name}}</h3>
+            <p class="subtitle">{{legend.humanUnits}}</p>
+            <div class="legend" v-for="color in legend.colorMap" v-if="color.label !== 'NO_DATA'">
+              <div v-bind:style="{background: color.color}" class="colorSquare" >
+                <p class="legendText" >{{ color.label }}</p>
               </div>
             </div>
           </div>
-          <div class="noLegend" v-else>Legend not available
-          </div>
+          <div class="noLegend" v-else>Legend not available</div>
         </b-col>
         <b-col cols="10">
           <div id="scoringMap" style="width: 100%;  height: 600px;">
@@ -333,7 +331,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
   <script src="../uibuilder/vendor/socket.io/socket.io.js"></script>
 
   <!-- --- Vendor Libraries - Load in the right order --- -->
-  <script src="../uibuilder/vendor/vue/dist/vue.js"></script> 
+  <script src="../uibuilder/vendor/vue/dist/vue.js"></script>
   <script src="../uibuilder/vendor/bootstrap-vue/dist/bootstrap-vue.js"></script>
 
   <script src="../uibuilder/vendor/bootstrap-slider/dist/bootstrap-slider.js"></script>

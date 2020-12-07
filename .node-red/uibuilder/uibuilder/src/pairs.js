@@ -173,33 +173,60 @@ function createOpenStreetMap(L,mapid,overlayMaps) {
 }
 
 /* Convert a value to a human-readable unit
-  the unit denomination is taken from dictUnits[fromUnit] and the converted one to dictUnits[toUnit]
-   Returns the new value,  */
-function convertUnits(value,dictUnits,fromUnit,toUnit) {
-  if(dictUnits[fromUnit]=='K') {
-    value=value+ZERO_C_IN_K
-    dictUnits[toUnit]='C'
-  } else if(dictUnits[fromUnit]=='kg m-2 s-1') {
-    value=value*1000
-    dictUnits[toUnit]='g m-2 s-1'
-  } else if(dictUnits[fromUnit]=='J m-2') {
-    value=value/1000000
-    dictUnits[toUnit]='MJ m-2'
-  } else {
-    dictUnits[toUnit]=dictUnits[fromUnit]
-  }
+   the unit denomination is taken from dictUnits[fromUnit] and the converted one to dictUnits[toUnit]
+   fromUnit and toUnit are the keys that yield the attribute of dictUnits which holds the unit code
 
-  return value
+   Returns the new value,  */
+UNIT_MAP={"K":"C",
+          "kg m-2 s-1" : "g m\u207b\u00B2 s\u207b\u00b9",
+          'J m-2': 'MJ/m\u00B2',
+          'm s-1': 'km/h',
+          'm/s': 'km/h',
+          'g kg-1': 'g/kg',
+          'mm hour-1': 'mm/hour',
+        }
+
+function getHumanUnit(unit) {
+  return (unit in UNIT_MAP)? UNIT_MAP[unit]:unit
+}
+
+function toHumanUnit(value,fromUnit,decimals=2) {
+  try {
+    var floatVal=Number.parseFloat(value)
+    if(Number.isNaN(floatVal)) {
+      return value
+    } else if(fromUnit=='K') {
+      return Number.parseFloat((floatVal+ZERO_C_IN_K).toFixed(decimals))
+    } else if(fromUnit=='kg m-2 s-1') {
+      return Number.parseFloat((floatVal*1000).toFixed(decimals))
+    } else if(fromUnit=='J m-2') {
+      return Number.parseFloat((floatVal/1000000).toFixed(decimals))
+    } else if(fromUnit=='m s-1') {
+      return Number.parseFloat((floatVal*3.6).toFixed(decimals-1))
+    } else if(fromUnit=='m/s') {
+      return Number.parseFloat((floatVal*3.6).toFixed(decimals-1))
+    } else {
+      return Number.parseFloat(floatVal.toFixed(decimals+1))
+    }
+  } catch(exc) {
+    // probable conversion error
+    return value
+  }
 }
 
 /* Get back a value to its non-human form */
-function unConvertUnits(value,humanUnit) {
-  if(humanUnit=='C') {
-    value=value-ZERO_C_IN_K
-  } else if(humanUnit=='g m-2 s-1') {
-    value=value/1000
-  } else if(humanUnit=='MJ m-2') {
-    value=value*1000000
+function fromHumanUnits(value,humanUnit) {
+  var floatVal=Number.parseFloat(value)
+  if(Number.isNaN(floatVal)) {
+    return value
+  } else if(humanUnit=='C') {
+    value=floatVal-ZERO_C_IN_K
+  } else if(humanUnit==UNIT_MAP["kg m-2 s-1"]) {
+    value=floatVal/1000
+  } else if(humanUnit==UNIT_MAP["J m-2"]) {
+    value=floatVal*1000000
+  } else if(humanUnit==UNIT_MAP["m s-1"]) {
+    value=floatVal/3.6
   }
 
   return value
@@ -213,4 +240,11 @@ function capitalize(str,breakChars) {
       : str[i].toLowerCase()
   }
   return cap.replace(/_/g,' ').replace(/d /,"d'")
+}
+
+/* Make a string more readable
+   Separate numbers from words
+*/
+function humanize(strValue) {
+  return strValue.replaceAll(/([0-9]+)([a-z]+)/gi, '$1 $2').replaceAll(/([a-z]+)([0-9]+)/gi, '$1 $2')
 }
