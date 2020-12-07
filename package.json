@@ -13,12 +13,14 @@
         "node-red-node-openwhisk": "0.x",
         "node-red-node-watson": "0.x",
         "node-red-nodes-cf-sqldb-dashdb": "0.x",
-		"node-red-contrib-uibuilder": "^2.0.8",
-		"node-red-contrib-web-worldmap": "^2.4.1",
-		"node-red-dashboard": "^2.23.0"
-		
-		
-		
+        "node-red-contrib-uibuilder": "^2.0.8",
+        "node-red-contrib-web-worldmap": "^2.4.1",
+        "node-red-dashboard": "^2.23.0",
+        "bootstrap-slider": "^11.0.2",
+        "leaflet": "^1.7.1",
+        "vue-bootstrap-slider": "^2.1.8",
+        "vue-slider-component": "^3.2.5",
+        "vue2-leaflet": "^2.5.2"
     },
     "scripts": {
         "start": "node --max-old-space-size=160 index.js --settings ./bluemix-settings.js -v"
