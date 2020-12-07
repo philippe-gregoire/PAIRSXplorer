@@ -27,14 +27,18 @@ var currentCredRev = null;
 
 var libraryCache = {};
 
+// Setup the default pre-populated flows
+//const defaultFlows=__dirname + "/defaults/flow.json";
+const defaultFlows=__dirname + "/.node-red/flows_VitiXplore_20201207.json";
+
 function prepopulateFlows(resolve) {
     var key = appname + "/" + "flow";
     flowDb.get(key, function (err, doc) {
         if (err) {
             var promises = [];
-            if (fs.existsSync(__dirname + "/defaults/flow.json")) {
+            if (fs.existsSync(defaultFlows)) {
                 try {
-                    var flow = fs.readFileSync(__dirname + "/defaults/flow.json", "utf8");
+                    var flow = fs.readFileSync(defaultFlows, "utf8");
                     var flows = JSON.parse(flow);
                     util.log("[cloudantStorage] Installing default flow");
                     promises.push(cloudantStorage.saveFlows(flows));
