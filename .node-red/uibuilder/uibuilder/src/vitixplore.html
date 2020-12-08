@@ -124,14 +124,14 @@ copy this file to <userDir>/uibuilder/<url>/src.
           <b-form-input v-model.number="refPos.lng" size="xs" id="refLng" type="number" maxlength=10></b-form-input>
         </b-col>
         <b-col cols="2">
-          <b-button style="vertical-align: bottom; display: table-cell; float:none;" id="btn_goTo" pill variant="primary" size="lg" v-on:click="moveTo" class="smallButton">Zoom to</b-button>
+          <b-button style="vertical-align: bottom; display: table-cell; float:none;" id="btn_goTo" pill variant="primary" size="lg" @click="moveTo" class="smallButton">Zoom to</b-button>
         </b-col>
       </b-row>
 
 
       <b-overlay :show="qryRunning" rounded="sm">
         <b-row>
-          <b-button :disabled="layersDict===null" style="display: block;margin: auto auto;height 25px;" id="btn_loadLayers" pill variant="primary" size="sm" v-on:click="loadLayers" class="button">Compute Layers</b-button>
+          <b-button :disabled="layersDict===null" style="display: block;margin: auto auto;height 25px;" id="btn_loadLayers" pill variant="primary" size="sm" @click="loadLayers" class="button">Compute Layers</b-button>
         </b-row>
         <b-row>
           <b-overlay :show="qryRunning" rounded="sm">
@@ -186,14 +186,14 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   <br>Chosen value : {{criteriasRange[l.id]}} </p>
 
                   <b-form-slider class="criteriaSlider" v-if="l.Max > l.Min" style="width: 100%;" :id="'slider_'+l.id"
-                    v-bind:disabled="!criteriasCheck[l.id]"
-                    v-bind:min="slPos(l,'Inf',critOff,critExt)"
                     v-model:value="criteriasRange[l.id]"
-                    v-bind:max="slPos(l,'Sup',critOff,critExt)"
-                    v-bind:ticks="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt)"
-                    :ticks-labels="['Inf','Min', 'Mean','Max','Sup']"
-                    v-bind:ticks-positions="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt,100)"
+                    :disabled="!criteriasCheck[l.id]"
+                    :min="slPos(l,'Inf',critOff,critExt)"
+                    :max="slPos(l,'Sup',critOff,critExt)"
                     :step="(l.Max-l.Min)/100"
+                    :ticks="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt)"
+                    :ticks-labels="['Inf','Min', 'Mean','Max','Sup']"
+                    :ticks-positions="slPos(l,['Inf','Min','Mean','Max','Sup'],critOff,critExt,100)"
                     :precision="critDigits">
                   </b-form-slider>
                 </center>
@@ -208,11 +208,11 @@ copy this file to <userDir>/uibuilder/<url>/src.
               </span>
               <span v-if="(l.id == 50453) || (l.id == 50456)">
                 <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
-                  v-bind:disabled="!criteriasCheck[l.id]"
-                  v-bind:ticks="[l.Mean-l*critOff, l.Mean, l.Mean+l.Mean*critOff]"
-                  v-bind:min="l.Mean-l.Mean*critExt"
                   v-model:value="criteriasRange[l.id]"
-                  v-bind:max="l.Mean+l.Mean*critExt"
+                  :disabled="!criteriasCheck[l.id]"
+                  :ticks="[l.Mean-l*critOff, l.Mean, l.Mean+l.Mean*critOff]"
+                  :min="l.Mean-l.Mean*critExt"
+                  :max="l.Mean+l.Mean*critExt"
                   :step="((l.Mean+l.Mean*0.1)-(l.Mean-l.Mean*0.1))/100"
                   :precision="critDigits">
                 </b-form-slider>
@@ -229,11 +229,11 @@ copy this file to <userDir>/uibuilder/<url>/src.
                 <p class="criteriaRefValue">Ref values : {{l[depth].toFixed(critDigits)}} for depth : {{ humanize(depth) }}.
                 <br>Chosen value : {{criteriasRange[l.id][depth]}} </p>
                 <b-form-slider class="criteriaSlider" style="width: 100%;" :id="'slider_'+l.id"
-                  v-bind:disabled="!criteriasCheck[l.id]"
-                  v-bind:ticks="[l[depth]-l[depth]*critOff, l[depth], l[depth]+l[depth]*critOff]"
-                  v-bind:min="l[depth]-l[depth]*critExt"
                   v-model:value="criteriasRange[l.id][depth]"
-                  v-bind:max="l[depth]+l[depth]*critExt"
+                  :disabled="!criteriasCheck[l.id]"
+                  :ticks="[l[depth]-l[depth]*critOff, l[depth], l[depth]+l[depth]*critOff]"
+                  :min="l[depth]-l[depth]*critExt"
+                  :max="l[depth]+l[depth]*critExt"
                   :step="((l[depth]+l[depth]*0.1)-(l[depth]-l[depth]*0.1))/100"
                   :precision="critDigits">
                 </b-form-slider>
@@ -249,11 +249,11 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-row>
           <b-col cols="10">
             <b-form-select v-model="refAOI" @change="chooseAoi">
-              <b-form-select-option v-for="aoi in aoisArray" :value="aoi" v-bind:key="aoi">{{aoi}}</b-form-select-option>
+              <b-form-select-option v-for="aoi in aoisArray" :value="aoi" :key="aoi">{{aoi}}</b-form-select-option>
             </b-form-select>
           </b-col>
           <b-col cols="2">
-            <b-button :pressed.sync="rectangleBtnIsPressed" v-on:click="chooseRectangle">Rectangle</b-button>
+            <b-button :pressed.sync="rectangleBtnIsPressed" @click="chooseRectangle">Rectangle</b-button>
           </b-col>
         </b-row>
 
@@ -261,8 +261,8 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <!-- <h2 class="subtitle">Or draw a rectangle on the map of the area of interest</h2> -->
         <b-row>
           <b-col cols="12">
-            <div id="aoiSelMap" style="width: 100%;  height: 400px;">
-              <l-map ref="aoiSelMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('aoiSelMap')">
+            <div id="areaSelMap" style="width: 100%;  height: 400px;">
+              <l-map ref="areaSelMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('areaSelMap')">
                 <l-control-layers position="topright"  ></l-control-layers>
                 <l-tilelayer v-for="tileProvider in tileProviders"
                       :url="tileProvider.url"
@@ -280,8 +280,8 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-row>
           <b-col cols="12">
             <center>
-              <button v-if="!rectangleBtnIsPressed" :disabled="refAOI===null" class="button" v-on:click="launchScoringQuery">Run query</button>
-              <button v-if="rectangleBtnIsPressed" :disabled="rectangle===null" class="button" v-on:click="launchScoringQuery">Run query</button>
+              <button v-if="!rectangleBtnIsPressed" :disabled="refAOI===null" class="button" @click="launchScoringQuery">Run query</button>
+              <button v-if="rectangleBtnIsPressed" :disabled="rectanglePos===null" class="button" @click="launchScoringQuery">Run query</button>
             </center>
           </b-col>
         </b-row>
@@ -292,11 +292,11 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-row class="smallText">
           <b-col cols=10>
             <b-form-select v-model="selQueryJob">
-              <b-form-select-option v-for="qj in queryJobs" v-if="qrySelAll || !qj.status.startsWith('Failed')" :value="qj" v-bind:key="'selQJ_'+qj.id">[{{qj.status}}]: {{qj.nickname}}</b-form-select-option>
+              <b-form-select-option v-for="qj in queryJobs" v-if="qrySelAll || !qj.status.startsWith('Failed')" :value="qj" :key="'selQJ_'+qj.id">[{{qj.status}}]: {{qj.nickname}}</b-form-select-option>
             </b-form-select>
           </b-col>
           <b-col cols=2>
-            <button :disabled="selQueryJob===null" class="smallButton" v-on:click="showQueryJob">Show query</button>
+            <button :disabled="selQueryJob===null" class="smallButton" @click="showQueryJob">Show query</button>
           </b-col>
         </b-row>
 
@@ -305,7 +305,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
             <b-form-checkbox v-model="qrySelAll">Display failed queries</b-form-checkbox>
           </b-col>
           <b-col cols=2>
-            <button :disabled="selQueryJob===null" class="smallButton" v-on:click="deleteQueryJob">Delete query</button>
+            <button :disabled="selQueryJob===null" class="smallButton" @click="deleteQueryJob">Delete query</button>
           </b-col>
         </b-row>
 
@@ -328,7 +328,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
             <h3 class="subtitle">{{legend.name}}</h3>
             <p class="subtitle">{{legend.humanUnits}}</p>
             <div class="legend" v-for="color in legend.colorMap" v-if="color.label !== 'NO_DATA'">
-              <div v-bind:style="{background: color.color}" class="colorSquare" >
+              <div :style="{background: color.color}" class="colorSquare" >
                 <p class="legendText" >{{ color.label }}</p>
               </div>
             </div>

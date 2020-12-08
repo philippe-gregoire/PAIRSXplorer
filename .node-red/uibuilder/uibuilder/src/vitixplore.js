@@ -90,7 +90,6 @@ var appViti = new Vue({
         test: {l:{Min:20,Mean:50,Max:100},so:0.20,sx:0.5},
         // ---- Current position and dates
         refPos      : {lat : INIT_LAT, lng : INIT_LNG},
-        rectanglePos: [],
         startDay    : new Date(new Date()-1000*3600*24*30.5*MONTHS_BACK).toISOString().split("T")[0],  // About 6 months back
         endDay      : new Date().toISOString().split("T")[0],
         refAOI      : null,
@@ -99,14 +98,16 @@ var appViti = new Vue({
         qryPos      : null,
         qryLayers   : null,
         // ---- Map variables
-        map         : null,
+        locationMap : null,  // The Leaflet map for the first page
         mapCenter   : {lat : INIT_LAT, lng : INIT_LNG},
         mapZoom     : INIT_ZOOM,
         refPointMarker: null,
-        rectanglePointMarker: null,
-        rectangle: null,
+        // Area selection, access the layer only through setAreaSelLayer()
+        _areaSelLayer: null,
+        rectanglePos: null,
+        rectangleBtnIsPressed: false,
         // Scoring query management
-        scoringMap    : null,
+        scoringMap    : null, // The Leaflet map for the scoring (last) page
         scoringInProgress : false,
         scoringStatus : null,
         scoringStart  : null,
@@ -131,7 +132,6 @@ var appViti = new Vue({
         serverTimeOffset     : '[unknown]',
         imgProps             : { width: 75, height: 75 },
         allColorMaps: null,
-        rectangleBtnIsPressed: false,
         myToggle: false,
         pairsWMSLayers: null,
         legend: null,
@@ -204,7 +204,7 @@ var appViti = new Vue({
           aoi.name=capitalize(aoi.name,"-_")
           dict[aoi.name]=aoi
           return dict},
-          {})
+        {})
 
         // Create an array with the name of the AOIs, so we can sort it alphabetically
         Object.entries(this.aoisDict).forEach(([key, aoi], index) =>
@@ -327,23 +327,25 @@ var appViti = new Vue({
         })
       },
       moveTo: function(event) {
-        this.map.flyTo(this.refPos,this.map.getZoom()+1)
+        this.locationMap.flyTo(this.refPos,this.locationMap.getZoom()+1)
       },
       onMapReady: function(mapRef) {
         console.log(`On map ready`,mapRef)
         // Tie some map events to a callback function
         if(mapRef==='vitiMap') {
-          this.map = this.$refs[mapRef].mapObject
-          this.map.on('moveend',this.mapEvent)
-          this.map.on('zoomend',this.mapEvent)
-          this.map.on('move',this.mapEvent)
-          this.map.on('click',this.mapEvent)
+          const vitiMap =this.$refs[mapRef].mapObject;
+          ['moveend','zoomend','move','click'].forEach(evtType=>vitiMap.on(evtType,this.handleMapEvent))
+          this.locationMap=vitiMap
+
+          // this.locationMap.on('zoomend',this.handleMapEvent)
+          // this.locationMap.on('move',this.handleMapEvent)
+          // this.locationMap.on('click',this.handleMapEvent)
 
           this.setView(this.mapCenter,this.mapZoom)
           this.setRefPointMarker(this.refPos)
-        } else if(mapRef==='aoiSelMap') {
-          this.aoiSelMap=this.$refs[mapRef].mapObject
-          this.aoiSelMap.on('click', this.setRectangle)
+        } else if(mapRef==='areaSelMap') {
+          this.areaSelMap=this.$refs[mapRef].mapObject
+          this.areaSelMap.on('click', this.setRectangle)
         } else if(mapRef==='scoringMap') {
           this.scoringMap=this.$refs[mapRef].mapObject
           this.scoringMap.on('baselayerchange', this.changeLegend); // If we change the layer display, we call the changeLegend function
@@ -362,7 +364,8 @@ var appViti = new Vue({
       },
       /** Helper shortcut methods **/
       flyTo: function(map,pos,zoom,duration) {
-        map.flyTo(pos,zoom?zoom:this.map.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
+        //map.flyTo(pos,zoom?zoom:this.locationMap.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
+        map.flyTo(pos,zoom?zoom:map.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
       },
       flyToBounds: function(map,queryJob,duration) {
         if(queryJob!=null && 'neLat' in queryJob) {
@@ -376,28 +379,26 @@ var appViti = new Vue({
         }
       },
       setView: function(pos,zoom) {
-        this.map.setView(pos,zoom?zoom:this.map.getZoom())
+        this.locationMap.setView(pos,zoom?zoom:this.locationMap.getZoom())
       },
-      addLayers: function(wmsLayers) {
-        console.log('addLayers')
+      addLayers: function(lMap,wmsLayers) {
+        console.log(`addLayers to Leaflet map ${lMap}`)
 
         console.log('Adding WMS layers from ',wmsLayers)
-        wmsOverlays={}
+        pairsOverlays={}
 
         wmsLayers.forEach(function(layer) {
-
-          wmsOverlays[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,layer.colorTableId,layer.name)
+          pairsOverlays[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,layer.colorTableId,layer.name)
         })
 
-        console.log("Adding WMS overlays ",wmsOverlays)
-        L.control.layers(null, wmsOverlays).addTo(this.map);
+        console.log("Adding WMS overlays ",pairsOverlays)
+        L.control.layers(null, pairsOverlays).addTo(lMap);
       },
-      mapEvent: function(event) {
-
-        console.debug('mapEvent evt:',event)
+      handleMapEvent: function(event) {
+        console.log('mapEvent evt:',event)
         // keep tracks of last center and zoom position
-        this.mapCenter=this.map.getCenter()
-        this.mapZoom=this.map.getZoom()
+        this.mapCenter=this.locationMap.getCenter()
+        this.mapZoom=this.locationMap.getZoom()
         var eventName='map'+event.type.charAt(0).toUpperCase() + event.type.slice(1)
         this.sendToNodered(eventName,{'pos':('latlng' in event)?event.latlng:this.mapCenter, 'zoom':this.mapZoom})
       },
@@ -405,73 +406,77 @@ var appViti = new Vue({
         console.log(pos)
         // remove marker
         if (this.refPointMarker) {
-            this.map.removeLayer(this.refPointMarker);
+            this.locationMap.removeLayer(this.refPointMarker);
             this.refPointMarker=null
         }
         // add new marker
-        let svgPin = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="10" cy="10" r="9"/><circle fill="#633CEA" cx="10" cy="10" r="5"/></svg>'
-        this.refPointMarker=L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);
+        this.refPointMarker=svgMarker(pos,20,svgDisk(21,21,10,"#633CEA",5,'#EF3CEA'),"Ref Point").addTo(this.locationMap);
         this.refPos=pos
+      },
+      setAreaSelLayer: function(areaSelLayer) {
+        // first remove the old layer no matter what
+        if(this.areaSelMap) {
+          // first remove previous marker
+          if(this._areaSelLayer) {
+            this.areaSelMap.removeLayer(this._areaSelLayer)
+            this._areaSelLayer=null
+          }
+          // then add to areaSelMap
+          this._areaSelLayer=areaSelLayer
+          if(areaSelLayer) {
+            areaSelLayer.addTo(this.areaSelMap)
+          }
+        } else {
+          console.error("Expected areaSelMap but it is null or undefined")
+          this._areaSelLayer=null
+        }
       },
       // Function to create a rectangle on the map on page 2 - filters and regions
       setRectangle: function (pos) {
         if (this.rectangleBtnIsPressed) {
-          // TO-DO : pas supposé être là j'imagine
-          this.map=this.$refs['aoiSelMap'].mapObject
-
-          // Step 1 : get first point
-          if ((this.rectanglePos[0] == []) || (this.rectanglePos[0] == undefined)) {
-            this.rectanglePos[0] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
-            let svgPin = '<svg width="4" height="4" xmlns="http://www.w3.org/2000/svg"><metadata id="metadata1">image/svg+xml</metadata><circle fill="#633CEA" cx="2" cy="2" r="1"/></svg>'
-
-            this.rectangleMarker=L.marker([pos.latlng['lat'], pos.latlng['lng']], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svgPin}`).replace(/\#/g,'%23'), iconSize: 20})}).bindPopup("Ref Point").addTo(this.map);  // add marker to map
-          }
-          // Step 2 : draw rectangle
-          else if (this.rectangleMarker) {
-            this.map.removeLayer(this.rectangleMarker);
-            this.rectangleMarker=null // remove marker to create a rectangle
-
+          // Step 1 : get first point, when no rectangle exists or when there is already a full rect
+          if (this.rectanglePos === null || this.rectanglePos[1]!==null) {
+            this.rectanglePos=[{"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']},null] // save first corner pos
+            // this.setAreaSelLayer(svgMarker(pos.latlng,4,svgDisk(5,5,4,"#633CEA"),"Area Corner"))
+            this.setAreaSelLayer(svgMarker(pos.latlng,4,svgCrossHair(20,20,7,"#633CEA"),"Area Corner"))
+          } else if (this.rectanglePos[1]==null) {
+            // Step 2 : draw rectangle
+            // store second corner of rect
             this.rectanglePos[1] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
-            this.rectangle=L.rectangle([[this.rectanglePos[0].lat, this.rectanglePos[0].lng], [this.rectanglePos[1].lat, this.rectanglePos[1].lng]], {color: "#633CEA", weight: 1}).bindPopup("Ref Point").addTo(this.map); // add rectangle to map
+            this.setAreaSelLayer(L.rectangle([[this.rectanglePos[0].lat, this.rectanglePos[0].lng], [this.rectanglePos[1].lat, this.rectanglePos[1].lng]], {color: "#633CEA", weight: 1}).bindPopup("Area Selection"))
+          } else {
+            // Step 3 : reset
+            this.rectanglePos = null
+            this.setAreaSelLayer(null)
           }
+        } else {
           // Step 3 : reset
-          else if ((this.rectanglePos[0] !== []) && this.rectanglePos[1] !== []) {
-            this.map.removeLayer(this.rectangle);
-            this.rectangle=null
-            this.rectanglePos = []
-          }
+          this.rectanglePos = null
+          this.setAreaSelLayer(null)
         }
       },
       // Triggered when we click on rectangle on page 2 - filters and regions
       chooseRectangle: function () {
-        if (this.rectangleBtnIsPressed) {
-          console.log("button selected")
-          this.refAOI = null; // If the user chooses a rectangle selection, we remove the aoi
-        } else {
-          console.log("button not selected")
-
-        }
+        this.rectanglePos = null
+        this.setAreaSelLayer(null)
+        this.refAOI = null // If the user chooses a rectangle selection, we remove the aoi
       },
       // Triggered when we select an aoi on page 2 - filters and regions
       chooseAoi: function () {
-        // If the user chooses an AOI, we remove the rectangle
+        // If the user chooses an AOI, we remove the current area selection
         if(this.rectangleBtnIsPressed) {
           this.rectangleBtnIsPressed = false;
 
-          // TO-DO : pas supposé être là j'imagine
-          this.map=this.$refs['aoiSelMap'].mapObject
+          this.rectanglePos = null;
+          this.setAreaSelLayer(null)
+        }
 
-          if (this.rectangleMarker) {
-            this.map.removeLayer(this.rectangleMarker);
-            this.rectangleMarker=null
-          } else if (this.rectanglePos[0] == undefined) {
-            // added this beacause of an error in the console. Need to fix somewhere else
-          } else if ((this.rectanglePos[0] !== []) && (this.rectanglePos[1] !== [])) {
-            this.map.removeLayer(this.rectangle);
-            this.rectangle=null
-          }
-
-          this.rectanglePos = [];
+        //
+        const aoi=this.aoisDict[this.refAOI]
+        console.log(`AOI chosen`,this.refAOI,this.aoisDict[this.refAOI])
+        if(aoi && 'poly' in aoi) {
+          console.log(`AOI has a polygon`,aoi.poly)
+          this.setAreaSelLayer(L.geoJSON(aoi.poly))
         }
       },
       launchScoringQuery: function () {
@@ -530,11 +535,10 @@ var appViti = new Vue({
         UDF=UDF.slice(0,-3)
         // UDF+= ")*100)/" + scoringData.length + ")";
 
-        if (this.rectangle) { this.formatCoordinates() }
-
+        const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
         this.scoringInProgress=true
 
-        this.sendToNodered('scoringQuery', {'pos': this.qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
+        this.sendToNodered('scoringQuery', {'pos': qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
 
         this.pairsWMSLayers=null
         this.legend=null
@@ -592,7 +596,7 @@ var appViti = new Vue({
         const layersControl=L.control.layers()
 
         // The colorMaps and dataLayers have the same indexing, add the colorMap to the layer
-        for(var i=0;i<pairsWMSLayers.length;i++) {
+        for(const i=0;i<pairsWMSLayers.length;i++) {
           const pairsWMSLayer=pairsWMSLayers[i]
           const layerName=pairsWMSLayer.name
 
@@ -677,23 +681,25 @@ var appViti = new Vue({
         this.listQueryJobs()
       },
       // Coordinates needs to be formated in a certain way when amking a call to PAIRS
-      formatCoordinates: function () {
+      formatCoordinates: function (rectPos) {
         // square pos to send to PAIRS = [southernmost latitude, westernmost longitude, northernmost latitude, easternmost longitude]
-        if (this.rectanglePos[0].lat > this.rectanglePos[1].lat) {
-          this.qryPos["rSouth"] = this.rectanglePos[1].lat;
-          this.qryPos["rNorth"] = this.rectanglePos[0].lat;
+        qryPos={}
+        if (rectPos[0].lat > rectPos[1].lat) {
+          qryPos["rSouth"] = rectPos[1].lat;
+          qryPos["rNorth"] = rectPos[0].lat;
         } else {
-          this.qryPos["rSouth"] = this.rectanglePos[0].lat;
-          this.qryPos["rNorth"] = this.rectanglePos[1].lat;
+          qryPos["rSouth"] = rectPos[0].lat;
+          qryPos["rNorth"] = rectPos[1].lat;
         }
 
-        if (this.rectanglePos[0].lng > this.rectanglePos[1].lng) {
-          this.qryPos["rWest"] = this.rectanglePos[1].lng;
-          this.qryPos["rEast"] = this.rectanglePos[0].lng;
+        if (rectPos[0].lng > rectPos[1].lng) {
+          qryPos["rWest"] = rectPos[1].lng;
+          qryPos["rEast"] = rectPos[0].lng;
         } else {
-          this.qryPos["rWest"] = this.rectanglePos[0].lng;
-          this.qryPos["rEast"] = this.rectanglePos[1].lng;
+          qryPos["rWest"] = rectPos[0].lng;
+          qryPos["rEast"] = rectPos[1].lng;
         }
+        return qryPos
       },
       slPos: function(layer, pos, offset,extent,normalize) {  // pos can be Inf, Min, Lower,  Mean, Upper, Max, Sup
         const critDigits=this.critDigits
@@ -809,7 +815,7 @@ var appViti = new Vue({
                 vueApp.flyTo(this.map,msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
                 break;
               case 'addLayers':
-                vueApp.addlayers(msg.payload.layers,pairsError)
+                vueApp.addlayers(this.map,msg.payload.layers,pairsError)
                 break;
               case 'setRefPointMarker':
                 vueApp.setRefPointMarker(msg.payload.pos)
@@ -868,4 +874,23 @@ var appViti = new Vue({
 
 }) // --- End of appViti --- //
 
+/* general utility functions */
+function svgDisk(w,h,ro,colo,ri=0,coli=null) {
+  return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`+
+           `<circle cx="${w/2}" cy="${h/2}" r="${ro}" fill="${colo}"/>`+
+           (ri>0?`<circle cx="${w/2}" cy="${h/2}" r="${ri}" fill="${coli}"/>`:'')+
+         "</svg>"
+}
+
+function svgCrossHair(w,h,r,col) {
+  return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`+
+           `<circle cx="${w/2}" cy="${h/2}" r="${r}" stroke="${col}"/>`+
+           `<line x1="0" y1="${h/2}" x2="${w-1}" y2="${h/2}" stroke="${col}"/>` +
+           `<line x1="${w/2}" y1="0" x2="${w/2}" y2="${h-1}" stroke="${col}"/>` +
+         "</svg>"
+}
+
+function svgMarker(pos,size,svg,popup="Ref Point") {
+  return L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svg}`).replace(/\#/g,'%23'), iconSize: size})}).bindPopup(popup)
+}
 // EOF
