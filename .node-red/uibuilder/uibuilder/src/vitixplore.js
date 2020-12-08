@@ -57,6 +57,7 @@ var appViti = new Vue({
     el: '#appViti',
     data: {
         curPage     : 1,
+        isDev : window.location.search.search(/.*[?&]dev/i)>=0,
         tileProviders: [
           { name: 'OpenStreetMap', visible: true, key:'open.streetMap',
             attribution: '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',

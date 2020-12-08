@@ -67,7 +67,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
             :ticks='[1, 2, 3]' :ticks-labels="['Location','Filters & Region', 'Result']" tooltip="hide">
           </b-form-slider>
         </b-col>
-        <b-col></b-col>
+        <b-col><div v-if='isDev'>DEV</div></b-col>
       </b-row>
     </b-container>
 
@@ -300,15 +300,14 @@ copy this file to <userDir>/uibuilder/<url>/src.
           </b-col>
         </b-row>
 
-        <!-- Debug -->
-        <!-- <b-row>
+        <b-row v-if='isDev'>
           <b-col cols=2>
             <b-form-checkbox v-model="qrySelAll">Display failed queries</b-form-checkbox>
           </b-col>
           <b-col cols=2>
             <button :disabled="selQueryJob===null" class="smallButton" v-on:click="deleteQueryJob">Delete query</button>
           </b-col>
-        </b-row> -->
+        </b-row>
 
       </b-row>
     </b-container>
