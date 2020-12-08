@@ -223,7 +223,7 @@ var appViti = new Vue({
               try {
                 this.aoisDict[n]['poly']=JSON.parse(aoi.poly)
               } catch(exc) {
-                console.log(`Exception ${exc} parsing`,aoi.poly)
+                console.warn(`Exception ${exc} parsing`,aoi.poly)
               }
               break
             }
@@ -277,8 +277,6 @@ var appViti = new Vue({
         this.qryRunning=false
       },
       initCriterias: function(offset,extent) {
-        // console.log(this.qryLayers)
-
         if(this.qryLayers!=null) {
           const _this=this
           this.criteriasRange=Object.keys(this.qryLayers).reduce(function(acc,layerId){
@@ -346,20 +344,16 @@ var appViti = new Vue({
         } else if(mapRef==='areaSelMap') {
           this.areaSelMap=this.$refs[mapRef].mapObject
           this.areaSelMap.on('click', this.setRectangle)
+          // add the reference marker
+          addRefPointMarker(this.refPos,this.areaSelMap)
         } else if(mapRef==='scoringMap') {
           this.scoringMap=this.$refs[mapRef].mapObject
           this.scoringMap.on('baselayerchange', this.changeLegend); // If we change the layer display, we call the changeLegend function
+          addRefPointMarker(this.refPos,this.scoringMap)
 
           if(this.selQueryJob!=null) {
             this.flyToBounds(this.scoringMap,this.selQueryJob)
           }
-        }
-        // var nitroLayer=newPAIRSLayer(L,'geoserver1',0.000000,0.0001000,4,'1588089600_03312498ESASentinel5PL2-NitrogendioxideTropospheric5042415856992000001588291200000-Mean')
-        // var populLayer=newPAIRSLayer(L,'geoserver06',0,655350,92,'1588046400_35972570GlobalpopulationSEDAC-Globalpopulationdensity-01_01_2020T000000')
-
-        var overlayMaps = {
-            // "Nitro": nitroLayer,
-            // "Popul": populLayer
         }
       },
       /** Helper shortcut methods **/
@@ -382,9 +376,11 @@ var appViti = new Vue({
         this.locationMap.setView(pos,zoom?zoom:this.locationMap.getZoom())
       },
       addLayers: function(lMap,wmsLayers) {
-        console.log(`addLayers to Leaflet map ${lMap}`)
+        if(this.isDev) {
+          console.log(`addLayers to Leaflet map ${lMap}`)
+          console.log('Adding WMS layers from ',wmsLayers)
+        }
 
-        console.log('Adding WMS layers from ',wmsLayers)
         pairsOverlays={}
 
         wmsLayers.forEach(function(layer) {
@@ -395,7 +391,7 @@ var appViti = new Vue({
         L.control.layers(null, pairsOverlays).addTo(lMap);
       },
       handleMapEvent: function(event) {
-        console.log('mapEvent evt:',event)
+        if(this.isDev) console.log('mapEvent evt:',event)
         // keep tracks of last center and zoom position
         this.mapCenter=this.locationMap.getCenter()
         this.mapZoom=this.locationMap.getZoom()
@@ -403,14 +399,13 @@ var appViti = new Vue({
         this.sendToNodered(eventName,{'pos':('latlng' in event)?event.latlng:this.mapCenter, 'zoom':this.mapZoom})
       },
       setRefPointMarker: function (pos) {
-        console.log(pos)
         // remove marker
         if (this.refPointMarker) {
             this.locationMap.removeLayer(this.refPointMarker);
             this.refPointMarker=null
         }
         // add new marker
-        this.refPointMarker=svgMarker(pos,20,svgDisk(21,21,10,"#633CEA",5,'#EF3CEA'),"Ref Point").addTo(this.locationMap);
+        this.refPointMarker=addRefPointMarker(pos,this.locationMap)
         this.refPos=pos
       },
       setAreaSelLayer: function(areaSelLayer) {
@@ -473,10 +468,10 @@ var appViti = new Vue({
 
         //
         const aoi=this.aoisDict[this.refAOI]
-        console.log(`AOI chosen`,this.refAOI,this.aoisDict[this.refAOI])
         if(aoi && 'poly' in aoi) {
-          console.log(`AOI has a polygon`,aoi.poly)
           this.setAreaSelLayer(L.geoJSON(aoi.poly))
+        } else {
+          console.warn(`No polygon for AOI`,aoi)
         }
       },
       launchScoringQuery: function () {
@@ -515,6 +510,10 @@ var appViti = new Vue({
 
         // In the function before, we create a new array with parameter from selected layers, if layer not selected we get undefined, we want to remove them from the array
         scoringData = scoringData.filter(function (el) { return el != null; });
+        if(this.isDev) {
+          console.log('scoringData',scoringData)
+          console.log('qryLayers',this.qryLayers)
+        }
 
         var UDF = scoringData.reduce(function(udf,scoring, index) {
           if(scoring.lower) {
@@ -539,6 +538,7 @@ var appViti = new Vue({
         this.scoringInProgress=true
 
         this.sendToNodered('scoringQuery', {'pos': qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
+        if(this.isDev) console.log('UDF',UDF)
 
         this.pairsWMSLayers=null
         this.legend=null
@@ -567,10 +567,10 @@ var appViti = new Vue({
             // Now get the WMS layers and add them to map
             this.sendToNodered('scoringLayers',progress.id)
           } else if(progress.status==='Failed' || progress.status==="FailedConversion") {
-            console.log("Failed Query Job")
+            console.warn("Failed Query Job")
           } else {
             // unknown status
-            console.log("Unknown QueryJob Status",progress.status)
+            console.warn("Unknown QueryJob Status",progress.status)
           }
           this.scoringInProgress=false
         }
@@ -579,7 +579,7 @@ var appViti = new Vue({
         // Reload the Queries list
       },
       receivedResults: function(payload,pairsError) {
-        if(pairsError===null) {
+        if(pairsError===null && this.isDev) {
             console.log('PAIRS returned payload',payload)
         }
 
@@ -596,7 +596,7 @@ var appViti = new Vue({
         const layersControl=L.control.layers()
 
         // The colorMaps and dataLayers have the same indexing, add the colorMap to the layer
-        for(const i=0;i<pairsWMSLayers.length;i++) {
+        for(var i=0;i<pairsWMSLayers.length;i++) {
           const pairsWMSLayer=pairsWMSLayers[i]
           const layerName=pairsWMSLayer.name
 
@@ -651,7 +651,6 @@ var appViti = new Vue({
         }
 
         // Finally, add the Layers Control to the map
-        console.log(`Adding layers control to map`)
         layersControl.addTo(this.scoringMap)
 
         // Fly to the layer
@@ -726,7 +725,7 @@ var appViti = new Vue({
             case 'MeanUpper':
               return (layer.Mean+layer.Mean*offset)
             default:
-              console.log(`Invalid call to slPos(${layer},${pos},${offset},${extent})`)
+              console.warn(`Invalid call to slPos(${layer},${pos},${offset},${extent})`)
               return -1
             }
           }
@@ -754,7 +753,7 @@ var appViti = new Vue({
         return slPos
       },
       changeLegend: function(layerEvt) { // layer is the leaflet WMS layer event
-        console.log(`changelegend called with`,layerEvt)
+        console.debug(`changelegend called with`,layerEvt)
 
         // Find the PAIRS layer for the leaflet layer name
         const pairsWMSLayer=this.pairsWMSLayers[layerEvt.layer.layerName]
@@ -763,7 +762,7 @@ var appViti = new Vue({
         this.legend={"humanUnits": getHumanUnit(layerEvt.layer.units), "name": layerEvt.layer.dataLayer, "colorMap": pairsWMSLayer.colorTable.map}
 
         if( this.legend.colorMap == null) {
-          console.log(`No colorMap for ${layerEvt.layer.layerName}`)
+          console.warn(`No colorMap for ${layerEvt.layer.layerName}`)
         }
       },
       humanize: function(strValue) {
@@ -799,7 +798,7 @@ var appViti = new Vue({
 
           if(pairsError) {
             // console.log(`PAIRS returned error for topic=${msg.topic}`)
-            console.log(`PAIRS returned error for topic=${msg.topic}: msg=`,msg)
+            console.warn(`PAIRS returned error for topic=${msg.topic}: msg=`,msg)
           } else {
             switch(msg.topic) {
               case 'init':
@@ -851,7 +850,7 @@ var appViti = new Vue({
                 vueApp.deletedQueryJob(msg.payload,pairsError)
                 break;
               default:
-                console.log('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
+                console.warn('[indexjs:uibuilder.onChange] unhandled msg received from Node-RED server:', msg)
                 break;
             }
           }
@@ -893,4 +892,10 @@ function svgCrossHair(w,h,r,col) {
 function svgMarker(pos,size,svg,popup="Ref Point") {
   return L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svg}`).replace(/\#/g,'%23'), iconSize: size})}).bindPopup(popup)
 }
+
+function addRefPointMarker(pos,map) {
+  // add a ref point marke on any map
+  return svgMarker(pos,20,svgDisk(21,21,10,"#633CEA",5,'#EF3CEA'),"Ref Point").addTo(map)
+}
+
 // EOF
