@@ -6,3 +6,6 @@ node_modules/
 .node-red/uibuilder/.config/*.js
 .node-red/uibuilder/uibuilder/src/.*
 .node-red/.config.json*
+.node-red/.*.json.backup
+.node-red/flows_PHGP50-500GB*.json
+.node-red/settings_*.js

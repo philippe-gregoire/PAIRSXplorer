@@ -46,6 +46,7 @@ const DIMENSIONS_NAMES=['depth']  // name of dimensions that are processed
 console.debug("Registering Vue2Leaflet components")
 Vue.component('l-map', window.Vue2Leaflet.LMap);
 Vue.component('l-tilelayer', window.Vue2Leaflet.LTileLayer);
+Vue.component('l-control-layers', window.Vue2Leaflet.LControlLayers);
 Vue.component('l-marker', window.Vue2Leaflet.LMarker);
 Vue.component('l-rectangle', window.Vue2Leaflet.LRectangle);
 
@@ -56,6 +57,32 @@ var appViti = new Vue({
     el: '#appViti',
     data: {
         curPage     : 1,
+        tileProviders: [
+          { name: 'OpenStreetMap', visible: true, key:'open.streetMap',
+            attribution: '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          },
+          { name: 'OpenTopoMap', visible: false, key:'open.topoMap',
+            url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+          },
+          { name: 'Google Street Map', visible: false, key:'google.streetMap',
+            url: "https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}",
+            attribution: "Google-Street-Map"
+          },
+          { name: 'Google Sat Map', visible: false, key:'google.satMap',
+            url: "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+            attribution: "Google-Sat-Map"
+          },
+          { name: 'Google Hybrid Map', visible: false, key:'google.hybridMap',
+            url: "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+            attribution: "Google-Hybrid-Map"
+          },
+          // { name: 'Six Aerial', visible: false, key:'six.aerial',
+          //   url: "http://maps.six.nsw.gov.au/arcgis/rest/services/public/NSW_Imagery/MapServer/tile/{z}/{y}/{x}",
+          //   attribution: "Six-Aerial"
+          // }
+        ],
         layersDict  : null, // Dict of layers indexed by layerID
         aoisDict    : null,
         aoisArray    : [],
@@ -178,11 +205,29 @@ var appViti = new Vue({
           return dict},
           {})
 
-          // Create an array with the name of the AOIs, so we can sort it alphabetically
-          Object.entries(this.aoisDict).forEach(([key, value], index) =>
-            this.aoisArray[index] = value.name
-          );
-          this.aoisArray.sort();
+        // Create an array with the name of the AOIs, so we can sort it alphabetically
+        Object.entries(this.aoisDict).forEach(([key, aoi], index) =>
+          this.aoisArray[index] = aoi.name
+        );
+        this.aoisArray.sort();
+      },
+      loadedPolygons: function(aois,pairsError) {
+        // We get the polygons for the AOIs that should already be loaded
+        for(const a in aois) {
+          const aoi=aois[a]
+
+          for(const n in this.aoisDict) {
+            if(this.aoisDict[n].id==aoi.id) {
+              // add the poly to the existing dict's AOI
+              try {
+                this.aoisDict[n]['poly']=JSON.parse(aoi.poly)
+              } catch(exc) {
+                console.log(`Exception ${exc} parsing`,aoi.poly)
+              }
+              break
+            }
+          }
+        }
       },
       loadLayers: function(event) {
         // this.sendToNodered('loadLayers', {'pos': this.refPos, 'startDay' : this.startDay, 'endDay' : this.endDay, 'layers': Object.keys(this.layersDict)})
@@ -776,6 +821,9 @@ var appViti = new Vue({
                 break;
               case 'loadAOIs':
                 vueApp.loadedAOIs(msg.payload,pairsError)
+                break;
+              case 'loadPolygons':
+                vueApp.loadedPolygons(msg.payload,pairsError)
                 break;
               case 'loadLayers':
                 vueApp.loadedLayers(msg.payload.data,pairsError)

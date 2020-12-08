@@ -100,7 +100,15 @@ copy this file to <userDir>/uibuilder/<url>/src.
       <b-row>
         <div id="refMap" style="width: 100%;  height: 400px;">
           <l-map ref="vitiMap" @ready="onMapReady('vitiMap')">
-            <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
+            <l-control-layers position="topright" ></l-control-layers>
+            <l-tilelayer v-for="tileProvider in tileProviders"
+                  :url="tileProvider.url"
+                  :key="tileProvider.name"
+                  :name="tileProvider.name"
+                  :visible="tileProvider.visible"
+                  :attribution="tileProvider.attribution"
+                  layer-type="base">
+             </l-tilelayer>
             <!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
           </l-map>
         </div>
@@ -143,7 +151,15 @@ copy this file to <userDir>/uibuilder/<url>/src.
         </b-col>
         <b-col cols="4">
           <l-map ref="qryMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom">
-            <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
+            <l-control-layers position="topright"  ></l-control-layers>
+            <l-tilelayer v-for="tileProvider in tileProviders"
+                  :url="tileProvider.url"
+                  :key="tileProvider.name"
+                  :name="tileProvider.name"
+                  :visible="tileProvider.visible"
+                  :attribution="tileProvider.attribution"
+                  layer-type="base">
+             </l-tilelayer>
             <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
           </l-map>
         </b-col>
@@ -230,7 +246,6 @@ copy this file to <userDir>/uibuilder/<url>/src.
       <b-row class="subContent">
         <b-row><h1 class="title">Choose where you want to look for similar field</h1></b-row>
         <b-row class="leftTextAlign subContent"><h2 class="subtitle">Select an area of interest for a new query</h2></b-row>
-
         <b-row>
           <b-col cols="10">
             <b-form-select v-model="refAOI" @change="chooseAoi">
@@ -248,7 +263,15 @@ copy this file to <userDir>/uibuilder/<url>/src.
           <b-col cols="12">
             <div id="aoiSelMap" style="width: 100%;  height: 400px;">
               <l-map ref="aoiSelMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('aoiSelMap')">
-                <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
+                <l-control-layers position="topright"  ></l-control-layers>
+                <l-tilelayer v-for="tileProvider in tileProviders"
+                      :url="tileProvider.url"
+                      :key="tileProvider.name"
+                      :name="tileProvider.name"
+                      :visible="tileProvider.visible"
+                      :attribution="tileProvider.attribution"
+                      layer-type="base">
+                 </l-tilelayer>
               </l-map>
             </div>
           </b-col>
@@ -316,7 +339,15 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-col cols="10">
           <div id="scoringMap" style="width: 100%;  height: 600px;">
             <l-map ref="scoringMap" :center="[mapCenter.lat, mapCenter.lng]" :zoom="mapZoom" @ready="onMapReady('scoringMap')">
-              <l-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></l-tilelayer>
+              <l-control-layers position="topright"  ></l-control-layers>
+              <l-tilelayer v-for="tileProvider in tileProviders"
+                    :url="tileProvider.url"
+                    :key="tileProvider.name"
+                    :name="tileProvider.name"
+                    :visible="tileProvider.visible"
+                    :attribution="tileProvider.attribution"
+                    layer-type="base">
+               </l-tilelayer>
               <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
             </l-map>
           </div>
