@@ -29,7 +29,7 @@ var libraryCache = {};
 
 // Setup the default pre-populated flows
 //const defaultFlows=__dirname + "/defaults/flow.json";
-const defaultFlows=__dirname + "/.node-red/flows_VitiXplore_20201207.json";
+const defaultFlows=__dirname + "/.node-red/flows_VitiXplore_20201208.json";
 
 function prepopulateFlows(resolve) {
     var key = appname + "/" + "flow";
