@@ -478,67 +478,72 @@ var appViti = new Vue({
         // Make a dictionary with low-up-enabled values
         const _this=this
 
-        const layers=Object.keys(this.criteriasCheck)
+        // Get only layers IDs that are selected
+        const layerIds=Object.keys(this.criteriasCheck)
         console.log(this.criteriasCheck)
 
         // Create an array with values selected in sliders on page 2 - filters and regions
-        var scoringData=layers.map(function(layerId) {
+        const scoringData=layerIds.map(function(layerId) {
           if (_this.criteriasCheck[layerId]) {
-            const humanUnits=_this.qryLayers[layerId].humanUnits;
-            if (_this.qryLayers[layerId].dimensions_description !== undefined) {
-              var data = {'id': layerId, 'enabled':_this.criteriasCheck[layerId]};
-              _this.depths.map(function (depth) {
-                data[depth] = {
-                  'lower':fromHumanUnits(_this.criteriasRange[layerId][depth][0],humanUnits),
-                  'upper':fromHumanUnits(_this.criteriasRange[layerId][depth][1],humanUnits)
-                }
-              })
-              return data
-            } else if((layerId == "50450") || (layerId == "50511" )) {
-              return {
-                'id':layerId,
-                'type': _this.qryLayers[layerId].Mean,
-                'enabled':_this.criteriasCheck[layerId]}
+            // Keep only enabled layers
+            const layer=_this.qryLayers[layerId]
+            const humanUnits=layer.humanUnits;
+            const criteriaRange=_this.criteriasRange[layerId]
+            if (layer.dimensions_description !== undefined) {
+              // Layer with depths
+              return {'id': layerId,
+                      'depths': _this.depths.map(function(depth) {
+                                                   return {'name':depth,
+                                                           'lower':fromHumanUnits(criteriaRange[depth][0],humanUnits),
+                                                           'upper':fromHumanUnits(criteriaRange[depth][1],humanUnits)}
+                                                  })
+                     }
+            // } else if((layerId == "50450") || (layerId == "50511" )) {
+            } else if(layer.units===undefined || layer.units==='categorical') {
+              // Categorical layer
+              return {'id':layerId,'category': layer.Mean}
             } else {
+              // regular layer
               return {'id':layerId,
-                'lower':fromHumanUnits(_this.criteriasRange[layerId][0],humanUnits),
-                'upper':fromHumanUnits(_this.criteriasRange[layerId][1],humanUnits),
-                'enabled':_this.criteriasCheck[layerId]}
+                      'lower':fromHumanUnits(criteriaRange[0],humanUnits),
+                      'upper':fromHumanUnits(criteriaRange[1],humanUnits)}
             }
+          } else {
+            return null
           }
         })
 
         // In the function before, we create a new array with parameter from selected layers, if layer not selected we get undefined, we want to remove them from the array
-        scoringData = scoringData.filter(function (el) { return el != null; });
         if(this.isDev) {
           console.log('scoringData',scoringData)
           console.log('qryLayers',this.qryLayers)
         }
 
-        var UDF = scoringData.reduce(function(udf,scoring, index) {
-          if(scoring.lower) {
-            udf += "(( $Mean_" + scoring.id + " >= " + scoring.lower +
-                   " && $Mean_" + scoring.id + " <= "+ scoring.upper + ") ? 1 : 0 ) + "
-          } else if (scoring.type) {
-            udf += "(( $Mean_" + scoring.id + " == " + scoring.type + ") ? 1 : 0 ) + "
-          } else {
-            _this.depths.map(function (depth) {
-              udf += "(( $" + depth + "_" + scoring.id + " >= " + scoring[depth].lower +
-                     " && $" + depth + "_" + scoring.id + " <= "+ scoring[depth].upper + ") ? 1 : 0 ) + "
-            })
+        // Build an array of filters, skipping empty entries
+        const UDFFilters = scoringData.reduce(function(filters,scoring) {
+          if(scoring) { // note that reduce() should not invoke on empty elements
+            if(scoring.depths) {
+              // Create a filter for each depth
+              return filters.concat(scoring.depths.map(depth=>`$${depth.name}_${scoring.id} >= ${depth.lower} && $${depth.name}_${scoring.id} <= ${depth.upper}`))
+            } else if (scoring.category) {
+              // categorical layer
+              filters.push(`$Mean_${scoring.id} == ${scoring.category}`)
+            } else {
+              // regular layer
+              filters.push(`$Mean_${scoring.id} >= ${scoring.lower} && $Mean_${scoring.id} <= ${scoring.upper}`)
+            }
+            return filters
           }
-          return udf
-        },"")
+        },[]) // start with an empty array
 
-        // remove trailing " + "
-        UDF=UDF.slice(0,-3)
-        // UDF+= ")*100)/" + scoringData.length + ")";
+        // add ternary operator for each filter, and join expression with +
+        const UDF=`(${UDFFilters.map(filter=>`((${filter}) ? 1 : 0)`).join(' + ')})*100/${UDFFilters.length}`
+        if(this.isDev) console.log('UDF=',UDF)
 
         const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
-        this.scoringInProgress=true
 
+        this.scoringInProgress=true
         this.sendToNodered('scoringQuery', {'pos': qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
-        if(this.isDev) console.log('UDF',UDF)
 
         this.pairsWMSLayers=null
         this.legend=null
@@ -554,7 +559,7 @@ var appViti = new Vue({
 
         const newBounds=[[progress.neLat,progress.neLon],[progress.swLat,progress.swLon]]
         // If this is a query not ready yet, animate the map now, otherwise it will be animated later
-        if(newBounds!=this.scoringBounds && !progress.ready) {
+        if(!progress.ready && (!this.scoringBounds || [0,1].some(x=>[0,1].some(y=>newBounds[x][y]!=this.scoringBounds[x][y])))) {
           // do a long flyover
           this.flyToBounds(this.scoringMap,progress,3)
         }
@@ -755,17 +760,18 @@ var appViti = new Vue({
       changeLegend: function(layerEvt) { // layer is the leaflet WMS layer event
         console.debug(`changelegend called with`,layerEvt)
 
-        // Find the PAIRS layer for the leaflet layer name
+        // Find the PAIRS layer for the leaflet layer name, note that this may be a layer from the base maps
         const pairsWMSLayer=this.pairsWMSLayers[layerEvt.layer.layerName]
+        if(pairsWMSLayer) {
+          // setup current legend data
+          this.legend={"humanUnits": getHumanUnit(layerEvt.layer.units), "name": layerEvt.layer.dataLayer, "colorMap": pairsWMSLayer.colorTable.map}
 
-        // setup current legend data
-        this.legend={"humanUnits": getHumanUnit(layerEvt.layer.units), "name": layerEvt.layer.dataLayer, "colorMap": pairsWMSLayer.colorTable.map}
-
-        if( this.legend.colorMap == null) {
-          console.warn(`No colorMap for ${layerEvt.layer.layerName}`)
+          if( this.legend.colorMap == null) {
+            console.warn(`No colorMap for ${layerEvt.layer.layerName}`)
+          }
         }
       },
-      humanize: function(strValue) {
+      humanize: function(strValue) { // for use by HTML, redirect to function defined outside
         return humanize(strValue)
       }
     }, // --- End of methods --- //
