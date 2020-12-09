@@ -33,6 +33,7 @@ const AOIS_CATEGORY = 'FRA'
 const ZERO_C_IN_K = -273.15
 
 const MONTHS_BACK = 1
+const AREAS_COLOR='#633CEA'
 
 const DEFAULT_FLYTO_SEC = 2
 const LONG_FLYTO_SEC = 5
@@ -357,6 +358,18 @@ var appViti = new Vue({
           // at this stage, either we are running an existing query, so we know the bounds,
           // or we have launched a query and we will know the bounds on the first status later
           this.flyToScoring()
+
+          const areaLayer=this.scoring.poly ? L.geoJSON(this.scoring.poly) :
+                          this.scoring.bounds ? L.rectangle(this.scoring.bounds, {color: AREAS_COLOR, weight: 1}) :
+                          null
+          if(areaLayer) {
+            const _this=this
+            areaLayer.bindPopup("Scoring Area")
+            this.scoringMap.on('zoomend',function() {
+              console.log('Scoring area zoomend')
+              areaLayer.addTo(_this.scoringMap)
+            })
+          }
         }
       },
       setView: function(pos,zoom) {
@@ -370,9 +383,7 @@ var appViti = new Vue({
 
         pairsOverlays={}
 
-        wmsLayers.forEach(function(layer) {
-          pairsOverlays[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,layer.colorTableId,layer.name)
-        })
+        wmsLayers.forEach(layer => pairsOverlays[layer.datalayer]=newPAIRSLayer(L,layer.geoserverUrl,layer.min,layer.max,layer.colorTableId,layer.name))
 
         console.log("Adding WMS overlays ",pairsOverlays)
         L.control.layers(null, pairsOverlays).addTo(lMap);
@@ -385,7 +396,7 @@ var appViti = new Vue({
         var eventName='map'+event.type.charAt(0).toUpperCase() + event.type.slice(1)
         this.sendToNodered(eventName,{'pos':('latlng' in event)?event.latlng:this.mapCenter, 'zoom':this.mapZoom})
       },
-      setRefPointMarker: function (pos) {
+      setRefPointMarker: function(pos) {
         // remove marker
         if (this.refPointMarker) {
             this.locationMap.removeLayer(this.refPointMarker);
@@ -419,13 +430,13 @@ var appViti = new Vue({
           // Step 1 : get first point, when no rectangle exists or when there is already a full rect
           if (this.rectanglePos === null || this.rectanglePos[1]!==null) {
             this.rectanglePos=[{"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']},null] // save first corner pos
-            // this.setAreaSelLayer(svgMarker(pos.latlng,4,svgDisk(5,5,4,"#633CEA"),"Area Corner"))
-            this.setAreaSelLayer(svgMarker(pos.latlng,4,svgCrossHair(20,20,7,"#633CEA"),"Area Corner"))
+            // this.setAreaSelLayer(svgMarker(pos.latlng,4,svgDisk(5,5,4,AREAS_COLOR),"Area Corner"))
+            this.setAreaSelLayer(svgMarker(pos.latlng,4,svgCrossHair(20,20,7,AREAS_COLOR),"Area Corner"))
           } else if (this.rectanglePos[1]==null) {
             // Step 2 : draw rectangle
             // store second corner of rect
             this.rectanglePos[1] = {"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']} // save pos
-            this.setAreaSelLayer(L.rectangle([[this.rectanglePos[0].lat, this.rectanglePos[0].lng], [this.rectanglePos[1].lat, this.rectanglePos[1].lng]], {color: "#633CEA", weight: 1}).bindPopup("Area Selection"))
+            this.setAreaSelLayer(L.rectangle([[this.rectanglePos[0].lat, this.rectanglePos[0].lng], [this.rectanglePos[1].lat, this.rectanglePos[1].lng]], {color: AREAS_COLOR, weight: 1}).bindPopup("Area Selection"))
           } else {
             // Step 3 : reset
             this.rectanglePos = null
@@ -461,7 +472,7 @@ var appViti = new Vue({
           console.warn(`No polygon for AOI`,aoi)
         }
       },
-      launchScoringQuery: function () {
+      launchScoringQuery: function() {
         // Make a dictionary with low-up-enabled values
         const _this=this
 
@@ -479,11 +490,9 @@ var appViti = new Vue({
             if (layer.dimensions_description !== undefined) {
               // Layer with depths
               return {'id': layerId,
-                      'depths': _this.depths.map(function(depth) {
-                                                   return {'name':depth,
-                                                           'lower':fromHumanUnits(criteriaRange[depth][0],humanUnits),
-                                                           'upper':fromHumanUnits(criteriaRange[depth][1],humanUnits)}
-                                                  })
+                      'depths': _this.depths.map(function(depth) { return {'name':depth,
+                                                                  'lower':fromHumanUnits(criteriaRange[depth][0],humanUnits),
+                                                                  'upper':fromHumanUnits(criteriaRange[depth][1],humanUnits)}})
                      }
             // } else if((layerId == "50450") || (layerId == "50511" )) {
             } else if(layer.units===undefined || layer.units==='categorical') {
@@ -528,20 +537,26 @@ var appViti = new Vue({
         if(this.isDev) console.log('UDF=',UDF)
 
         const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
-
-        this.sendToNodered('scoringQuery', {'pos': qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
+        const aoi=this.aoisDict[this.refAOI]
+        this.sendToNodered('scoringQuery', {'pos': qryPos , 'aoi':aoi, 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
 
         this.scoring={'inProgress':true,'exPercent':0,'status':'Launched'}
+        if(aoi) {
+          this.scoring.poly=aoi.poly
+        } else if(qryPos) {
+          this.scoring.bounds=[[qryPos.rSouth,qryPos.rWest],[qryPos.rNorth,qryPos.rEast]]
+        }
         this.selQueryJob=null // no more selected query job
         this.pairsWMSLayers=null
         this.legend=null
         this.curPage=3
       },
       flyToScoring: function() {
-        if(this.scoring.bounds) {
+        if(this.scoring.bounds && !this.scoring.flown) {
           // if(!this.scoring.bounds || (newBounds && [0,1].some(x=>[0,1].some(y=>newBounds[x][y]!=this.scoring.bounds[x][y])))) {
           console.log(`Flying to scoring bounds`,this.scoring.bounds)
           this.scoringMap.flyToBounds(this.scoring.bounds,{'animate':true,'duration':LONG_FLYTO_SEC})
+          this.scoring.flown=true
         } else {
           console.log(`Cannot fly to scoring no bounds`)
         }
@@ -647,10 +662,9 @@ var appViti = new Vue({
         },[])
 
         // Create a Layers Control to add to the Map
-        const layersControl=layersArray.reduce(function(control,layer) {
-          // Add the leaflet PAIRS layer to the layers control
-          return control.addBaseLayer(layer[0],layer[1])
-        },L.control.layers()) // created and passed to reduce iterations
+        // Add the leaflet PAIRS layer to the layers control
+        const layersControl=layersArray.reduce((control,layer) => control.addBaseLayer(layer[0],layer[1]),
+                                               L.control.layers()) // created and passed to reduce iterations
 
         // Finally, add the Layers Control to the map
         layersControl.addTo(this.scoringMap)
@@ -668,6 +682,28 @@ var appViti = new Vue({
       showQueryJob: function() {
         // Existing query, inject it to the query process
         this.scoring={'inProgress':true,'bounds':boundsFromPairs(this.selQueryJob)}
+
+        // Try to figure out the AOI or ect from the name
+        const qryName=this.selQueryJob.nickname
+        if(this.isDev && qryName.startsWith('VitXplore_')) {
+          try {
+            const coords=qryName.match(/.*_Rect\[([0-9\.]+);([0-9\.]+);([0-9\.]+);([0-9\.]+)\]_.*/)
+            if(coords && coords.length==5) {
+              // found a rectangle
+              this.scoring.bounds=[[Number.parseFloat(coords[1]),Number.parseFloat(coords[2])],
+                                   [Number.parseFloat(coords[3]),Number.parseFloat(coords[4])]]
+            } else {
+              const aoi=qryName.match(/.*_([a-zA-Z\-]+)_\[([0-9\.]+);([0-9\.]+)\]_.*/)
+              if(aoi && aoi.length==4) {
+                this.scoring.aoi=this.aoisDict[aoi[1]]
+                if(this.scoring.aoi) this.scoring.poly=this.scoring.aoi.poly
+                this.refPos={'lat':Number.parseFloat(aoi[2]),'lng':Number.parseFloat(aoi[3])}
+              }
+            }
+          } catch(exc) {
+            console.warn('Parsing error on ',qryName,exc)
+          }
+        }
         this.sendToNodered('scoringQuery', {'id':this.selQueryJob.id})
         this.curPage=3
       },
@@ -866,10 +902,7 @@ var appViti = new Vue({
         })
 
         // If Socket.IO connects/disconnects, we get true/false here
-        uibuilder.onChange('ioConnected', function(connState) {
-            //console.info('[indexjs:uibuilder.onChange:ioConnected] Socket.IO Connection Status Changed to:', newVal)
-            vueApp.socketConnectedState = connState
-        })
+        uibuilder.onChange('ioConnected', connState=> vueApp.socketConnectedState = connState)
         // // If Server Time Offset changes
         // uibuilder.onChange('serverTimeOffset', function(newVal){
         //     //console.info('[indexjs:uibuilder.onChange:serverTimeOffset] Offset of time between the browser and the server has changed to:', newVal)
@@ -905,7 +938,7 @@ function svgMarker(pos,size,svg,popup="Ref Point") {
 /** Helper shortcut methods **/
 function addRefPointMarker(pos,map) {
   // add a ref point marke on any map
-  return svgMarker(pos,20,svgDisk(21,21,10,"#633CEA",5,'#EF3CEA'),"Ref Point").addTo(map)
+  return svgMarker(pos,20,svgDisk(21,21,10,AREAS_COLOR,5,'#EF3CEA'),"Ref Point").addTo(map)
 }
 
 function flyTo(map,pos,zoom,duration) {
