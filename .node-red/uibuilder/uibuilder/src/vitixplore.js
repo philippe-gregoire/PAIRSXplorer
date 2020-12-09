@@ -35,6 +35,7 @@ const ZERO_C_IN_K = -273.15
 const MONTHS_BACK = 1
 
 const DEFAULT_FLYTO_SEC = 2
+const LONG_FLYTO_SEC = 5
 
 const SIMUL_QUERYID = '1601956800_33355820'
 const DEFAULT_COLORTABLEID = 4
@@ -108,13 +109,7 @@ var appViti = new Vue({
         rectangleBtnIsPressed: false,
         // Scoring query management
         scoringMap    : null, // The Leaflet map for the scoring (last) page
-        scoringInProgress : false,
-        scoringStatus : null,
-        scoringStart  : null,
-        scoringSince  : null,
-        scoringReady  : null,
-        scoringBounds : null,
-        scoringPercent: null,
+        scoring       : {inProgress : false},
         queryJobs     : null,
         selQueryJob   : null,
         qrySelAll     : false,
@@ -351,25 +346,9 @@ var appViti = new Vue({
           this.scoringMap.on('baselayerchange', this.changeLegend); // If we change the layer display, we call the changeLegend function
           addRefPointMarker(this.refPos,this.scoringMap)
 
-          if(this.selQueryJob!=null) {
-            this.flyToBounds(this.scoringMap,this.selQueryJob)
-          }
-        }
-      },
-      /** Helper shortcut methods **/
-      flyTo: function(map,pos,zoom,duration) {
-        //map.flyTo(pos,zoom?zoom:this.locationMap.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
-        map.flyTo(pos,zoom?zoom:map.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
-      },
-      flyToBounds: function(map,queryJob,duration) {
-        if(queryJob!=null && 'neLat' in queryJob) {
-          const bounds=[[queryJob.neLat,queryJob.neLon],[queryJob.swLat,queryJob.swLon]]
-          console.log(`Flying to bounds ${bounds}`)
-          map.flyToBounds(bounds,{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
-          return bounds
-        } else {
-          console.log('no neLat in ', queryJob)
-          return null
+          // at this stage, either we are running an existing query, so we know the bounds,
+          // or we have launched a query and we will know the bounds on the first status later
+          this.flyToScoring()
         }
       },
       setView: function(pos,zoom) {
@@ -542,28 +521,32 @@ var appViti = new Vue({
 
         const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
 
-        this.scoringInProgress=true
         this.sendToNodered('scoringQuery', {'pos': qryPos , 'aoi': this.aoisDict[this.refAOI], 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
 
+        this.scoring={'inProgress':true,'exPercent':0,'status':'Launched'}
+        this.selQueryJob=null // no more selected query job
         this.pairsWMSLayers=null
         this.legend=null
         this.curPage=3
       },
+      flyToScoring: function() {
+        if(this.scoring.bounds) {
+          // if(!this.scoring.bounds || (newBounds && [0,1].some(x=>[0,1].some(y=>newBounds[x][y]!=this.scoring.bounds[x][y])))) {
+          console.log(`Flying to scoring bounds`,this.scoring.bounds)
+          this.scoringMap.flyToBounds(this.scoring.bounds,{'animate':true,'duration':LONG_FLYTO_SEC})
+        } else {
+          console.log(`Cannot fly to scoring no bounds`)
+        }
+      },
       progressScoringQuery: function(progress,pairsError) {
         console.debug("progressScoringQuery",progress,pairsError)
-        this.scoringStatus=progress.status
-        this.scoringStart=progress.start
-        this.scoringSince=Date.now()-progress.start
-        this.scoringReady=progress.ready
-        this.scoringPercent=progress.exPercent
-
-        const newBounds=[[progress.neLat,progress.neLon],[progress.swLat,progress.swLon]]
-        // If this is a query not ready yet, animate the map now, otherwise it will be animated later
-        if(!progress.ready && (!this.scoringBounds || [0,1].some(x=>[0,1].some(y=>newBounds[x][y]!=this.scoringBounds[x][y])))) {
-          // do a long flyover
-          this.flyToBounds(this.scoringMap,progress,3)
-        }
-        this.scoringBounds=newBounds
+        this.scoring.status=progress.status
+        this.scoring.start=progress.start
+        this.scoring.since=Date.now()-progress.start
+        this.scoring.ready=progress.ready
+        this.scoring.exPercent=progress.exPercent
+        this.scoring.bounds=boundsFromPairs(progress)
+        this.flyToScoring()
 
         if(['Initializing','Queued','Running','Writing'].includes(progress.status)) {
           // still running
@@ -577,7 +560,7 @@ var appViti = new Vue({
             // unknown status
             console.warn("Unknown QueryJob Status",progress.status)
           }
-          this.scoringInProgress=false
+          this.scoring={'inProgress':false}
         }
       },
       deletedQuery: function(payload,pairsError) {
@@ -590,28 +573,23 @@ var appViti = new Vue({
 
         if(payload.status==='Failed' || payload.status==='Success') {
           // query completed
-          this.scoringInProgress=false
+          this.scoring={'inProgress':false}
         }
       },
       scoredLayers: function(colorMaps, pairsWMSLayers, pairsError) {
-        //const layer=function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,opacity)
+        const _this=this
         this.pairsWMSLayers = {}  // The WMS datalayers from PAIRS
 
-        // Create a Layers Control to add to the Map
-        const layersControl=L.control.layers()
-
         // The colorMaps and dataLayers have the same indexing, add the colorMap to the layer
-        for(var i=0;i<pairsWMSLayers.length;i++) {
-          const pairsWMSLayer=pairsWMSLayers[i]
+        const layersArray=pairsWMSLayers.reduce(function(layers,pairsWMSLayer,i) {
           const layerName=pairsWMSLayer.name
-
-          // Store the layer in a dict indexed by full layerName
-          this.pairsWMSLayers[layerName]=pairsWMSLayer
-
           const layerId=pairsWMSLayer.datalayerId
 
+          // Store the layer in a dict indexed by full layerName
+          _this.pairsWMSLayers[layerName]=pairsWMSLayer
+
           // Find out which unit is used
-          const unit = (this.layersDict && layerId !== undefined)? this.layersDict[layerId].units : "%"
+          const unit = (_this.layersDict && layerId !== undefined)? _this.layersDict[layerId].units : "%"
 
           // get color for legend from colorMap at same index
           const colorTableId=colorMaps[i].colorTableId
@@ -641,25 +619,35 @@ var appViti = new Vue({
             }
           }
 
-          // Add the leaflet PAIRS layer to the layers control
-          layersControl.addBaseLayer(newLayer,layerDesc)
-
           // Find the Scoring layer and add it to the map to make it visible, and setup legend
           // make the scoring layer visible
           if(SCORING_LAYER_NAMES.includes(layerDesc)) {
+            // insert as first layer
+            layers.unshift([newLayer,layerDesc])
+
             // add to the map makes the layer visible
-            this.scoringMap.addLayer(newLayer);
+            _this.scoringMap.addLayer(newLayer);
 
             // setup current legend data
-            this.legend={"humanUnits": getHumanUnit(unit), "name": layerDesc, "colorMap": colorMap}
+            _this.legend={"humanUnits": getHumanUnit(unit), "name": layerDesc, "colorMap": colorMap}
+          } else {
+            layers.push([newLayer,layerDesc])
           }
-        }
+
+          return layers
+        },[])
+
+        // Create a Layers Control to add to the Map
+        const layersControl=layersArray.reduce(function(control,layer) {
+          // Add the leaflet PAIRS layer to the layers control
+          return control.addBaseLayer(layer[0],layer[1])
+        },L.control.layers()) // created and passed to reduce iterations
 
         // Finally, add the Layers Control to the map
         layersControl.addTo(this.scoringMap)
-
-        // Fly to the layer
-        this.flyToBounds(this.scoringMap,this.selQueryJob)
+        // // Fly to the layer
+        // console.log(`scoredLayers flying to `,this.selQueryJob)
+        // setScoringBounds(this.selQueryJob)
       },
       listQueryJobs: function() {
         this.sendToNodered('listQueryJobs',null)
@@ -670,7 +658,7 @@ var appViti = new Vue({
       },
       showQueryJob: function() {
         // Existing query, inject it to the query process
-        this.scoringInProgress=true
+        this.scoring={'inProgress':true,'bounds':boundsFromPairs(this.selQueryJob)}
         this.sendToNodered('scoringQuery', {'id':this.selQueryJob.id})
         this.curPage=3
       },
@@ -817,7 +805,8 @@ var appViti = new Vue({
                 vueApp.setView(msg.payload.pos,msg.payload.zoom)
                 break;
               case 'flyTo':
-                vueApp.flyTo(this.map,msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
+                console.log(`Fly to from nodered pos:`,payload.pos,' zoom:',msg.payload.zoom)
+                flyTo(this.locationMap,msg.payload.pos,msg.payload.zoom,('duration'in msg.payload)?msg.payload.duration:null)
                 break;
               case 'addLayers':
                 vueApp.addlayers(this.map,msg.payload.layers,pairsError)
@@ -899,9 +888,18 @@ function svgMarker(pos,size,svg,popup="Ref Point") {
   return L.marker([pos.lat,pos.lng], {icon: L.icon({iconUrl: encodeURI(`data:image/svg+xml,${svg}`).replace(/\#/g,'%23'), iconSize: size})}).bindPopup(popup)
 }
 
+/** Helper shortcut methods **/
 function addRefPointMarker(pos,map) {
   // add a ref point marke on any map
   return svgMarker(pos,20,svgDisk(21,21,10,"#633CEA",5,'#EF3CEA'),"Ref Point").addTo(map)
 }
 
+function flyTo(map,pos,zoom,duration) {
+  map.flyTo(pos,zoom?zoom:map.getZoom(),{'animate':true,'duration':duration?duration:DEFAULT_FLYTO_SEC})
+}
+
+/* Create a leaflet latLng bounds rectangle from PAIRS coordinates specification, may be null if not found */
+function boundsFromPairs(rect) {
+  return (rect && rect.swLat)?[[rect.swLat,rect.swLon],[rect.neLat,rect.neLon]]:null
+}
 // EOF
