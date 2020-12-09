@@ -110,6 +110,7 @@ var appViti = new Vue({
         // Scoring query management
         scoringMap    : null, // The Leaflet map for the scoring (last) page
         scoring       : {inProgress : false},
+        scoringLayerOpacity  : INIT_OPACITY*100,
         queryJobs     : null,
         selQueryJob   : null,
         qrySelAll     : false,
@@ -138,7 +139,14 @@ var appViti = new Vue({
         depths: ["0to5cm","5to15cm","15to30cm","30to60cm","60to100cm", "100to200cm"]
 
     }, // --- End of data --- //
-
+    watch:{
+        scoringLayerOpacity: function(opacity,oldOpacity) {
+          console.log(`opacity changed ${opacity} - ${oldOpacity}`)
+          if(this._shownScoringLayer) {
+            this._shownScoringLayer.setOpacity(this.scoringLayerOpacity/100)
+          }
+        }
+    },
     computed: {
         hLastRcvd: function() {
             var msgRecvd = this.msgRecvd
@@ -630,6 +638,7 @@ var appViti = new Vue({
 
             // setup current legend data
             _this.legend={"humanUnits": getHumanUnit(unit), "name": layerDesc, "colorMap": colorMap}
+            _this.setShownScoringLayer(newLayer)
           } else {
             layers.push([newLayer,layerDesc])
           }
@@ -757,7 +766,12 @@ var appViti = new Vue({
           if( this.legend.colorMap == null) {
             console.warn(`No colorMap for ${layerEvt.layer.layerName}`)
           }
+          this.setShownScoringLayer(layerEvt.layer)
         }
+      },
+      setShownScoringLayer: function(scoringLayer) {
+        this._shownScoringLayer=scoringLayer
+        this._shownScoringLayer.setOpacity(this.scoringLayerOpacity/100)
       },
       humanize: function(strValue) { // for use by HTML, redirect to function defined outside
         return humanize(strValue)
