@@ -63,7 +63,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
         <b-col></b-col>
         <b-col cols="10" class="menu">
           <b-form-slider class="menu-titles" style="width: 100%;"
-            v-model:value="curPage" min="1" max="3"
+            v-model:value="curPage" min=1 max=3
             :ticks='[1, 2, 3]' :ticks-labels="['Location','Filters & Region', 'Result']" tooltip="hide">
           </b-form-slider>
         </b-col>
@@ -334,7 +334,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
           </div>
           <div class="noLegend" v-else>Legend not available</div>
           <div v-if="isDev">
-            <b-form-slider class="menu-titles" style="width: 100%;" v-model:value="scoringLayerOpacity" min="1" max="100" handle="triangle"></b-form-slider>
+            <b-form-slider class="menu-titles" style="width: 100%;" v-model:value="scoringLayerOpacity" min=1 max=100 handle="triangle"></b-form-slider>
           </div>
         </b-col>
         <b-col cols="10">

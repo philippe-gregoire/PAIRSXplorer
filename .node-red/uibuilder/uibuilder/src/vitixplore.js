@@ -684,7 +684,7 @@ var appViti = new Vue({
       // Coordinates needs to be formated in a certain way when amking a call to PAIRS
       formatCoordinates: function (rectPos) {
         // square pos to send to PAIRS = [southernmost latitude, westernmost longitude, northernmost latitude, easternmost longitude]
-        qryPos={}
+        const qryPos={}
         if (rectPos[0].lat > rectPos[1].lat) {
           qryPos["rSouth"] = rectPos[1].lat;
           qryPos["rNorth"] = rectPos[0].lat;
