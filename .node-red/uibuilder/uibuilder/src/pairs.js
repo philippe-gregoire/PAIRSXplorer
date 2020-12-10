@@ -3,9 +3,28 @@
 
   Main purpose is to provide an extension to the leaflet TileLayer class to support PAIRS WMS tiling server
 */
-const EPSG={'EPSG:3857':{'dx':20026376.39,'dy':20048966.10}}
-const INIT_OPACITY=0.4
+//const EPSG={'EPSG:3857':{'dx':20026376.39,'dy':20048966.10}}
 
+const WGS84_Degree=0.01745329251994328
+const WGS84_SemiMajorAxis=6378137.0
+const WGS84_InvFlatening=298.257223563
+
+const PROJECTIONS={'EPSG:3857':{'dy':20026376.39,  'dx':20048966.10},
+                   'EPSG:3857  ':{'dy':20037508.3428,'dx':20048966.10},
+
+                  'EPSG:3857 ':{'dx':WGS84_SemiMajorAxis*Math.PI,'dy':WGS84_SemiMajorAxis*Math.PI*(1-1/WGS84_InvFlatening)}}
+console.log('PROJECTIONS',PROJECTIONS)
+
+const USE_PROJ='EPSG:3857 '  // note the space
+
+/* Make-up the style layer descriptor and encode it */
+function encodeSLD(minColor,maxColor,colorTableId,layerName) {
+  var sld=`https://${PAIRS_HOST}/map/sld?type=raster&min=${minColor}&max=${maxColor}&colorTableId=${colorTableId}&no_data=0&layer=pairs:${layerName}`
+  //var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&no_data=-1&property=value&layer=pairs:${layerName}`
+  return encodeURIComponent(sld)
+}
+
+const INIT_OPACITY=0.4
 pairsFuncs= {
     setPairsData: function(geoServerURLOrID,minColor,maxColor,colorTableId,layerName,units, dataLayer) {
         this.geoServerURL=geoServerURLOrID.startsWith('http')?geoServerURLOrID:`https://${this.pairsHost}:${this.pairsPort}/${geoServerURLOrID}`
@@ -16,26 +35,26 @@ pairsFuncs= {
         this.units=units
         this.dataLayer=dataLayer
     },
-    makePairsURL: function(z,x,y,geoServerURL,minColor,maxColor,colorTableId,layerName) {
-        const proj='EPSG:3857'
+    makePairsURL: function(z,tileX,tileY,geoServerURL,minColor,maxColor,colorTableId,layerName) {
         const imageFormat='png'
         const wpels=256
         const hpels=256
 
         // So, this should be the main WMS URL base
-        var baseURL=`${geoServerURL}/pairs/wms?service=WMS&version=1.3.0&request=GetMap&format=image/${imageFormat}&transparent=true&transitionEffect=resize&width=${wpels}&height=${hpels}&crs=${proj}&styles=`
+        var baseURL=`${geoServerURL}/pairs/wms?service=WMS&version=1.3.0&request=GetMap&format=image/${imageFormat}&transparent=true&transitionEffect=resize&width=${wpels}&height=${hpels}&crs=${USE_PROJ.trim()}&styles=`
 
         zpow=2**z/2
-        bbox_l=(x-zpow)*EPSG[proj]['dx']/zpow
-        bbox_t=(zpow-y-1)*EPSG[proj]['dy']/zpow
-        bbox_r=(x-zpow+1)*EPSG[proj]['dx']/zpow
-        bbox_b=(zpow-y)*EPSG[proj]['dy']/zpow
+        bbox_l=(tileX-zpow)*PROJECTIONS[USE_PROJ]['dx']/zpow
+        bbox_t=(zpow-tileY-1)*PROJECTIONS[USE_PROJ]['dy']/zpow
+        bbox_r=(tileX-zpow+1)*PROJECTIONS[USE_PROJ]['dx']/zpow
+        bbox_b=(zpow-tileY)*PROJECTIONS[USE_PROJ]['dy']/zpow
 
-        // Make-up the style layer descriptor and encode it
-        //var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&colorTableId=${colorTableId}&no_data=-1&property=value&layer=pairs:${layerName}`
-        var sld=`https://${PAIRS_HOST}/map/sld?type=raster&min=${minColor}&max=${maxColor}&colorTableId=${colorTableId}&no_data=0&layer=pairs:${layerName}`
-        //var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&no_data=-1&property=value&layer=pairs:${layerName}`
-        sldEnc=encodeURIComponent(sld)
+        // // Make-up the style layer descriptor and encode it
+        // //var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&colorTableId=${colorTableId}&no_data=-1&property=value&layer=pairs:${layerName}`
+        // var sld=`https://${PAIRS_HOST}/map/sld?type=raster&min=${minColor}&max=${maxColor}&colorTableId=${colorTableId}&no_data=0&layer=pairs:${layerName}`
+        // //var sld=`https://${PAIRS_HOST}:443/map/sld?type=raster&min=${minColor}&max=${maxColor}&no_data=-1&property=value&layer=pairs:${layerName}`
+        // sldEnc=encodeURIComponent(sld)
+        sldEnc=encodeSLD(minColor,maxColor,colorTableId,layerName)
 
         // Finally build the full URL
         var fullURL=`${baseURL}&bbox=${bbox_l},${bbox_t},${bbox_r},${bbox_b}&layers=${layerName}&authorization=${this.pairsWMSAuth}&sld=${sldEnc}`
@@ -59,17 +78,32 @@ function initPAIRS(L,pairsHost,pairsPort,pairsWMSAuth) {
 
 /** Create a PAIRS-backed WMS layer */
 function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units,dataLayer,opacity) {
-    newLayer=new L.TileLayer.Pairs()
-    newLayer.setPairsData(geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units,dataLayer)
-    newLayer.setOpacity(opacity?opacity:INIT_OPACITY)
+  const baseUrl=geoServerURLOrId.startsWith('http')?geoServerURLOrId:`https://${this.pairsHost}:${this.pairsPort}/${geoServerURLOrId}`
+  const sldEnc=encodeSLD(minColor,maxColor,colorTableId,layerName)
+  // &authorization=${this.pairsWMSAuth}
+  const newLayer=new L.tileLayer.wms(`${baseUrl}/pairs/wms?sld=${sldEnc}&`,
+       {layers:layerName,
+        transparent: true,
+        format: 'image/png'})
+  // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&`,
 
-    return newLayer
+  newLayer.geoServerURL=baseUrl
+  newLayer.minColor=minColor
+  newLayer.maxColor=maxColor
+  newLayer.colorTableId=colorTableId
+  newLayer.layerName=layerName
+  newLayer.units=units
+  newLayer.dataLayer=dataLayer
+
+  // const newLayer=new L.TileLayer.Pairs()
+  // newLayer.setPairsData(geoServerURLOrId,minColor,maxColor,colorTableId,layerName,units,dataLayer)
+  newLayer.setOpacity(opacity?opacity:INIT_OPACITY)
+
+  return newLayer
 }
 
 /* Set up the map watching to communicate with Node-RED */
 function addMapWatch(cScope,map,mapid,layers,fallBack) {
-
-
     sendMapDimensions=function(evt) {
         cScope.send({"dimChange" : {'type': evt.type, 'fromMapId': mapid, 'zoom': map.getZoom(), 'pos': map.getCenter()}})
     }

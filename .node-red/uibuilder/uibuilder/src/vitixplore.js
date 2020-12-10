@@ -48,11 +48,14 @@ const DIMENSIONS_NAMES=['depth']  // name of dimensions that are processed
 console.debug("Registering Vue2Leaflet components")
 Vue.component('l-map', window.Vue2Leaflet.LMap);
 Vue.component('l-tilelayer', window.Vue2Leaflet.LTileLayer);
+Vue.component('l-wms-tile-layer', window.Vue2Leaflet.LWMSTileLayer);
 Vue.component('l-control-layers', window.Vue2Leaflet.LControlLayers);
 Vue.component('l-marker', window.Vue2Leaflet.LMarker);
 Vue.component('l-rectangle', window.Vue2Leaflet.LRectangle);
 
 // Vue.use()
+const wms_authorization='jGn23qJeqcCVeFaRot2duWirS6bl052bxLjdSisZWVjlSadbmAWAfc30SUd9L-GxPBIZ-TulkhNL1LAl-J_Sjmf-j7TUEqpIHj4kZ1flCBHmOs6aNmw_qkT1YrtYhYLDmmJktFoRfpfW9GeCaD41Ed21bVw2XOWyBLHVn4kf43rMqI326lp7vxJGGjmZlXjtBFfUFvhoh7gYEZgnWB-mk-506RyWVqQ3rc4J0AusaRRbh6xg_D4DXbjSqqO4q9ft1SY8xNjiqAQO4Nde0QcEHdY_DU54WheQP_vmw8a_C4Q5KSNlQ4oA_X4A3XXcHiMjtLszKAi3hCa0jvj3MmLAm0xyhA1OhNgKWCkUHG53wIee7FqRKSeMfjQEHDpLVxUVWL2L99ZYxO-vt8gL2UA6y68yExwlVnVQMOe3yL-nfflwM_Jo8QPK46gC5ogbmEhr9xJFswwGG7BcUNdnXMAFADBmVoCfl6KpEW4wvXjBfYy7fWED93Tmsq1SdPMX_gIPEfkvT2ZTG_iL-4i_eCa91OffwkQlu0FON0hioVTtdgtZ-fHFfxn9A7lL0NOqV2yTRel1ZFue93HYI3ZWYSRZSdZJjt3mSX7lLDXtzD2iCSraSI3gG8wZyRO8gBu4ttA7wF3qrbneBbxWnpMwX1EHv2n9N4h9DglgfwZZob54U4I'
+const wms_sld='https%3A%2F%2Fpairs.res.ibm.com%2Fmap%2Fsld%3Ftype%3Draster%26min%3D0%26max%3D39%26colorTableId%3D4%26no_data%3D0%26layer%3Dpairs%3A1607576400_31103119Expression-OverallScoringOverallScoring-Exp'
 
 // eslint-disable-next-line no-unused-vars
 var appViti = new Vue({
@@ -84,6 +87,42 @@ var appViti = new Vue({
           // { name: 'Six Aerial', visible: false, key:'six.aerial',
           //   url: "http://maps.six.nsw.gov.au/arcgis/rest/services/public/NSW_Imagery/MapServer/tile/{z}/{y}/{x}",
           //   attribution: "Six-Aerial"
+          // }
+        ],
+        wmsLayers: [
+          { name : "TOPO-WMS",
+            baseUrl : "http://ows.mundialis.de/services/service?",
+            layers : 'TOPO-WMS',
+            attribution : 'Mundialis',
+            visible : false
+          },
+          { name : "OSM-WMS",
+            baseUrl :"http://ows.mundialis.de/services/service?",
+            layers : 'OSM-Overlay-WMS',
+            attribution : 'Mundialis',
+            visible : false
+          },
+          { name : "TOPO+OSM-WMS",
+            baseUrl : "http://ows.mundialis.de/services/service?",
+            layers : 'TOPO-WMS,OSM-Overlay-WMS',
+            attribution : 'Mundialis',
+            visible : false
+          },
+          { name : "PAIRS Test",
+            // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&authorization=${wms_authorization}&`,
+            baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&`,
+            // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?`,
+            layers : '1607576400_31103119Expression-OverallScoringOverallScoring-Exp',
+            attribution : 'PAIRS',
+            visible : false
+          },
+          // "https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?service=WMS&version=1.3.0&request=GetMap&format=image/png&transparent=true&transitionEffect=resize&width=256&height=256&crs=EPSG:3857&styles=&bbox=2191602.4749925737,10921272.234207656,2504688.5428486555,11233308.583756447&layers=1607576400_31103119Expression-OverallScoringOverallScoring-Exp
+          // &authorization=${this.wms_authorization}
+          //
+          // { name : "Weather Data",
+          //   baseUrl : "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
+          //   layers : 'nexrad-n0r-900913',
+          //   visible : false
           // }
         ],
         layersDict  : null, // Dict of layers indexed by layerID

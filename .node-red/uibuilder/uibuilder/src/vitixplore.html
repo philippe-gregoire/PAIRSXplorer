@@ -108,8 +108,17 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :visible="tileProvider.visible"
                   :attribution="tileProvider.attribution"
                   layer-type="base">
-             </l-tilelayer>
-            <!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
+            </l-tilelayer>
+            <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+                  :key="wmsLayer.name"
+                  :base-url="wmsLayer.baseUrl"
+                  :layers="wmsLayer.layers"
+                  :visible="wmsLayer.visible"
+                  :name="wmsLayer.name"
+                  :attribution="wmsLayer.attribution"
+                  layer-type="base" :transparent='true' format='image/png'>
+            </l-wms-tile-layer>
+<!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
           </l-map>
         </div>
       </b-row>
@@ -159,7 +168,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :visible="tileProvider.visible"
                   :attribution="tileProvider.attribution"
                   layer-type="base">
-             </l-tilelayer>
+            </l-tilelayer>
+            <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+                 :key="wmsLayer.name"
+                 :base-url="wmsLayer.baseUrl"
+                 :layers="wmsLayer.layers"
+                 :visible="wmsLayer.visible"
+                 :name="wmsLayer.name"
+                 :attribution="wmsLayer.attribution"
+                 layer-type="base" :transparent='true' format='image/png'>
+            </l-wms-tile-layer>
             <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
           </l-map>
         </b-col>
@@ -271,7 +289,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
                       :visible="tileProvider.visible"
                       :attribution="tileProvider.attribution"
                       layer-type="base">
-                 </l-tilelayer>
+                </l-tilelayer>
+                <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+                     :key="wmsLayer.name"
+                     :base-url="wmsLayer.baseUrl"
+                     :layers="wmsLayer.layers"
+                     :visible="wmsLayer.visible"
+                     :name="wmsLayer.name"
+                     :attribution="wmsLayer.attribution"
+                     layer-type="base" :transparent='true' format='image/png'>
+                </l-wms-tile-layer>
               </l-map>
             </div>
           </b-col>
@@ -350,7 +377,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
                     :visible="tileProvider.visible"
                     :attribution="tileProvider.attribution"
                     layer-type="base">
-               </l-tilelayer>
+              </l-tilelayer>
+              <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+                   :key="wmsLayer.name"
+                   :base-url="wmsLayer.baseUrl"
+                   :layers="wmsLayer.layers"
+                   :visible="wmsLayer.visible"
+                   :name="wmsLayer.name"
+                   :attribution="wmsLayer.attribution"
+                   layer-type="base" :transparent='true' format='image/png'>
+              </l-wms-tile-layer>
               <!-- <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker> -->
             </l-map>
           </div>
