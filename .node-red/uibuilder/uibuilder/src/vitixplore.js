@@ -108,14 +108,14 @@ var appViti = new Vue({
             attribution : 'Mundialis',
             visible : false
           },
-          { name : "PAIRS Test",
-            // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&authorization=${wms_authorization}&`,
-            baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&`,
-            // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?`,
-            layers : '1607576400_31103119Expression-OverallScoringOverallScoring-Exp',
-            attribution : 'PAIRS',
-            visible : false
-          },
+          // { name : "PAIRS Test",
+          //   // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&authorization=${wms_authorization}&`,
+          //   baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&`,
+          //   // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?`,
+          //   layers : '1607576400_31103119Expression-OverallScoringOverallScoring-Exp',
+          //   attribution : 'PAIRS',
+          //   visible : false
+          // },
           // "https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?service=WMS&version=1.3.0&request=GetMap&format=image/png&transparent=true&transitionEffect=resize&width=256&height=256&crs=EPSG:3857&styles=&bbox=2191602.4749925737,10921272.234207656,2504688.5428486555,11233308.583756447&layers=1607576400_31103119Expression-OverallScoringOverallScoring-Exp
           // &authorization=${this.wms_authorization}
           //

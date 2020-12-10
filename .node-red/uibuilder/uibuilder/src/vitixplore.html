@@ -109,7 +109,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :attribution="tileProvider.attribution"
                   layer-type="base">
             </l-tilelayer>
-            <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+            <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
                   :key="wmsLayer.name"
                   :base-url="wmsLayer.baseUrl"
                   :layers="wmsLayer.layers"
@@ -169,7 +169,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :attribution="tileProvider.attribution"
                   layer-type="base">
             </l-tilelayer>
-            <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+            <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
                  :key="wmsLayer.name"
                  :base-url="wmsLayer.baseUrl"
                  :layers="wmsLayer.layers"
@@ -290,7 +290,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
                       :attribution="tileProvider.attribution"
                       layer-type="base">
                 </l-tilelayer>
-                <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+                <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
                      :key="wmsLayer.name"
                      :base-url="wmsLayer.baseUrl"
                      :layers="wmsLayer.layers"
@@ -378,7 +378,7 @@ copy this file to <userDir>/uibuilder/<url>/src.
                     :attribution="tileProvider.attribution"
                     layer-type="base">
               </l-tilelayer>
-              <l-wms-tile-layer v-for="wmsLayer in wmsLayers"
+              <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
                    :key="wmsLayer.name"
                    :base-url="wmsLayer.baseUrl"
                    :layers="wmsLayer.layers"
