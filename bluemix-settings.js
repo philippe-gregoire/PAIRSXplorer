@@ -63,7 +63,7 @@ var settings = module.exports = {
     // Serve up the welcome page
     //httpStatic: path.join(__dirname,"public"),
     // Point to our main page by default
-    httpStatic: path.join(__dirname,".node-red/uibuilder/uibuilder/src/homePage.html"),
+    httpStatic: path.join(__dirname,".node-red/uibuilder/uibuilder/src"),
 
     functionGlobalContext: { },
 
