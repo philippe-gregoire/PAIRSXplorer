@@ -69,6 +69,44 @@ function prepopulateFlows(resolve) {
     });
 }
 
+function _getDoc(docType,defaultDoc) {
+	const key = `${appname}/${docType}`;
+	return new Promise(function (resolve, reject) {
+		flowDb.get(key, function (err, doc) {
+			if (err) {
+				if (err.statusCode != 404) {
+					reject(err.toString());
+				} else {
+					resolve(defaultDoc);
+				}
+			} else {
+				currentRevs[docType] = doc._rev;
+				resolve(doc[docType]);
+			}
+		});
+	});
+}
+
+function _saveDoc(docType,docContents) {
+	const key = `${appname}/${docType}`;
+	return new Promise(function (resolve, reject) {
+		const doc = { _id: key} 
+		doc[docType]=docContents;
+		
+		if (docType in currentRevs) {
+			doc._rev = currentRevs[docType];
+		}
+		flowDb.insert(doc, function (err, db) {
+			if (err) {
+				reject(err.toString());
+			} else {
+				currentRevs[docType] = db.rev;
+				resolve();
+			}
+		});
+	});
+}
+
 
 var cloudantStorage = {
     init: function (_settings) {
@@ -147,68 +185,31 @@ var cloudantStorage = {
             });
         });
     },
-
-    getDoc: function (docType,defaultDoc) {
-        const key = `${appname}/${docType}`;
-        return new Promise(function (resolve, reject) {
-            flowDb.get(key, function (err, doc) {
-                if (err) {
-                    if (err.statusCode != 404) {
-                        reject(err.toString());
-                    } else {
-                        resolve(defaultDoc);
-                    }
-                } else {
-					currentRevs[docType] = doc._rev;
-                    resolve(doc[docType]);
-                }
-            });
-        });
-    },
-
+	getDoc: _getDoc,
+	setDoc: _setDoc,
     getFlows: function () {
-		return this.getDoc('flow',[]);
+		return _getDoc('flow',[]);
     },
 
-	saveDoc: function (docType,docContents) {
-        const key = `${appname}/${docType}`;
-        return new Promise(function (resolve, reject) {
-            const doc = { _id: key} 
-			doc[docType]=docContents;
-			
-            if (docType in currentRevs) {
-                doc._rev = currentRevs[docType];
-            }
-            flowDb.insert(doc, function (err, db) {
-                if (err) {
-                    reject(err.toString());
-                } else {
-					currentRevs[docType] = db.rev;
-                    resolve();
-                }
-            });
-        });
-    },
     saveFlows: function (flows) {
-		return this.saveDoc('flow',flows);
+		return _saveDoc('flow',flows);
     },
 
     getCredentials: function () {
-		return this.getDoc('credentials',{});
+		return _getDoc('credentials',{});
     },
 
     saveCredentials: function (credentials) {
-		return this.saveDoc('credentials',credentials);
+		return _saveDoc('credentials',credentials);
     },
 
     getSettings: function () {
-		return this.getDoc('settings',{})
+		return _getDoc('settings',{})
     },
 
     saveSettings: function (settings) {
-		return this.saveDoc('settings',settings);
+		return _saveDoc('settings',settings);
     },
-
     getAllFlows: function () {
         var key = [appname, "flow"];
         return new Promise(function (resolve, reject) {
