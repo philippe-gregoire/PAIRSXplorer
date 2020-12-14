@@ -9,3 +9,4 @@ node_modules/
 .node-red/.*.json.backup
 .node-red/flows_PHGP50-500GB*.json
 .node-red/settings_*.js
+.node-red/backups/*
