@@ -87,6 +87,7 @@ function newPAIRSLayer(L,geoServerURLOrId,minColor,maxColor,colorTableId,layerNa
         format: 'image/png'})
   // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&`,
 
+  // Add some of our own attributes to the leaflet layer
   newLayer.geoServerURL=baseUrl
   newLayer.minColor=minColor
   newLayer.maxColor=maxColor

@@ -28,8 +28,7 @@ var currentCredRev = null;
 var libraryCache = {};
 
 // Setup the default pre-populated flows
-//const defaultFlows=__dirname + "/defaults/flow.json";
-const defaultFlows=__dirname + "/.node-red/flows_VitiXplore_20201208.json";
+var defaultFlows=__dirname + "/defaults/flow.json";
 
 function prepopulateFlows(resolve) {
     var key = appname + "/" + "flow";
@@ -87,6 +86,12 @@ var cloudantStorage = {
 
         appname = settings.prefix || require('os').hostname();
         var dbname = settings.db || "nodered";
+
+        // Use the flowFile as default
+        if(settings.flowFile) {
+            defaultFlows=__dirname + "/" + settings.flowFile;
+            util.log(`Using file from settings.flowFile=${settings.flowFile}, full path: ${defaultFlows}`)
+        }
 
         return new Promise(function (resolve, reject) {
             couchDb.db.get(dbname, function (err, body) {

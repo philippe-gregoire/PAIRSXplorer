@@ -45,7 +45,7 @@ var settings = module.exports = {
 
     userDir: userDir,
 
-    flowFile: "flows.json",
+    flowFile: ".node-red/"+"flows_VitiXplore_20201213.json",
 
     // Add the bluemix-specific nodes in
     nodesDir: path.join(__dirname,"nodes"),
