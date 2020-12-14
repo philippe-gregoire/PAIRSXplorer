@@ -84,6 +84,7 @@ var cloudantStorage = {
 
         appname = settings.prefix || require('os').hostname();
         var dbname = settings.db || "nodered";
+		dbname=dbname.toLowerCase();
 
         // Use the flowFile as default
         if(settings.flowFile) {
