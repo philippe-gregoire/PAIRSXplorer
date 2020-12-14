@@ -122,12 +122,14 @@ var cloudantStorage = {
 
         appname = settings.prefix || require('os').hostname();
         var dbname = settings.db || "nodered";
-		dbname=dbname.toLowerCase();
+        dbname=dbname.toLowerCase();
 
         // Use the flowFile as default
-        if(settings.flowFile) {
-            defaultFlows=__dirname + "/" + settings.flowFile;
-            util.log(`Using file from settings.flowFile=${settings.flowFile}, full path: ${defaultFlows}`)
+        if(_settings.flowFile) {
+            defaultFlows=__dirname + "/" + _settings.flowFile;
+            util.log(`Using flow file from _settings.flowFile=${_settings.flowFile}, full path: ${defaultFlows}`)
+        } else {
+            util.log(`Using default flow ${defaultFlows}`)
         }
 
         return new Promise(function (resolve, reject) {
