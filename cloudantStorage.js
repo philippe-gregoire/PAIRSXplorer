@@ -188,7 +188,7 @@ var cloudantStorage = {
         });
     },
 	getDoc: _getDoc,
-	setDoc: _setDoc,
+	saveDoc: _saveDoc,
     getFlows: function () {
 		return _getDoc('flow',[]);
     },
