@@ -21,9 +21,7 @@ var fs = require('fs');
 var settings;
 var appname;
 var flowDb = null;
-var currentFlowRev = null;
-var currentSettingsRev = null;
-var currentCredRev = null;
+var currentRevs={};
 
 var libraryCache = {};
 
@@ -149,112 +147,64 @@ var cloudantStorage = {
         });
     },
 
-    getFlows: function () {
-        var key = appname + "/" + "flow";
+    getDoc: function (docType,defaultDoc) {
+        const key = `${appname}/${docType}`;
         return new Promise(function (resolve, reject) {
             flowDb.get(key, function (err, doc) {
                 if (err) {
                     if (err.statusCode != 404) {
                         reject(err.toString());
                     } else {
-                        resolve([]);
+                        resolve(defaultDoc);
                     }
                 } else {
-                    currentFlowRev = doc._rev;
-                    resolve(doc.flow);
+					currentRevs[docType] = doc._rev;
+                    resolve(doc[docType]);
                 }
             });
         });
     },
 
-    saveFlows: function (flows) {
-        var key = appname + "/" + "flow";
+    getFlows: function () {
+		return this.getDoc('flow',[]);
+    },
+
+	saveDoc: function (docType,docContents) {
+        const key = `${appname}/${docType}`;
         return new Promise(function (resolve, reject) {
-            var doc = { _id: key, flow: flows };
-            if (currentFlowRev) {
-                doc._rev = currentFlowRev;
+            const doc = { _id: key, `$docType` : docContents };
+			
+            if (docType in currentRevs) {
+                doc._rev = currentRevs[docType];
             }
             flowDb.insert(doc, function (err, db) {
                 if (err) {
                     reject(err.toString());
                 } else {
-                    currentFlowRev = db.rev;
+					currentRevs[docType] = db.rev;
                     resolve();
                 }
             });
         });
+    },
+    saveFlows: function (flows) {
+		return this.saveDoc('flow',flows);
     },
 
     getCredentials: function () {
-        var key = appname + "/" + "credential";
-        return new Promise(function (resolve, reject) {
-            flowDb.get(key, function (err, doc) {
-                if (err) {
-                    if (err.statusCode != 404) {
-                        reject(err.toString());
-                    } else {
-                        resolve({});
-                    }
-                } else {
-                    currentCredRev = doc._rev;
-                    resolve(doc.credentials);
-                }
-            });
-        });
+		return this.getDoc('credentials',{});
     },
 
     saveCredentials: function (credentials) {
-        var key = appname + "/" + "credential";
-        return new Promise(function (resolve, reject) {
-            var doc = { _id: key, credentials: credentials };
-            if (currentCredRev) {
-                doc._rev = currentCredRev;
-            }
-            flowDb.insert(doc, function (err, db) {
-                if (err) {
-                    reject(err.toString());
-                } else {
-                    currentCredRev = db.rev;
-                    resolve();
-                }
-            });
-        });
+		return this.saveDoc('credentials',credentials);
     },
 
     getSettings: function () {
-        var key = appname + "/" + "settings";
-        return new Promise(function (resolve, reject) {
-            flowDb.get(key, function (err, doc) {
-                if (err) {
-                    if (err.statusCode != 404) {
-                        reject(err.toString());
-                    } else {
-                        resolve({});
-                    }
-                } else {
-                    currentSettingsRev = doc._rev;
-                    resolve(doc.settings);
-                }
-            });
-        });
+		return this.getDoc('settings',{})
     },
 
     saveSettings: function (settings) {
-        var key = appname + "/" + "settings";
-        return new Promise(function (resolve, reject) {
-            var doc = { _id: key, settings: settings };
-            if (currentSettingsRev) {
-                doc._rev = currentSettingsRev;
-            }
-            flowDb.insert(doc, function (err, db) {
-                if (err) {
-                    reject(err.toString());
-                } else {
-                    currentSettingsRev = db.rev;
-                    resolve();
-                }
-            });
-        });
+		return this.saveDoc('settings',settings);
     },
 
     getAllFlows: function () {
