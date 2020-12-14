@@ -172,7 +172,8 @@ var cloudantStorage = {
 	saveDoc: function (docType,docContents) {
         const key = `${appname}/${docType}`;
         return new Promise(function (resolve, reject) {
-            const doc = { _id: key, `${docType}` : docContents };
+            const doc = { _id: key} 
+			doc[docType]=docContents;
 			
             if (docType in currentRevs) {
                 doc._rev = currentRevs[docType];
