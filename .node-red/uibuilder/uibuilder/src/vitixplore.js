@@ -473,7 +473,7 @@ var appViti = new Vue({
           if (this.rectanglePos === null || this.rectanglePos[1]!==null) {
             this.rectanglePos=[{"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']},null] // save first corner pos
             // this.setAreaSelLayer(svgMarker(pos.latlng,4,svgDisk(5,5,4,AREAS_COLOR),"Area Corner"))
-            this.setAreaSelLayer(svgMarker(pos.latlng,4,svgCrossHair(20,20,7,AREAS_COLOR),"Area Corner"))
+            this.setAreaSelLayer(svgMarker(pos.latlng,20,svgCrossHair(20,20,AREAS_COLOR),"Area Corner"))
           } else if (this.rectanglePos[1]==null) {
             // Step 2 : draw rectangle
             // store second corner of rect
@@ -975,18 +975,22 @@ var appViti = new Vue({
 
 /* general utility functions */
 function svgDisk(w,h,ro,colo,ri=0,coli=null) {
-  return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`+
-           `<circle cx="${w/2}" cy="${h/2}" r="${ro}" fill="${colo}"/>`+
-           (ri>0?`<circle cx="${w/2}" cy="${h/2}" r="${ri}" fill="${coli}"/>`:'')+
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">`+
+         `<circle cx="50%" cy="50%" r="${ro}" fill="${colo}"/>`+
+         (ri>0?`<circle cx="50%" cy="50%" r="${ri}" fill="${coli}"/>`:'')+
          "</svg>"
+  console.log('Disk: ',svg)
+  return svg
 }
 
-function svgCrossHair(w,h,r,col) {
-  return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`+
-           `<circle cx="${w/2}" cy="${h/2}" r="${r}" stroke="${col}"/>`+
-           `<line x1="0" y1="${h/2}" x2="${w-1}" y2="${h/2}" stroke="${col}"/>` +
-           `<line x1="${w/2}" y1="0" x2="${w/2}" y2="${h-1}" stroke="${col}"/>` +
-         "</svg>"
+function svgCrossHair(w,h,col) {
+const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">` +
+        	`<circle cx="50%" cy="50%" r="35%" stroke-width="2px" stroke="${col}" fill-opacity="0"/>` +
+        	`<line x1="0" y1="50%" x2="100%" y2="50%" stroke-width="2px" stroke="${col}"/>` +
+        	`<line x1="50%" y1="0" x2="50%" y2="100%" stroke-width="2px" stroke="${col}"/>` +
+          "</svg>"
+  console.log('Crosshair: ',svg)
+  return svg
 }
 
 function svgMarker(pos,size,svg,popup="Ref Point") {
