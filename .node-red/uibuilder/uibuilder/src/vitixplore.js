@@ -554,7 +554,7 @@ var appViti = new Vue({
       flyToScoring: function() {
         if(this.scoring.bounds && !this.scoring.flown) {
           // if(!this.scoring.bounds || (newBounds && [0,1].some(x=>[0,1].some(y=>newBounds[x][y]!=this.scoring.bounds[x][y])))) {
-          console.log(`Flying to scoring bounds`,this.scoring.bounds)
+          console.log(`Flying to scoring bounds`, this.scoring.bounds)
           this.scoringMap.flyToBounds(this.scoring.bounds,{'animate':true,'duration':LONG_FLYTO_SEC})
           this.scoring.flown=true
         } else {
