@@ -1,21 +1,20 @@
-/* jshint browser: true, esversion: 5, asi: true */
-/*globals Vue, uibuilder */
-// @ts-nocheck
-/*
-  Copyright (c) 2019 Julian Knight (Totally Information)
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-*/
+/**
+ * Copyright 2020 IBM Corp.
+ *
+ * Original UIBuilder template Copyright (c) 2019 Julian Knight (Totally Information)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
 'use strict'
 
 /** @see https://github.com/TotallyInformation/node-red-contrib-uibuilder/wiki/Front-End-Library---available-properties-and-methods */
@@ -41,18 +40,25 @@ const LONG_FLYTO_SEC = 5
 const SIMUL_QUERYID = '1601956800_33355820'
 const DEFAULT_COLORTABLEID = 4
 
-const SCORING_LAYER_NAMES=['Overall Scoring','scoring']
+const SCORING_LAYER_NAMES=['Overall Scoring','scoring'] // Tha names we use to identify our scoring UDF layer
 const DIMENSIONS_NAMES=['depth']  // name of dimensions that are processed
 
 // Register l-map components
 console.debug("Registering Vue2Leaflet components")
+
+/* Initialize Vue bindings for Leaflet */
 Vue.component('l-map', window.Vue2Leaflet.LMap);
 Vue.component('l-tilelayer', window.Vue2Leaflet.LTileLayer);
+Vue.component('l-wms-tile-layer', window.Vue2Leaflet.LWMSTileLayer);
 Vue.component('l-control-layers', window.Vue2Leaflet.LControlLayers);
 Vue.component('l-marker', window.Vue2Leaflet.LMarker);
 Vue.component('l-rectangle', window.Vue2Leaflet.LRectangle);
 
 // Vue.use()
+/* This is the auth token for PAIRS WMS, actually not used, works without... */
+// const wms_authorization='jGn23qJeqcCVeFaRot2duWirS6bl052bxLjdSisZWVjlSadbmAWAfc30SUd9L-GxPBIZ-TulkhNL1LAl-J_Sjmf-j7TUEqpIHj4kZ1flCBHmOs6aNmw_qkT1YrtYhYLDmmJktFoRfpfW9GeCaD41Ed21bVw2XOWyBLHVn4kf43rMqI326lp7vxJGGjmZlXjtBFfUFvhoh7gYEZgnWB-mk-506RyWVqQ3rc4J0AusaRRbh6xg_D4DXbjSqqO4q9ft1SY8xNjiqAQO4Nde0QcEHdY_DU54WheQP_vmw8a_C4Q5KSNlQ4oA_X4A3XXcHiMjtLszKAi3hCa0jvj3MmLAm0xyhA1OhNgKWCkUHG53wIee7FqRKSeMfjQEHDpLVxUVWL2L99ZYxO-vt8gL2UA6y68yExwlVnVQMOe3yL-nfflwM_Jo8QPK46gC5ogbmEhr9xJFswwGG7BcUNdnXMAFADBmVoCfl6KpEW4wvXjBfYy7fWED93Tmsq1SdPMX_gIPEfkvT2ZTG_iL-4i_eCa91OffwkQlu0FON0hioVTtdgtZ-fHFfxn9A7lL0NOqV2yTRel1ZFue93HYI3ZWYSRZSdZJjt3mSX7lLDXtzD2iCSraSI3gG8wZyRO8gBu4ttA7wF3qrbneBbxWnpMwX1EHv2n9N4h9DglgfwZZob54U4I'
+/* This is the URL to retrieve the colortable and layer styling from PAIRS WMS server */
+// const wms_sld='https%3A%2F%2Fpairs.res.ibm.com%2Fmap%2Fsld%3Ftype%3Draster%26min%3D0%26max%3D39%26colorTableId%3D4%26no_data%3D0%26layer%3Dpairs%3A1607576400_31103119Expression-OverallScoringOverallScoring-Exp'
 
 // eslint-disable-next-line no-unused-vars
 var appViti = new Vue({
@@ -84,6 +90,42 @@ var appViti = new Vue({
           // { name: 'Six Aerial', visible: false, key:'six.aerial',
           //   url: "http://maps.six.nsw.gov.au/arcgis/rest/services/public/NSW_Imagery/MapServer/tile/{z}/{y}/{x}",
           //   attribution: "Six-Aerial"
+          // }
+        ],
+        wmsLayers: [
+          { name : "TOPO-WMS",
+            baseUrl : "http://ows.mundialis.de/services/service?",
+            layers : 'TOPO-WMS',
+            attribution : 'Mundialis',
+            visible : false
+          },
+          { name : "OSM-WMS",
+            baseUrl :"http://ows.mundialis.de/services/service?",
+            layers : 'OSM-Overlay-WMS',
+            attribution : 'Mundialis',
+            visible : false
+          },
+          { name : "TOPO+OSM-WMS",
+            baseUrl : "http://ows.mundialis.de/services/service?",
+            layers : 'TOPO-WMS,OSM-Overlay-WMS',
+            attribution : 'Mundialis',
+            visible : false
+          },
+          // { name : "PAIRS Test",
+          //   // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&authorization=${wms_authorization}&`,
+          //   baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?sld=${wms_sld}&`,
+          //   // baseUrl : `https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?`,
+          //   layers : '1607576400_31103119Expression-OverallScoringOverallScoring-Exp',
+          //   attribution : 'PAIRS',
+          //   visible : false
+          // },
+          // "https://pairs.res.ibm.com:8080/geoserver06/pairs/wms?service=WMS&version=1.3.0&request=GetMap&format=image/png&transparent=true&transitionEffect=resize&width=256&height=256&crs=EPSG:3857&styles=&bbox=2191602.4749925737,10921272.234207656,2504688.5428486555,11233308.583756447&layers=1607576400_31103119Expression-OverallScoringOverallScoring-Exp
+          // &authorization=${this.wms_authorization}
+          //
+          // { name : "Weather Data",
+          //   baseUrl : "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
+          //   layers : 'nexrad-n0r-900913',
+          //   visible : false
           // }
         ],
         layersDict  : null, // Dict of layers indexed by layerID
@@ -142,7 +184,7 @@ var appViti = new Vue({
     }, // --- End of data --- //
     watch:{
         scoringLayerOpacity: function(opacity,oldOpacity) {
-          console.log(`opacity changed ${opacity} - ${oldOpacity}`)
+          // console.log(`opacity changed ${opacity} - ${oldOpacity}`)
           if(this._shownScoringLayer) {
             this._shownScoringLayer.setOpacity(this.scoringLayerOpacity/100)
           }
@@ -431,7 +473,7 @@ var appViti = new Vue({
           if (this.rectanglePos === null || this.rectanglePos[1]!==null) {
             this.rectanglePos=[{"lat" : pos.latlng['lat'], "lng": pos.latlng['lng']},null] // save first corner pos
             // this.setAreaSelLayer(svgMarker(pos.latlng,4,svgDisk(5,5,4,AREAS_COLOR),"Area Corner"))
-            this.setAreaSelLayer(svgMarker(pos.latlng,4,svgCrossHair(20,20,7,AREAS_COLOR),"Area Corner"))
+            this.setAreaSelLayer(svgMarker(pos.latlng,20,svgCrossHair(20,20,AREAS_COLOR),"Area Corner"))
           } else if (this.rectanglePos[1]==null) {
             // Step 2 : draw rectangle
             // store second corner of rect
@@ -538,7 +580,10 @@ var appViti = new Vue({
 
         const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
         const aoi=this.aoisDict[this.refAOI]
-        this.sendToNodered('scoringQuery', {'pos': qryPos , 'aoi':aoi, 'startDay':this.startDay,'endDay':this.endDay,'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
+        this.sendToNodered('scoringQuery',
+              {'pos': qryPos , 'aoi':aoi,
+               'startDay':this.startDay,'endDay':this.endDay,
+               'layers':scoringData,'udf':UDF, 'layerInfo': this.qryLayers})
 
         this.scoring={'inProgress':true,'exPercent':0,'status':'Launched'}
         if(aoi) {
@@ -573,16 +618,18 @@ var appViti = new Vue({
 
         if(['Initializing','Queued','Running','Writing'].includes(progress.status)) {
           // still running
+          if(this.isDev) console.log(`Query progress status ${progress.status}`,progress)
         } else {
           if(progress.status==='Succeeded') {
-            // Now get the WMS layers and add them to map
+            // Send a request to PAIRS through Node-RED backend to get the WMS layers definitions and subsequently add them to map
             this.sendToNodered('scoringLayers',progress.id)
           } else if(progress.status==='Failed' || progress.status==="FailedConversion") {
-            console.warn("Failed Query Job")
+            console.warn("Failed Query Job",progress)
           } else {
             // unknown status
-            console.warn("Unknown QueryJob Status",progress.status)
+            console.warn("Unknown QueryJob Status:",progress.status)
           }
+          // Mark scoring process as completed
           this.scoring={'inProgress':false}
         }
       },
@@ -599,6 +646,7 @@ var appViti = new Vue({
           this.scoring={'inProgress':false}
         }
       },
+      /* This is invoked when results of scoring and WMS layers come back from PAIRS through Node-RED backend */
       scoredLayers: function(colorMaps, pairsWMSLayers, pairsError) {
         const _this=this
         this.pairsWMSLayers = {}  // The WMS datalayers from PAIRS
@@ -616,12 +664,16 @@ var appViti = new Vue({
 
           // get color for legend from colorMap at same index
           const colorTableId=colorMaps[i].colorTableId
+          // Convert the colortables from WMS (XML converted to JSON dict, hence the .$),
+          // to a flatter JSON colormap representation, and map to human units
           const colorMap=(colorMaps.length!=pairsWMSLayers.length)?null:
             colorMaps[i].colorMap.map(function(colorEntry) {
+              // Label is the unit, map to human-readable values
               colorEntry.$.label=toHumanUnit(colorEntry.$.label,unit)
               return colorEntry.$
             })
 
+          // Store the colorTable for the layer
           pairsWMSLayer["colorTable"]={"id":colorTableId,"map":colorMap}
           if(!colorMap) {
             console.warn(`Cannot map layers to colorTables ${pairsWMSLayers.length}<>${colorMaps.length}`)
@@ -629,6 +681,7 @@ var appViti = new Vue({
 
           var layerDesc=pairsWMSLayer.datalayer.split('[')[0]
 
+          // Create the Leaflet layer for the WMS entry
           const newLayer=newPAIRSLayer(L,pairsWMSLayer.geoserverUrl,pairsWMSLayer.min,pairsWMSLayer.max,colorTableId,layerName, unit, layerDesc)
 
           // If this is a multi-dimensions layer, compose name
@@ -668,9 +721,6 @@ var appViti = new Vue({
 
         // Finally, add the Layers Control to the map
         layersControl.addTo(this.scoringMap)
-        // // Fly to the layer
-        // console.log(`scoredLayers flying to `,this.selQueryJob)
-        // setScoringBounds(this.selQueryJob)
       },
       listQueryJobs: function() {
         this.sendToNodered('listQueryJobs',null)
@@ -683,9 +733,9 @@ var appViti = new Vue({
         // Existing query, inject it to the query process
         this.scoring={'inProgress':true,'bounds':boundsFromPairs(this.selQueryJob)}
 
-        // Try to figure out the AOI or ect from the name
+        // Try to figure out the AOI or Rect from the name
         const qryName=this.selQueryJob.nickname
-        if(this.isDev && qryName.startsWith('VitXplore_')) {
+        if(qryName.startsWith('VitXplore_')) {
           try {
             const coords=qryName.match(/.*_Rect\[([0-9\.]+);([0-9\.]+);([0-9\.]+);([0-9\.]+)\]_.*/)
             if(coords && coords.length==5) {
@@ -843,6 +893,14 @@ var appViti = new Vue({
           if(pairsError) {
             // console.log(`PAIRS returned error for topic=${msg.topic}`)
             console.warn(`PAIRS returned error for topic=${msg.topic}: msg=`,msg)
+          } if('pairsWarning' in msg) {
+            // Warnings are not forwarded to action code, we trace only as warning when in dev mode
+            if(this.isDev) {
+              console.warn(`PAIRS warning  for topic=${msg.topic}: msg=`,msg)
+            } else {
+              // not see when not in dev mode
+              console.debug(`PAIRS warning  for topic=${msg.topic}: msg=`,msg)
+            }
           } else {
             switch(msg.topic) {
               case 'init':
@@ -917,18 +975,22 @@ var appViti = new Vue({
 
 /* general utility functions */
 function svgDisk(w,h,ro,colo,ri=0,coli=null) {
-  return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`+
-           `<circle cx="${w/2}" cy="${h/2}" r="${ro}" fill="${colo}"/>`+
-           (ri>0?`<circle cx="${w/2}" cy="${h/2}" r="${ri}" fill="${coli}"/>`:'')+
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">`+
+         `<circle cx="50%" cy="50%" r="${ro}" fill="${colo}"/>`+
+         (ri>0?`<circle cx="50%" cy="50%" r="${ri}" fill="${coli}"/>`:'')+
          "</svg>"
+  console.log('Disk: ',svg)
+  return svg
 }
 
-function svgCrossHair(w,h,r,col) {
-  return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`+
-           `<circle cx="${w/2}" cy="${h/2}" r="${r}" stroke="${col}"/>`+
-           `<line x1="0" y1="${h/2}" x2="${w-1}" y2="${h/2}" stroke="${col}"/>` +
-           `<line x1="${w/2}" y1="0" x2="${w/2}" y2="${h-1}" stroke="${col}"/>` +
-         "</svg>"
+function svgCrossHair(w,h,col) {
+const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">` +
+        	`<circle cx="50%" cy="50%" r="35%" stroke-width="2px" stroke="${col}" fill-opacity="0"/>` +
+        	`<line x1="0" y1="50%" x2="100%" y2="50%" stroke-width="2px" stroke="${col}"/>` +
+        	`<line x1="50%" y1="0" x2="50%" y2="100%" stroke-width="2px" stroke="${col}"/>` +
+          "</svg>"
+  console.log('Crosshair: ',svg)
+  return svg
 }
 
 function svgMarker(pos,size,svg,popup="Ref Point") {

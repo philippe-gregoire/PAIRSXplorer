@@ -1,4 +1,20 @@
 <!doctype html>
+<!--
+ * Copyright 2020 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
 <!-- Note that adding an appcache really speeds things up after the first load
 You need to amend the appcache file to meet your needs.
 Don't forget to change the appcache file if you update ANY
@@ -6,14 +22,11 @@ of the files in it otherwise the old versions will ALWAYS be used.
 <html lang="en" manifest="./uibuilder.appcache">
 -->
 <html lang="en">
-<!--
-This is the default, template html for uibuilder.
-It is meant to demonstrate the use of VueJS & bootstrap-vue to dynamically
-update the ui based on incoming/outgoing messages from/to the
-Node-RED server.
 
-You will want to alter this to suite your own needs. To do so,
-copy this file to <userDir>/uibuilder/<url>/src.
+<!--
+Based on the default template html for uibuilder.
+Uses of VueJS & bootstrap-vue to dynamically update the ui based on
+incoming/outgoing messages from/to the Node-RED server.
 -->
 <head>
   <meta charset="utf-8">
@@ -108,8 +121,17 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :visible="tileProvider.visible"
                   :attribution="tileProvider.attribution"
                   layer-type="base">
-             </l-tilelayer>
-            <!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
+            </l-tilelayer>
+            <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
+                  :key="wmsLayer.name"
+                  :base-url="wmsLayer.baseUrl"
+                  :layers="wmsLayer.layers"
+                  :visible="wmsLayer.visible"
+                  :name="wmsLayer.name"
+                  :attribution="wmsLayer.attribution"
+                  layer-type="base" :transparent='true' format='image/png'>
+            </l-wms-tile-layer>
+<!-- <l-marker :lat-lng="[47.413220, -1.219482]"></l-marker> -->
           </l-map>
         </div>
       </b-row>
@@ -159,7 +181,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
                   :visible="tileProvider.visible"
                   :attribution="tileProvider.attribution"
                   layer-type="base">
-             </l-tilelayer>
+            </l-tilelayer>
+            <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
+                 :key="wmsLayer.name"
+                 :base-url="wmsLayer.baseUrl"
+                 :layers="wmsLayer.layers"
+                 :visible="wmsLayer.visible"
+                 :name="wmsLayer.name"
+                 :attribution="wmsLayer.attribution"
+                 layer-type="base" :transparent='true' format='image/png'>
+            </l-wms-tile-layer>
             <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker>
           </l-map>
         </b-col>
@@ -271,7 +302,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
                       :visible="tileProvider.visible"
                       :attribution="tileProvider.attribution"
                       layer-type="base">
-                 </l-tilelayer>
+                </l-tilelayer>
+                <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
+                     :key="wmsLayer.name"
+                     :base-url="wmsLayer.baseUrl"
+                     :layers="wmsLayer.layers"
+                     :visible="wmsLayer.visible"
+                     :name="wmsLayer.name"
+                     :attribution="wmsLayer.attribution"
+                     layer-type="base" :transparent='true' format='image/png'>
+                </l-wms-tile-layer>
               </l-map>
             </div>
           </b-col>
@@ -350,7 +390,16 @@ copy this file to <userDir>/uibuilder/<url>/src.
                     :visible="tileProvider.visible"
                     :attribution="tileProvider.attribution"
                     layer-type="base">
-               </l-tilelayer>
+              </l-tilelayer>
+              <l-wms-tile-layer v-if='isDev' v-for="wmsLayer in wmsLayers"
+                   :key="wmsLayer.name"
+                   :base-url="wmsLayer.baseUrl"
+                   :layers="wmsLayer.layers"
+                   :visible="wmsLayer.visible"
+                   :name="wmsLayer.name"
+                   :attribution="wmsLayer.attribution"
+                   layer-type="base" :transparent='true' format='image/png'>
+              </l-wms-tile-layer>
               <!-- <l-marker v-if="qryPos!=null" :lat-lng="[qryPos.lat, qryPos.lng]"></l-marker> -->
             </l-map>
           </div>

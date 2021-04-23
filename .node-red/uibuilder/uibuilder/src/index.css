@@ -1,14 +1,48 @@
-/* Cloak elements on initial load to hide the possible display of {{ ... }} 
- * Add to the app tag or to specific tags
- * To display "loading...", change to the following:
- *    [v-cloak] > * { display:none }
- *    [v-cloak]::before { content: "loading…" }
- */
-[v-cloak] { display: none; }
+body {
+    background-image: url('./index_files/vignoble.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
 
-/*  Colours for Syntax Highlighted pre's */
-.syntax-highlight {color:white;background-color:black;padding:5px 10px;}
-.syntax-highlight > .key {color:#ffbf35}
-.syntax-highlight > .string {color:#5dff39;}
-.syntax-highlight > .number {color:#70aeff;}
-.syntax-highlight > .boolean {color:#b993ff;}
+    /* Add the blur effect */
+    /* filter: blur(8px);
+    -webkit-filter: blur(8px); */
+
+  }
+
+  h1{
+    font: normal normal normal 4em IBM Plex Sans Hebrew;
+    letter-spacing: 0px;
+    color: #ffffff;
+    font-weight: bold;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+  .button{
+
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #633CEA;
+    border-radius: 6px;
+    outline: none;
+    display: inline-block;
+    margin: auto auto;
+
+  }
+  /* Position text in the middle of the page/image */
+  .bg-text {
+    color: white;
+    font: normal normal normal 1em IBM Plex Sans Hebrew;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    width: 80%;
+    padding: 20px;
+    text-align: center;
+  }

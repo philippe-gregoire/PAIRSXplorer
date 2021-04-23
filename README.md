@@ -1,3 +1,17 @@
+PAIRS Xplorer
+
+Project built on top of Node-RED IBMCloud Starter Application
+
+The goal of this project is to implement a PAIRS UI
+
+We use UIBuilder to manage a BootStrap + VueJS + Leaflet WebUI Front-End
+
+Node-RED is used as a Back-End to interface the VueJS Front-End to PAIRS
+
+This code is using Node-RED's Apacje 2.0 licence
+
+=============================================
+
 Node-RED IBM Cloud Starter Application
 ====================================
 
