@@ -238,8 +238,6 @@ var appViti = new Vue({
           {})
       },
       loadAOIs: function(AOICategory) {
-        console.log("AOICategory", AOICategory)
-        console.log("AOIS_CATEGORY", AOIS_CATEGORY)
         this.sendToNodered('loadAOIs',AOIS_CATEGORY)
       },
       loadedAOIs: function(aois,pairsError) {
@@ -581,6 +579,7 @@ var appViti = new Vue({
         // add ternary operator for each filter, and join expression with +
         const UDF=`(${UDFFilters.map(filter=>`((${filter}) ? 1 : 0)`).join(' + ')})*100/${UDFFilters.length}`
         if(this.isDev) console.log('UDF=',UDF)
+       console.log('UDF=',UDF)
 
 
         const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
