@@ -230,6 +230,7 @@ var appViti = new Vue({
         this.sendToNodered('initLayers',{})
       },
       initializedLayers: function(layers,pairsError) {
+        console.log(layers)
         // We got the details list of layers (array in msg.payload)
         this.layersDict=layers.reduce(function(dict,layer,index) {
           dict[layer.id]=layer
@@ -237,6 +238,8 @@ var appViti = new Vue({
           {})
       },
       loadAOIs: function(AOICategory) {
+        console.log("AOICategory", AOICategory)
+        console.log("AOIS_CATEGORY", AOIS_CATEGORY)
         this.sendToNodered('loadAOIs',AOIS_CATEGORY)
       },
       loadedAOIs: function(aois,pairsError) {
@@ -562,7 +565,7 @@ var appViti = new Vue({
           if(scoring) { // note that reduce() should not invoke on empty elements
             if(scoring.depths) {
               // Create a filter for each depth
-              return filters.concat(scoring.depths.map(depth=>`$${depth.name}_${scoring.id} >= ${depth.lower} && $${depth.name}_${scoring.id} <= ${depth.upper}`))
+              return filters.concat(scoring.depths.map(depth=>`$depth${depth.name}_${scoring.id} >= ${depth.lower} && $depth${depth.name}_${scoring.id} <= ${depth.upper}`))
             } else if (scoring.category) {
               // categorical layer
               filters.push(`$Mean_${scoring.id} == ${scoring.category}`)
@@ -570,6 +573,7 @@ var appViti = new Vue({
               // regular layer
               filters.push(`$Mean_${scoring.id} >= ${scoring.lower} && $Mean_${scoring.id} <= ${scoring.upper}`)
             }
+
             return filters
           }
         },[]) // start with an empty array
@@ -577,6 +581,7 @@ var appViti = new Vue({
         // add ternary operator for each filter, and join expression with +
         const UDF=`(${UDFFilters.map(filter=>`((${filter}) ? 1 : 0)`).join(' + ')})*100/${UDFFilters.length}`
         if(this.isDev) console.log('UDF=',UDF)
+
 
         const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
         const aoi=this.aoisDict[this.refAOI]
