@@ -1,0 +1,22 @@
+[
+    {
+        "id": "5489d117.7fba7",
+        "type": "function",
+        "z": "45272af4.690614",
+        "name": "Setup Query Layers",
+        "func": "/* Setup payload query parameters */\npayload={\"name\":msg.payload.name, \n         \"spatial\":msg.payload.spatial,\n         \"layers\":[{\"alias\": \"Overall Scoring\", \"expression\": msg.payload.udf }],\n         \"temporal\":{ \"intervals\": [{ \"start\": `${msg.payload.startDay}T00:00:00Z`, \"end\": `${msg.payload.endDay}T00:00:00Z` }]}\n        }\n\nconst DEPTHS = [\"0to5cm\",\"5to15cm\",\"15to30cm\",\"30to60cm\",\"60to100cm\", \"100to200cm\"]\n\nfor (const i in msg.payload.layers) {\n    var layerId = msg.payload.layers[i].id\n    var layer=msg.payload.layerInfo[layerId]\n\n    if ((layer.measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.00 secs\") ||\n        (layer.measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.0 secs\")) {\n        /* handle non-temporal layers */\n        \n        if (layer.dimensions_description) {\n            /* Handle layers that have a depth */\n            for (var j = 0; j < DEPTHS.length; j++) {\n                payload.layers.push({ \"type\": \"raster\",\n                                      \"id\":layerId,\n                                      \"alias\": `depth${DEPTHS[j]}_${layerId}`,\n                                      \"aggregation\": \"Mean\",\n                                      \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2021-04-01T00:00:01Z\"}]},\n                                      \"dimensions\" : [{\"name\" : \"quantile\", \"value\" : \"mean\"}, {\"name\" : \"depth\", \"value\" : DEPTHS[j] }] })\n            }\n        } else {\n            /* Other non-depth non-temporal layers */\n            payload.layers.push({ \"type\": \"raster\",\n                                  \"id\": layerId,\n                                  \"alias\": `Mean_${layerId}`,\n                                  \"aggregation\": \"Mean\",\n                                  \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]} })\n        }\n    } else {\n        /* handle regular temporal layers, compute mean value */\n        payload.layers.push({ \"type\": \"raster\",\n                              \"id\": layerId,\n                              \"alias\": `Mean_${layerId}`,\n                              \"aggregation\": \"Mean\"})\n    }\n}\n\nmsg.payload=payload\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 120,
+        "wires": [
+            [
+                "e4b5f6b5.ac7a98",
+                "3d9b77f5.078b28"
+            ]
+        ]
+    }
+]
