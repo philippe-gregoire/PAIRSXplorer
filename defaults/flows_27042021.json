@@ -1,0 +1,3044 @@
+[
+    {
+        "id": "5fed8ae7.8bb5a4",
+        "type": "tab",
+        "label": "UiBuilder-Vue",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "dbc32d84.e0c05",
+        "type": "subflow",
+        "name": "PAIRS AOIs Polygons",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 50,
+                "y": 30,
+                "wires": [
+                    {
+                        "id": "2abd8130.e8909e"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 960,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "b8d6bf31.67559",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 960,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "c933e5ae.d57a68",
+                        "port": 1
+                    }
+                ]
+            },
+            {
+                "x": 960,
+                "y": 220,
+                "wires": [
+                    {
+                        "id": "388f1fa3.2e7c4",
+                        "port": "1"
+                    },
+                    {
+                        "id": "4d31b795.f8ab48",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "maxRetries",
+                "type": "num",
+                "value": "10"
+            }
+        ],
+        "color": "#DDAA99",
+        "inputLabels": [
+            "payload"
+        ],
+        "outputLabels": [
+            "result",
+            "debug",
+            "error"
+        ]
+    },
+    {
+        "id": "3aa70edc.b22322",
+        "type": "subflow",
+        "name": "Query colorTable - Subflow",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "cfce9bd3.401138"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 940,
+                "y": 400,
+                "wires": [
+                    {
+                        "id": "1c3a2a7d.41e506",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 940,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "cfce9bd3.401138",
+                        "port": 1
+                    },
+                    {
+                        "id": "3523cf98.89d7d",
+                        "port": 0
+                    },
+                    {
+                        "id": "5547f1e.c0a021",
+                        "port": 1
+                    }
+                ]
+            },
+            {
+                "x": 940,
+                "y": 160,
+                "wires": [
+                    {
+                        "id": "cfce9bd3.401138",
+                        "port": 2
+                    },
+                    {
+                        "id": "5547f1e.c0a021",
+                        "port": 2
+                    }
+                ]
+            },
+            {
+                "x": 940,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "cfce9bd3.401138",
+                        "port": 3
+                    },
+                    {
+                        "id": "5547f1e.c0a021",
+                        "port": 3
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "color": "#E2D96E",
+        "outputLabels": [
+            "result",
+            "debug",
+            "error",
+            "too many requests"
+        ]
+    },
+    {
+        "id": "45272af4.690614",
+        "type": "subflow",
+        "name": "PAIRS Scoring Query Job",
+        "info": "Makes the scoring request to PAIRS",
+        "category": "",
+        "in": [
+            {
+                "x": 20,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "664e6cdb.72c354"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 880,
+                "y": 480,
+                "wires": [
+                    {
+                        "id": "6552faee.7f79b4",
+                        "port": "4"
+                    }
+                ]
+            },
+            {
+                "x": 880,
+                "y": 540,
+                "wires": [
+                    {
+                        "id": "b81ba735.6c0288",
+                        "port": 2
+                    },
+                    {
+                        "id": "e4b5f6b5.ac7a98",
+                        "port": 2
+                    },
+                    {
+                        "id": "6552faee.7f79b4",
+                        "port": "5"
+                    },
+                    {
+                        "id": "6552faee.7f79b4",
+                        "port": "6"
+                    }
+                ]
+            },
+            {
+                "x": 880,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "d51c34e7.201c88",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 880,
+                "y": 420,
+                "wires": [
+                    {
+                        "id": "6552faee.7f79b4",
+                        "port": 0
+                    },
+                    {
+                        "id": "6552faee.7f79b4",
+                        "port": 1
+                    },
+                    {
+                        "id": "6552faee.7f79b4",
+                        "port": 2
+                    },
+                    {
+                        "id": "6552faee.7f79b4",
+                        "port": 3
+                    }
+                ]
+            },
+            {
+                "x": 880,
+                "y": 340,
+                "wires": [
+                    {
+                        "id": "e4b5f6b5.ac7a98",
+                        "port": 0
+                    },
+                    {
+                        "id": "45272af4.690614",
+                        "port": 0
+                    },
+                    {
+                        "id": "b81ba735.6c0288",
+                        "port": 1
+                    },
+                    {
+                        "id": "e4b5f6b5.ac7a98",
+                        "port": 1
+                    },
+                    {
+                        "id": "babf9321.715a8",
+                        "port": 0
+                    },
+                    {
+                        "id": "5c397cc3.a01284",
+                        "port": 0
+                    },
+                    {
+                        "id": "5489d117.7fba7",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 880,
+                "y": 180,
+                "wires": []
+            }
+        ],
+        "env": [
+            {
+                "name": "polingDelayMs",
+                "type": "num",
+                "value": "3000"
+            }
+        ],
+        "color": "#0088EE",
+        "outputLabels": [
+            "querySuccess",
+            "queryFailure",
+            "queryId",
+            "queryProgress",
+            "debugMsg",
+            "queryJSON"
+        ]
+    },
+    {
+        "id": "b14a35fc.a33548",
+        "type": "subflow",
+        "name": "PAIRS Layers Details",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "acda743b.735d48"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 920,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "14fdbe57.397492",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 920,
+                "y": 220,
+                "wires": [
+                    {
+                        "id": "7279cf64.23dc1",
+                        "port": 1
+                    },
+                    {
+                        "id": "aa73b87b.5f31b8",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 920,
+                "y": 280,
+                "wires": [
+                    {
+                        "id": "7279cf64.23dc1",
+                        "port": 2
+                    },
+                    {
+                        "id": "acda743b.735d48",
+                        "port": 2
+                    }
+                ]
+            },
+            {
+                "x": 920,
+                "y": 340,
+                "wires": [
+                    {
+                        "id": "7279cf64.23dc1",
+                        "port": 3
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "layersKey",
+                "type": "str",
+                "value": "layers"
+            }
+        ],
+        "color": "#FFCC66",
+        "inputLabels": [
+            "layers"
+        ],
+        "outputLabels": [
+            "layersDetails",
+            "msg",
+            "error",
+            "too many requests"
+        ],
+        "icon": "node-red/debug.svg"
+    },
+    {
+        "id": "22be0357.6ef6fc",
+        "type": "subflow",
+        "name": "PAIRS Request",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "276440b3.5fca6"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 960,
+                "y": 240,
+                "wires": [
+                    {
+                        "id": "90e7e0f8.4b61c",
+                        "port": 0
+                    },
+                    {
+                        "id": "cee0e50c.c1c638",
+                        "port": 1
+                    }
+                ]
+            },
+            {
+                "x": 900,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "6b610517.1197cc",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 960,
+                "y": 320,
+                "wires": [
+                    {
+                        "id": "9b5f91c3.41e42",
+                        "port": 1
+                    },
+                    {
+                        "id": "65cf2145.d7572",
+                        "port": 2
+                    },
+                    {
+                        "id": "65cf2145.d7572",
+                        "port": 3
+                    },
+                    {
+                        "id": "65cf2145.d7572",
+                        "port": 4
+                    }
+                ]
+            },
+            {
+                "x": 960,
+                "y": 400,
+                "wires": [
+                    {
+                        "id": "9b5f91c3.41e42",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "method",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "url",
+                "type": "str",
+                "value": "https://pairs.res.ibm.com/v2/"
+            },
+            {
+                "name": "appendPayloadToURL",
+                "type": "bool",
+                "value": "true"
+            },
+            {
+                "name": "urlSuffix",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "autoRetry",
+                "type": "bool",
+                "value": "false"
+            },
+            {
+                "name": "convertToJSON",
+                "type": "bool",
+                "value": "true"
+            }
+        ],
+        "color": "#3FADB5",
+        "outputLabels": [
+            "result",
+            "debug",
+            "error",
+            "too many requests"
+        ],
+        "icon": "node-red/white-globe.svg"
+    },
+    {
+        "id": "e68fbd7c.0431a",
+        "type": "subflow",
+        "name": "PAIRS Min-Mean-Max",
+        "info": "This subflow requires an input JSON that describes the parameters of the layers, point and temporal span\n\nThe request payload is in the form:\n{\n    \"layers\": [\n        \"16100\",\n        \"49440\",\n        \"49252\",\n        \"49257\",\n        \"49304\",\n        \"49313\",\n        \"50453\",\n        \"49310\",\n        \"49311\",\n        \"49250\",\n        \"49296\"\n    ],\n    \"refPoint\": {\n        \"lat\": \"49.080609\",\n        \"lng\": \"3.961231\"\n    },\n    \"startDay\": \"2018-06-30\",\n    \"endDay\": \"2018-10-31\"\n}",
+        "category": "",
+        "in": [
+            {
+                "x": 120,
+                "y": 240,
+                "wires": [
+                    {
+                        "id": "3c01f6c1.eb661a"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 540,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "3c865690.f7436a",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 540,
+                "y": 240,
+                "wires": [
+                    {
+                        "id": "3c865690.f7436a",
+                        "port": 1
+                    }
+                ]
+            },
+            {
+                "x": 540,
+                "y": 280,
+                "wires": [
+                    {
+                        "id": "3c865690.f7436a",
+                        "port": 2
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "color": "#E9967A",
+        "outputLabels": [
+            "response",
+            "debug",
+            "error"
+        ]
+    },
+    {
+        "id": "c933e5ae.d57a68",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "dbc32d84.e0c05",
+        "name": "",
+        "env": [
+            {
+                "name": "method",
+                "value": "GET",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/ws/queryaois/geojson/",
+                "type": "str"
+            },
+            {
+                "name": "autoRetry",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 480,
+        "y": 140,
+        "wires": [
+            [
+                "97bdcd02.c38e2"
+            ],
+            [],
+            [
+                "4d31b795.f8ab48"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "712ce8fb.d00968",
+        "type": "split",
+        "z": "dbc32d84.e0c05",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 90,
+        "y": 100,
+        "wires": [
+            [
+                "23b5b29a.a5bc1e"
+            ]
+        ]
+    },
+    {
+        "id": "b8d6bf31.67559",
+        "type": "join",
+        "z": "dbc32d84.e0c05",
+        "name": "",
+        "mode": "auto",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 870,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "388f1fa3.2e7c4",
+        "type": "switch",
+        "z": "dbc32d84.e0c05",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "istype",
+                "v": "array",
+                "vt": "array"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 290,
+        "y": 40,
+        "wires": [
+            [
+                "712ce8fb.d00968"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "df0abcbe.c7ad5",
+        "type": "comment",
+        "z": "dbc32d84.e0c05",
+        "name": "This subflow gets AOIs polygons",
+        "info": "Input can be either a array of AOIs, or a member which is itself an array or layerIDs",
+        "x": 220,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "23b5b29a.a5bc1e",
+        "type": "change",
+        "z": "dbc32d84.e0c05",
+        "name": "getId",
+        "rules": [
+            {
+                "t": "set",
+                "p": "layer",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.id",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 90,
+        "y": 140,
+        "wires": [
+            [
+                "21134248.e9090e"
+            ]
+        ]
+    },
+    {
+        "id": "97bdcd02.c38e2",
+        "type": "change",
+        "z": "dbc32d84.e0c05",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "layer.poly",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "layer",
+                "tot": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "layer",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 60,
+        "wires": [
+            [
+                "b8d6bf31.67559"
+            ]
+        ]
+    },
+    {
+        "id": "2abd8130.e8909e",
+        "type": "change",
+        "z": "dbc32d84.e0c05",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "loadPolygons",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "retries",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 180,
+        "y": 40,
+        "wires": [
+            [
+                "388f1fa3.2e7c4"
+            ]
+        ]
+    },
+    {
+        "id": "21134248.e9090e",
+        "type": "delay",
+        "z": "dbc32d84.e0c05",
+        "name": "Rate Limit 15",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "15",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 310,
+        "y": 140,
+        "wires": [
+            [
+                "c933e5ae.d57a68"
+            ]
+        ]
+    },
+    {
+        "id": "4d31b795.f8ab48",
+        "type": "switch",
+        "z": "dbc32d84.e0c05",
+        "name": "",
+        "property": "retries",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "maxRetries",
+                "vt": "env"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 470,
+        "y": 240,
+        "wires": [
+            [
+                "97bdcd02.c38e2"
+            ],
+            [
+                "b25b816d.6cd97"
+            ]
+        ]
+    },
+    {
+        "id": "b25b816d.6cd97",
+        "type": "change",
+        "z": "dbc32d84.e0c05",
+        "name": "inc Retries",
+        "rules": [
+            {
+                "t": "set",
+                "p": "retries",
+                "pt": "msg",
+                "to": "retries+1",
+                "tot": "jsonata"
+            },
+            {
+                "t": "delete",
+                "p": "url",
+                "pt": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "layer.id",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 210,
+        "y": 300,
+        "wires": [
+            [
+                "21134248.e9090e"
+            ]
+        ]
+    },
+    {
+        "id": "dc4aae9a.dbb9f",
+        "type": "function",
+        "z": "3aa70edc.b22322",
+        "name": "Format URL & save data",
+        "func": "DEFAULT_COLORTABLEID=4\n\n// Default the colorTableId\nmsg.colorTableId= msg.payload.colorTableId ? msg.payload.colorTableId: DEFAULT_COLORTABLEID\n\nmsg.payload = `sld?type=raster&min=${msg.payload.min}&max=${msg.payload.max}&colorTableId=${msg.colorTableId}&no_data=-1`\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 510,
+        "y": 140,
+        "wires": [
+            [
+                "5547f1e.c0a021"
+            ]
+        ]
+    },
+    {
+        "id": "e23f2ca9.c543b",
+        "type": "xml",
+        "z": "3aa70edc.b22322",
+        "name": "",
+        "property": "payload",
+        "attr": "",
+        "chr": "",
+        "x": 330,
+        "y": 400,
+        "wires": [
+            [
+                "44dd28e1.7f76b8"
+            ]
+        ],
+        "info": "Convert XML result to an object"
+    },
+    {
+        "id": "44dd28e1.7f76b8",
+        "type": "change",
+        "z": "3aa70edc.b22322",
+        "name": "get colorMap",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.colorTableId",
+                "pt": "msg",
+                "to": "colorTableId",
+                "tot": "msg"
+            },
+            {
+                "t": "move",
+                "p": "payload.sld:StyledLayerDescriptor.sld:NamedLayer[0].sld:UserStyle[0].sld:FeatureTypeStyle[0].sld:Rule[0].sld:RasterSymbolizer[0].sld:ColorMap[0].sld:ColorMapEntry",
+                "pt": "msg",
+                "to": "payload.colorMap",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload.name",
+                "pt": "msg",
+                "to": "name",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 450,
+        "y": 400,
+        "wires": [
+            [
+                "1c3a2a7d.41e506"
+            ]
+        ],
+        "info": "Get the array of color from the object result"
+    },
+    {
+        "id": "7231e4fa.613cfc",
+        "type": "split",
+        "z": "3aa70edc.b22322",
+        "name": "Get ColorMapId for each layer",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "payload.layer",
+        "x": 270,
+        "y": 140,
+        "wires": [
+            [
+                "dc4aae9a.dbb9f"
+            ]
+        ],
+        "info": "Split result to make an action per layer"
+    },
+    {
+        "id": "3523cf98.89d7d",
+        "type": "change",
+        "z": "3aa70edc.b22322",
+        "name": "save layers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "layers",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 470,
+        "y": 20,
+        "wires": [
+            [
+                "7231e4fa.613cfc"
+            ]
+        ]
+    },
+    {
+        "id": "1c3a2a7d.41e506",
+        "type": "join",
+        "z": "3aa70edc.b22322",
+        "name": "Join colormaps for each layer",
+        "mode": "auto",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 640,
+        "y": 400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1d1ae444.99db7c",
+        "type": "batch",
+        "z": "3aa70edc.b22322",
+        "name": "",
+        "mode": "interval",
+        "count": 10,
+        "overlap": 0,
+        "interval": "10",
+        "allowEmptySequence": false,
+        "topics": [],
+        "x": 130,
+        "y": 320,
+        "wires": [
+            [
+                "e23f2ca9.c543b"
+            ]
+        ],
+        "info": "Creates a batch to be able to use the join flow"
+    },
+    {
+        "id": "cfce9bd3.401138",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "3aa70edc.b22322",
+        "name": "Query Job Layers",
+        "env": [
+            {
+                "name": "method",
+                "value": "GET",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/v2/queryjobs/",
+                "type": "str"
+            },
+            {
+                "name": "urlSuffix",
+                "value": "/layers",
+                "type": "str"
+            },
+            {
+                "name": "autoRetry",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 230,
+        "y": 40,
+        "wires": [
+            [
+                "3523cf98.89d7d"
+            ],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "5547f1e.c0a021",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "3aa70edc.b22322",
+        "name": "Get ColorMap",
+        "env": [
+            {
+                "name": "method",
+                "value": "GET",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/map/",
+                "type": "str"
+            },
+            {
+                "name": "autoRetry",
+                "value": "true",
+                "type": "bool"
+            },
+            {
+                "name": "convertToJSON",
+                "value": "false",
+                "type": "bool"
+            }
+        ],
+        "x": 360,
+        "y": 240,
+        "wires": [
+            [
+                "e23f2ca9.c543b"
+            ],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "d51c34e7.201c88",
+        "type": "change",
+        "z": "45272af4.690614",
+        "name": "Extract query ID",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.id",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 280,
+        "wires": [
+            [
+                "b81ba735.6c0288"
+            ]
+        ]
+    },
+    {
+        "id": "e4b5f6b5.ac7a98",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "45272af4.690614",
+        "name": "POST query",
+        "env": [
+            {
+                "name": "method",
+                "value": "POST",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/v2/query",
+                "type": "str"
+            }
+        ],
+        "x": 130,
+        "y": 300,
+        "wires": [
+            [
+                "d51c34e7.201c88"
+            ],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "b81ba735.6c0288",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "45272af4.690614",
+        "name": "GET queryjobs",
+        "env": [
+            {
+                "name": "method",
+                "value": "GET",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/v2/queryjobs/",
+                "type": "str"
+            }
+        ],
+        "x": 580,
+        "y": 380,
+        "wires": [
+            [
+                "6552faee.7f79b4"
+            ],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "9d0b864a.53d0b8",
+        "type": "delay",
+        "z": "45272af4.690614",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "3",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 360,
+        "y": 380,
+        "wires": [
+            [
+                "b81ba735.6c0288"
+            ]
+        ]
+    },
+    {
+        "id": "4a41dfd4.ae7c5",
+        "type": "change",
+        "z": "45272af4.690614",
+        "name": "setDelay",
+        "rules": [
+            {
+                "t": "set",
+                "p": "delay",
+                "pt": "msg",
+                "to": "polingDelayMs",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 160,
+        "y": 380,
+        "wires": [
+            [
+                "9d0b864a.53d0b8"
+            ]
+        ]
+    },
+    {
+        "id": "6552faee.7f79b4",
+        "type": "switch",
+        "z": "45272af4.690614",
+        "name": "Test Status",
+        "property": "payload.status",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "Initializing",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Queued",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Running",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Writing",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Succeeded",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Failed",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 7,
+        "x": 170,
+        "y": 540,
+        "wires": [
+            [
+                "7383d76a.ae5d08"
+            ],
+            [
+                "7383d76a.ae5d08",
+                "288e21d8.0ec36e"
+            ],
+            [
+                "7383d76a.ae5d08",
+                "8e96b9c0.ef1d68"
+            ],
+            [
+                "7383d76a.ae5d08"
+            ],
+            [],
+            [
+                "8d584588.626178"
+            ],
+            [
+                "23ff7bd5.465224"
+            ]
+        ]
+    },
+    {
+        "id": "7383d76a.ae5d08",
+        "type": "change",
+        "z": "45272af4.690614",
+        "name": "Extract query ID",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.id",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 180,
+        "y": 440,
+        "wires": [
+            [
+                "4a41dfd4.ae7c5"
+            ]
+        ]
+    },
+    {
+        "id": "664e6cdb.72c354",
+        "type": "switch",
+        "z": "45272af4.690614",
+        "name": "Check query type",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "id",
+                "vt": "str"
+            },
+            {
+                "t": "hask",
+                "v": "name",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 3,
+        "x": 150,
+        "y": 80,
+        "wires": [
+            [
+                "d51c34e7.201c88"
+            ],
+            [
+                "e4b5f6b5.ac7a98"
+            ],
+            [
+                "5b5c0afb.53b1b4"
+            ]
+        ]
+    },
+    {
+        "id": "5b5c0afb.53b1b4",
+        "type": "switch",
+        "z": "45272af4.690614",
+        "name": "Check aoi",
+        "property": "payload.aoi",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "null"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 220,
+        "y": 140,
+        "wires": [
+            [
+                "5c397cc3.a01284"
+            ],
+            [
+                "babf9321.715a8"
+            ]
+        ]
+    },
+    {
+        "id": "5c397cc3.a01284",
+        "type": "function",
+        "z": "45272af4.690614",
+        "name": "Query Name - Rect",
+        "func": "/* generate for rectangle selection query */\nconst pos=msg.payload.pos\n\nmsg.payload[\"name\"]=`VitXplore_Rect[${pos.rSouth};${pos.rWest};${pos.rNorth};${pos.rEast}]_[${msg.payload.startDay}/${msg.payload.endDay}]`\nmsg.payload[\"spatial\"]={ \"type\": \"square\", \"coordinates\": [ pos.rSouth, pos.rWest, pos.rNorth, pos.rEast]}\n\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 410,
+        "y": 100,
+        "wires": [
+            [
+                "5489d117.7fba7"
+            ]
+        ]
+    },
+    {
+        "id": "8d584588.626178",
+        "type": "debug",
+        "z": "45272af4.690614",
+        "name": "sucedeed",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 430,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "23ff7bd5.465224",
+        "type": "debug",
+        "z": "45272af4.690614",
+        "name": "failed",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 440,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "babf9321.715a8",
+        "type": "function",
+        "z": "45272af4.690614",
+        "name": "Query name - AOI",
+        "func": "/* generate for rectangle selection query */\nconst pos=msg.payload.pos\n\nmsg.payload[\"name\"]=`VitXplore_${msg.payload.aoi.name}_[${pos.lat};${pos.lng}]_[${msg.payload.startDay}/${msg.payload.endDay}]`\nmsg.payload[\"spatial\"]= { \"type\": \"poly\", \"aoi\": msg.payload.aoi.id}\n\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 410,
+        "y": 160,
+        "wires": [
+            [
+                "5489d117.7fba7"
+            ]
+        ]
+    },
+    {
+        "id": "288e21d8.0ec36e",
+        "type": "debug",
+        "z": "45272af4.690614",
+        "name": "queud",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 680,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "8e96b9c0.ef1d68",
+        "type": "debug",
+        "z": "45272af4.690614",
+        "name": "running",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 630,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "5489d117.7fba7",
+        "type": "function",
+        "z": "45272af4.690614",
+        "name": "Setup Query Layers",
+        "func": "/* Setup payload query parameters */\npayload={\"name\":msg.payload.name, \n         \"spatial\":msg.payload.spatial,\n         \"layers\":[{\"alias\": \"Overall Scoring\", \"expression\": msg.payload.udf }],\n         \"temporal\":{ \"intervals\": [{ \"start\": `${msg.payload.startDay}T00:00:00Z`, \"end\": `${msg.payload.endDay}T00:00:00Z` }]}\n        }\n\nconst DEPTHS = [\"0to5cm\",\"5to15cm\",\"15to30cm\",\"30to60cm\",\"60to100cm\", \"100to200cm\"]\n\nfor (const i in msg.payload.layers) {\n    var layerId = msg.payload.layers[i].id\n    var layer=msg.payload.layerInfo[layerId]\n\n    if ((layer.measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.00 secs\") ||\n        (layer.measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.0 secs\")) {\n        /* handle non-temporal layers */\n        \n        if (layer.dimensions_description) {\n            /* Handle layers that have a depth */\n            for (var j = 0; j < DEPTHS.length; j++) {\n                payload.layers.push({ \"type\": \"raster\",\n                                      \"id\":layerId,\n                                      \"alias\": `depth${DEPTHS[j]}_${layerId}`,\n                                      \"aggregation\": \"Mean\",\n                                      \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]},\n                                      \"dimensions\" : [{\"name\" : \"quantile\", \"value\" : \"mean\"}, {\"name\" : \"depth\", \"value\" : DEPTHS[j] }] })\n            }\n        } else {\n            /* Other non-depth non-temporal layers */\n            payload.layers.push({ \"type\": \"raster\",\n                                  \"id\": layerId,\n                                  \"alias\": `Mean_${layerId}`,\n                                  \"aggregation\": \"Mean\",\n                                  \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]} })\n        }\n    } else {\n        /* handle regular temporal layers, compute mean value */\n        payload.layers.push({ \"type\": \"raster\",\n                              \"id\": layerId,\n                              \"alias\": `Mean_${layerId}`,\n                              \"aggregation\": \"Mean\"})\n    }\n}\n\nmsg.payload=payload\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 120,
+        "wires": [
+            [
+                "e4b5f6b5.ac7a98"
+            ]
+        ]
+    },
+    {
+        "id": "7279cf64.23dc1",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "b14a35fc.a33548",
+        "name": "",
+        "env": [
+            {
+                "name": "method",
+                "value": "GET",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/v2/datalayers/",
+                "type": "str"
+            },
+            {
+                "name": "autoRetry",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 620,
+        "y": 140,
+        "wires": [
+            [
+                "14fdbe57.397492"
+            ],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "aa73b87b.5f31b8",
+        "type": "split",
+        "z": "b14a35fc.a33548",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 450,
+        "y": 180,
+        "wires": [
+            [
+                "7279cf64.23dc1"
+            ]
+        ]
+    },
+    {
+        "id": "3d08812c.15e0de",
+        "type": "change",
+        "z": "b14a35fc.a33548",
+        "name": "set layers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.layers",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 320,
+        "y": 140,
+        "wires": [
+            [
+                "aa73b87b.5f31b8"
+            ]
+        ]
+    },
+    {
+        "id": "14fdbe57.397492",
+        "type": "join",
+        "z": "b14a35fc.a33548",
+        "name": "",
+        "mode": "auto",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 810,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "acda743b.735d48",
+        "type": "switch",
+        "z": "b14a35fc.a33548",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "layersKey",
+                "vt": "env"
+            },
+            {
+                "t": "istype",
+                "v": "array",
+                "vt": "array"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 170,
+        "y": 180,
+        "wires": [
+            [
+                "3d08812c.15e0de"
+            ],
+            [
+                "aa73b87b.5f31b8"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "47d3c58f.75cb7c",
+        "type": "comment",
+        "z": "b14a35fc.a33548",
+        "name": "This subflow gets full layers details",
+        "info": "Input can be either a array of layerIDs, or a member which is itself an array or layerIDs",
+        "x": 230,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "6b610517.1197cc",
+        "type": "http request",
+        "z": "22be0357.6ef6fc",
+        "name": "",
+        "method": "use",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "basic",
+        "x": 470,
+        "y": 300,
+        "wires": [
+            [
+                "65cf2145.d7572"
+            ]
+        ]
+    },
+    {
+        "id": "c63c4fef.64ee5",
+        "type": "change",
+        "z": "22be0357.6ef6fc",
+        "name": "Payload as data",
+        "rules": [
+            {
+                "t": "set",
+                "p": "method",
+                "pt": "msg",
+                "to": "method",
+                "tot": "env"
+            },
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "url",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 460,
+        "y": 80,
+        "wires": [
+            [
+                "a5d11332.53ac8"
+            ]
+        ]
+    },
+    {
+        "id": "276440b3.5fca6",
+        "type": "switch",
+        "z": "22be0357.6ef6fc",
+        "name": "",
+        "property": "method",
+        "propertyType": "env",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "POST",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "c63c4fef.64ee5"
+            ],
+            [
+                "c4faa10f.99ded"
+            ]
+        ]
+    },
+    {
+        "id": "9e97f404.322068",
+        "type": "change",
+        "z": "22be0357.6ef6fc",
+        "name": "Payload appended to URL",
+        "rules": [
+            {
+                "t": "set",
+                "p": "method",
+                "pt": "msg",
+                "to": "method",
+                "tot": "env"
+            },
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "$join([$env(\"url\"),$string(payload),$env(\"urlSuffix\")])\t",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 140,
+        "wires": [
+            [
+                "a5d11332.53ac8"
+            ]
+        ]
+    },
+    {
+        "id": "c4faa10f.99ded",
+        "type": "switch",
+        "z": "22be0357.6ef6fc",
+        "name": "",
+        "property": "appendPayloadToURL",
+        "propertyType": "env",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 270,
+        "y": 120,
+        "wires": [
+            [
+                "c63c4fef.64ee5"
+            ],
+            [
+                "9e97f404.322068"
+            ]
+        ]
+    },
+    {
+        "id": "90e7e0f8.4b61c",
+        "type": "json",
+        "z": "22be0357.6ef6fc",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 890,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a5d11332.53ac8",
+        "type": "change",
+        "z": "22be0357.6ef6fc",
+        "name": "AuthHeaders",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{\t  \"Authorization\":\t    \"Basic \" & $base64encode(\t       $globalContext(\"PAIRS\").user &\t':' & $globalContext(\"PAIRS\").apikey),\t\"Content-Type\" : \"application/json\",\t\"Accept\": \"application/json\"\t}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 730,
+        "y": 100,
+        "wires": [
+            [
+                "1ffe2c5c.6ea3d4",
+                "a440b4ce.9927d8"
+            ]
+        ]
+    },
+    {
+        "id": "8d218993.b53408",
+        "type": "inject",
+        "z": "22be0357.6ef6fc",
+        "name": "Init PAIRS Cred",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\t   \"user\":$env(\"PAIRS_USER\"),\t   \"apikey\": $env(\"PAIRS_APIKEY\")\t}",
+        "payloadType": "jsonata",
+        "x": 120,
+        "y": 20,
+        "wires": [
+            [
+                "f9b1d5a2.8904d8"
+            ]
+        ]
+    },
+    {
+        "id": "f9b1d5a2.8904d8",
+        "type": "change",
+        "z": "22be0357.6ef6fc",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PAIRS",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 390,
+        "y": 20,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1ffe2c5c.6ea3d4",
+        "type": "delay",
+        "z": "22be0357.6ef6fc",
+        "name": "Limit 15 msg/sec",
+        "pauseType": "rate",
+        "timeout": "1",
+        "timeoutUnits": "seconds",
+        "rate": "15",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 250,
+        "y": 300,
+        "wires": [
+            [
+                "6b610517.1197cc"
+            ]
+        ]
+    },
+    {
+        "id": "65cf2145.d7572",
+        "type": "switch",
+        "z": "22be0357.6ef6fc",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "btwn",
+                "v": "200",
+                "vt": "num",
+                "v2": "299",
+                "v2t": "num"
+            },
+            {
+                "t": "eq",
+                "v": "429",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "404",
+                "vt": "num"
+            },
+            {
+                "t": "btwn",
+                "v": "400",
+                "vt": "num",
+                "v2": "499",
+                "v2t": "num"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 5,
+        "x": 630,
+        "y": 300,
+        "wires": [
+            [
+                "cee0e50c.c1c638"
+            ],
+            [
+                "9b5f91c3.41e42"
+            ],
+            [],
+            [],
+            []
+        ],
+        "outputLabels": [
+            "ok",
+            "Too Many Requests",
+            "NotFound",
+            "error4XX",
+            "error"
+        ]
+    },
+    {
+        "id": "9b5f91c3.41e42",
+        "type": "switch",
+        "z": "22be0357.6ef6fc",
+        "name": "isAutoRetry",
+        "property": "autoRetry",
+        "propertyType": "env",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 610,
+        "y": 420,
+        "wires": [
+            [
+                "1ffe2c5c.6ea3d4"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "cee0e50c.c1c638",
+        "type": "switch",
+        "z": "22be0357.6ef6fc",
+        "name": "convertToJSON",
+        "property": "convertToJSON",
+        "propertyType": "env",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 780,
+        "y": 240,
+        "wires": [
+            [
+                "90e7e0f8.4b61c"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "3c865690.f7436a",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "e68fbd7c.0431a",
+        "name": "POST query",
+        "env": [
+            {
+                "name": "method",
+                "value": "POST",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/v2/query",
+                "type": "str"
+            },
+            {
+                "name": "appendPayloadToURL",
+                "value": "false",
+                "type": "bool"
+            }
+        ],
+        "x": 410,
+        "y": 240,
+        "wires": [
+            [],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "e2435632.28e3b8",
+        "type": "comment",
+        "z": "e68fbd7c.0431a",
+        "name": "Generate Min-Mean-Max query for mutiple layers",
+        "info": "Generate",
+        "x": 240,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "3c01f6c1.eb661a",
+        "type": "function",
+        "z": "e68fbd7c.0431a",
+        "name": "Generate query JSON",
+        "func": "var payload = {\n    \"layers\": [],\n    \"spatial\": { \"type\": \"point\", \"coordinates\": [ msg.payload.pos.lat, msg.payload.pos.lng]},\n    \"temporal\": { \"intervals\": [{ \"start\": msg.payload.startDay + \"T00:00:00Z\", \"end\": msg.payload.endDay + \"T00:00:00Z\" }] }\n};\n\n\nvar depths = [\"0to5cm\",\"5to15cm\",\"15to30cm\",\"30to60cm\",\"60to100cm\", \"100to200cm\"]\n    \nfor (const layerId in msg.payload.layers) {\n    if ((msg.payload.layers[layerId].measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.0 secs\") || msg.payload.layers[layerId].measurement_interval == \"0 years 0 mons 0 days 0 hours 0 mins 0.00 secs\") {\n        if (msg.payload.layers[layerId].dimensions_description) {\n            for (var j = 0; j < depths.length; j++) {\n                payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"aggregation\": \"None\", \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]}, \"dimensions\" : [{\"name\" : \"quantile\", \"value\" : \"mean\"}, {\"name\" : \"depth\", \"value\" : depths[j] }] })\n            }\n        } else {\n            payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"aggregation\": \"None\", \"temporal\" : {\"intervals\" : [{\"snapshot\" : \"2020-09-01T00:00:01Z\"}]} })\n        }\n    } else {\n        payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"aggregation\": \"Mean\"})\n        payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"aggregation\": \"Max\"})\n        payload.layers.push({ \"type\": \"raster\", \"id\": layerId, \"aggregation\": \"Min\"})\n    }\n}\n\nmsg.payload = payload;\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 240,
+        "y": 240,
+        "wires": [
+            [
+                "3c865690.f7436a"
+            ]
+        ]
+    },
+    {
+        "id": "a83e9bae.8c9a68",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "debug msg",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 910,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "80a88b8f.298e78",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "uibuilder ready",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "e57dd0c9.ea93f",
+        "type": "switch",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "switch topic",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "initLayers",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "loadLayers",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "loadAOIs",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "scoringQuery",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "scoringLayers",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "listQueryJobs",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "deleteQueryJob",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "mapClick",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "mapMove",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "mapMoveend",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "mapZoomend",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 12,
+        "x": 130,
+        "y": 380,
+        "wires": [
+            [
+                "a5bfb3db.d933d"
+            ],
+            [
+                "6a3160f6.b8e73"
+            ],
+            [
+                "bbcfcde3.fb03c"
+            ],
+            [
+                "34297c82.3e0c04"
+            ],
+            [
+                "627c085a.b13dd8"
+            ],
+            [
+                "be1041fc.81f6c"
+            ],
+            [
+                "2ae93902.04ff96"
+            ],
+            [
+                "3e5705db.ca5e9a"
+            ],
+            [],
+            [],
+            [],
+            [
+                "8f1f4081.886b1"
+            ]
+        ]
+    },
+    {
+        "id": "36aee627.0b693a",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "trace UI Command",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 270,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "3e5705db.ca5e9a",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "setRefPointMarker",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "setRefPointMarker",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 880,
+        "wires": [
+            [
+                "2704965f.c8c6fa"
+            ]
+        ]
+    },
+    {
+        "id": "3624727e.85076e",
+        "type": "link in",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "toFront",
+        "links": [
+            "2704965f.c8c6fa"
+        ],
+        "x": 75,
+        "y": 180,
+        "wires": [
+            [
+                "efc32871.ff0a38",
+                "36aee627.0b693a"
+            ]
+        ]
+    },
+    {
+        "id": "2704965f.c8c6fa",
+        "type": "link out",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "PAIRS ok",
+        "links": [
+            "3624727e.85076e"
+        ],
+        "x": 1015,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "6a3160f6.b8e73",
+        "type": "subflow:e68fbd7c.0431a",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "env": [],
+        "x": 500,
+        "y": 360,
+        "wires": [
+            [
+                "2704965f.c8c6fa",
+                "559eecc0.9adae4"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "8f1f4081.886b1"
+            ]
+        ]
+    },
+    {
+        "id": "6a2b5197.2396f",
+        "type": "subflow:b14a35fc.a33548",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "env": [],
+        "x": 500,
+        "y": 300,
+        "wires": [
+            [
+                "2704965f.c8c6fa"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "8f1f4081.886b1"
+            ],
+            [
+                "ad7cc6f5.f58a98"
+            ]
+        ],
+        "icon": "node-red/subflow.svg"
+    },
+    {
+        "id": "a5bfb3db.d933d",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "set Layers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.layers",
+                "pt": "msg",
+                "to": "layers",
+                "tot": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 310,
+        "y": 300,
+        "wires": [
+            [
+                "6a2b5197.2396f"
+            ]
+        ]
+    },
+    {
+        "id": "8f1f4081.886b1",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "Set pairsError",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pairsError",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 880,
+        "y": 460,
+        "wires": [
+            [
+                "2704965f.c8c6fa",
+                "ec54685c.664f98"
+            ]
+        ]
+    },
+    {
+        "id": "7adeb8a1.81de58",
+        "type": "switch",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "property": "uibuilderCtrl",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "ready for content",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 480,
+        "y": 200,
+        "wires": [
+            [
+                "80a88b8f.298e78",
+                "30ca398a.e6ac66"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "30ca398a.e6ac66",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "rules": [
+            {
+                "t": "delete",
+                "p": "uibuilderCtrl",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "from",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "cacheControl",
+                "pt": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "init",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 650,
+        "y": 220,
+        "wires": [
+            [
+                "80a88b8f.298e78",
+                "2704965f.c8c6fa"
+            ]
+        ]
+    },
+    {
+        "id": "bbcfcde3.fb03c",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "Get AOIs",
+        "env": [
+            {
+                "name": "method",
+                "value": "GET",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/ws/queryaois/repository/search?name=",
+                "type": "str"
+            },
+            {
+                "name": "urlSuffix",
+                "value": "%5C%5F",
+                "type": "str"
+            }
+        ],
+        "x": 460,
+        "y": 420,
+        "wires": [
+            [
+                "2704965f.c8c6fa",
+                "283deb8e.f2d984"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "8f1f4081.886b1"
+            ],
+            [
+                "ad7cc6f5.f58a98"
+            ]
+        ]
+    },
+    {
+        "id": "e1519206.1770c",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "uibuilder msg data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "34297c82.3e0c04",
+        "type": "subflow:45272af4.690614",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "env": [],
+        "x": 510,
+        "y": 560,
+        "wires": [
+            [
+                "2704965f.c8c6fa"
+            ],
+            [
+                "8f1f4081.886b1"
+            ],
+            [],
+            [
+                "2704965f.c8c6fa"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "f086ba1f.eb71a8"
+            ]
+        ]
+    },
+    {
+        "id": "be1041fc.81f6c",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "List QueryJobs",
+        "env": [
+            {
+                "name": "method",
+                "value": "GET",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/v2/queryjobs/list?flag=0&page=1&size=2147483647",
+                "type": "str"
+            },
+            {
+                "name": "appendPayloadToURL",
+                "value": "false",
+                "type": "bool"
+            }
+        ],
+        "x": 480,
+        "y": 740,
+        "wires": [
+            [
+                "2704965f.c8c6fa"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "8f1f4081.886b1"
+            ],
+            [
+                "ad7cc6f5.f58a98"
+            ]
+        ]
+    },
+    {
+        "id": "f086ba1f.eb71a8",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "quryJSON",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 890,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "2ae93902.04ff96",
+        "type": "subflow:22be0357.6ef6fc",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "Del Query Job",
+        "env": [
+            {
+                "name": "method",
+                "value": "DELETE",
+                "type": "str"
+            },
+            {
+                "name": "url",
+                "value": "https://pairs.res.ibm.com/v2/queryjobs/",
+                "type": "str"
+            }
+        ],
+        "x": 480,
+        "y": 820,
+        "wires": [
+            [
+                "2704965f.c8c6fa"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "8f1f4081.886b1"
+            ],
+            [
+                "ad7cc6f5.f58a98"
+            ]
+        ]
+    },
+    {
+        "id": "ec54685c.664f98",
+        "type": "link out",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "PAIRS Error",
+        "links": [
+            "75f5d767.1bd4d8"
+        ],
+        "x": 1015,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "75f5d767.1bd4d8",
+        "type": "link in",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "errorUI",
+        "links": [
+            "ec54685c.664f98"
+        ],
+        "x": 75,
+        "y": 220,
+        "wires": [
+            [
+                "efc32871.ff0a38",
+                "50194394.21477c"
+            ]
+        ]
+    },
+    {
+        "id": "50194394.21477c",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "trace UI Errors",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 260,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "627c085a.b13dd8",
+        "type": "subflow:3aa70edc.b22322",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "Query Layers & ColorMap",
+        "env": [],
+        "x": 510,
+        "y": 660,
+        "wires": [
+            [
+                "2704965f.c8c6fa"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "8f1f4081.886b1"
+            ],
+            [
+                "ad7cc6f5.f58a98"
+            ]
+        ]
+    },
+    {
+        "id": "a25a5118.5e051",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "Set RefData Layers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"layers\":[\"16100\",\"16200\",\"16700\",\"49250\",\"49310\",\"49257\",\"49313\",\"49311\",\"49432\",\"49433\",\"49441\",\"49454\",\"50450\"],\"pos\":{\"lat\":\"49.080609\",\"lng\":\"3.961231\"},\"startDay\":\"2018-06-30\",\"endDay\":\"2018-10-31\"}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "payload.zoom",
+                "pt": "msg",
+                "to": "12",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "payload.duration",
+                "pt": "msg",
+                "to": "2",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1030,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6aa75b73.a33b54",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "RefData 13 layers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"layers\":[\"16100\",\"16200\",\"16700\",\"49250\",\"49310\",\"49257\",\"49313\",\"49311\",\"49432\",\"49433\",\"49441\",\"49454\",\"50450\"],\"pos\":{\"lat\":\"49.080609\",\"lng\":\"3.961231\"},\"startDay\":\"2018-06-30\",\"endDay\":\"2018-10-31\"}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "payload.zoom",
+                "pt": "msg",
+                "to": "12",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "payload.duration",
+                "pt": "msg",
+                "to": "2",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 770,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c0d37d4c.fe0a2",
+        "type": "inject",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "init 19 Layers",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"layers\":[\"16100\",\"16200\",\"16700\",\"49296\",\"49250\",\"49310\",\"49257\",\"49313\",\"49311\",\"49304\",\"50463\",\"49252\",\"50450\",\"50509\",\"50511\",\"50497\",\"50496\",\"50453\",\"50456\"]}",
+        "payloadType": "json",
+        "x": 120,
+        "y": 40,
+        "wires": [
+            [
+                "e3100a9.ca94df8"
+            ]
+        ],
+        "info": "Créer un bug pour la fonction\n\n**Layers :** \n\n16100 : Ground temperature\n16200 : Ground relative humidity\n16700 : Average precipitation\n\n49250 : Precip past 24 h\n49252 : Relative humidity surface\n49257 : Temperature above ground\n49296 : Global elevation\n49304 : Dew point\n49310 : Temperature feels like\n49313 : Wind speed\n49441 : solar radiation\n\n50453 : Standard deviation of orography\n50450 : Soil type \n50456 : Slope of sub grid scale orography \n50463 : Wind Direction\n50496 : pH\n50497 : Soil organic carbon\n50509 : Nitrogen\n50511 : Soil classification most probable class\n\n\n**Non utilisés :**\n49311 : UV index \n49432 : Minimum precipitation rate\n49433 : Maximum precipitation rate\n\n50447 : High vegetation cover\n50498 : Organic carbon density\n50449 : Type of high vegetation\n"
+    },
+    {
+        "id": "e3100a9.ca94df8",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "layers",
+                "pt": "flow",
+                "to": "payload.layers",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "559eecc0.9adae4",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "result requete",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 940,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "283deb8e.f2d984",
+        "type": "subflow:dbc32d84.e0c05",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "env": [],
+        "x": 500,
+        "y": 480,
+        "wires": [
+            [
+                "2704965f.c8c6fa",
+                "4775d7e0.8127b8"
+            ],
+            [
+                "a83e9bae.8c9a68"
+            ],
+            [
+                "8f1f4081.886b1"
+            ]
+        ]
+    },
+    {
+        "id": "4775d7e0.8127b8",
+        "type": "debug",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "dbg AOIs",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "ad7cc6f5.f58a98",
+        "type": "change",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "Set pairsWarning",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pairsWarning",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 870,
+        "y": 780,
+        "wires": [
+            [
+                "d590a12d.c7a6b"
+            ]
+        ]
+    },
+    {
+        "id": "d590a12d.c7a6b",
+        "type": "link out",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "PAIRS Warn",
+        "links": [
+            "6a917723.550378"
+        ],
+        "x": 1015,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "6a917723.550378",
+        "type": "link in",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "warningUI",
+        "links": [
+            "d590a12d.c7a6b"
+        ],
+        "x": 75,
+        "y": 260,
+        "wires": [
+            [
+                "efc32871.ff0a38"
+            ]
+        ]
+    },
+    {
+        "id": "efc32871.ff0a38",
+        "type": "uibuilder",
+        "z": "5fed8ae7.8bb5a4",
+        "name": "",
+        "topic": "",
+        "url": "uibuilder",
+        "fwdInMessages": false,
+        "allowScripts": false,
+        "allowStyles": false,
+        "copyIndex": true,
+        "showfolder": false,
+        "x": 260,
+        "y": 120,
+        "wires": [
+            [
+                "e57dd0c9.ea93f",
+                "e1519206.1770c"
+            ],
+            [
+                "7adeb8a1.81de58"
+            ]
+        ]
+    },
+    {
+        "id": "a440b4ce.9927d8",
+        "type": "debug",
+        "z": "22be0357.6ef6fc",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1040,
+        "y": 500,
+        "wires": []
+    }
+]

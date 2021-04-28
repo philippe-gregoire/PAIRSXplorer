@@ -562,7 +562,7 @@ var appViti = new Vue({
           if(scoring) { // note that reduce() should not invoke on empty elements
             if(scoring.depths) {
               // Create a filter for each depth
-              return filters.concat(scoring.depths.map(depth=>`$${depth.name}_${scoring.id} >= ${depth.lower} && $${depth.name}_${scoring.id} <= ${depth.upper}`))
+              return filters.concat(scoring.depths.map(depth=>`$depth${depth.name}_${scoring.id} >= ${depth.lower} && $depth${depth.name}_${scoring.id} <= ${depth.upper}`))
             } else if (scoring.category) {
               // categorical layer
               filters.push(`$Mean_${scoring.id} == ${scoring.category}`)
