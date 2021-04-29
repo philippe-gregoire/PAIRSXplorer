@@ -230,6 +230,7 @@ var appViti = new Vue({
         this.sendToNodered('initLayers',{})
       },
       initializedLayers: function(layers,pairsError) {
+        console.log(layers)
         // We got the details list of layers (array in msg.payload)
         this.layersDict=layers.reduce(function(dict,layer,index) {
           dict[layer.id]=layer
@@ -570,6 +571,7 @@ var appViti = new Vue({
               // regular layer
               filters.push(`$Mean_${scoring.id} >= ${scoring.lower} && $Mean_${scoring.id} <= ${scoring.upper}`)
             }
+
             return filters
           }
         },[]) // start with an empty array
@@ -577,6 +579,8 @@ var appViti = new Vue({
         // add ternary operator for each filter, and join expression with +
         const UDF=`(${UDFFilters.map(filter=>`((${filter}) ? 1 : 0)`).join(' + ')})*100/${UDFFilters.length}`
         if(this.isDev) console.log('UDF=',UDF)
+       console.log('UDF=',UDF)
+
 
         const qryPos=(this.rectanglePos)?this.formatCoordinates(this.rectanglePos):this.qryPos
         const aoi=this.aoisDict[this.refAOI]
@@ -599,7 +603,7 @@ var appViti = new Vue({
       flyToScoring: function() {
         if(this.scoring.bounds && !this.scoring.flown) {
           // if(!this.scoring.bounds || (newBounds && [0,1].some(x=>[0,1].some(y=>newBounds[x][y]!=this.scoring.bounds[x][y])))) {
-          console.log(`Flying to scoring bounds`,this.scoring.bounds)
+          console.log(`Flying to scoring bounds`, this.scoring.bounds)
           this.scoringMap.flyToBounds(this.scoring.bounds,{'animate':true,'duration':LONG_FLYTO_SEC})
           this.scoring.flown=true
         } else {

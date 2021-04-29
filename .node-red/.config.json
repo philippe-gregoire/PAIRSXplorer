@@ -393,6 +393,44 @@
     }
    }
   },
+  "node-red-contrib-uibuilder": {
+   "name": "node-red-contrib-uibuilder",
+   "version": "2.0.8",
+   "local": true,
+   "nodes": {
+    "uibuilder": {
+     "name": "uibuilder",
+     "types": [
+      "uibuilder"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-contrib-uibuilder",
+     "file": "/Users/lucilejerber/Desktop/Doc/Travail/1. Developpement/02. 2019_10 - .../ta4/gitlab/NodeREDPAIRS/.node-red/node_modules/node-red-contrib-uibuilder/nodes/uibuilder.js"
+    }
+   }
+  },
+  "node-red-contrib-web-worldmap": {
+   "name": "node-red-contrib-web-worldmap",
+   "version": "2.5.3",
+   "local": true,
+   "nodes": {
+    "worldmap": {
+     "name": "worldmap",
+     "types": [
+      "worldmap",
+      "ui_worldmap",
+      "worldmap in",
+      "worldmap-tracks",
+      "worldmap-hull"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-contrib-web-worldmap",
+     "file": "/Users/lucilejerber/Desktop/Doc/Travail/1. Developpement/02. 2019_10 - .../ta4/gitlab/NodeREDPAIRS/.node-red/node_modules/node-red-contrib-web-worldmap/worldmap.js"
+    }
+   }
+  },
   "node-red-dashboard": {
    "name": "node-red-dashboard",
    "version": "2.23.4",
@@ -607,44 +645,6 @@
      "local": true,
      "module": "node-red-dashboard",
      "file": "/Users/lucilejerber/Desktop/Doc/Travail/1. Developpement/02. 2019_10 - .../ta4/gitlab/NodeREDPAIRS/.node-red/node_modules/node-red-dashboard/nodes/ui_spacer.js"
-    }
-   }
-  },
-  "node-red-contrib-web-worldmap": {
-   "name": "node-red-contrib-web-worldmap",
-   "version": "2.5.3",
-   "local": true,
-   "nodes": {
-    "worldmap": {
-     "name": "worldmap",
-     "types": [
-      "worldmap",
-      "ui_worldmap",
-      "worldmap in",
-      "worldmap-tracks",
-      "worldmap-hull"
-     ],
-     "enabled": true,
-     "local": true,
-     "module": "node-red-contrib-web-worldmap",
-     "file": "/Users/lucilejerber/Desktop/Doc/Travail/1. Developpement/02. 2019_10 - .../ta4/gitlab/NodeREDPAIRS/.node-red/node_modules/node-red-contrib-web-worldmap/worldmap.js"
-    }
-   }
-  },
-  "node-red-contrib-uibuilder": {
-   "name": "node-red-contrib-uibuilder",
-   "version": "2.0.8",
-   "local": true,
-   "nodes": {
-    "uibuilder": {
-     "name": "uibuilder",
-     "types": [
-      "uibuilder"
-     ],
-     "enabled": true,
-     "local": true,
-     "module": "node-red-contrib-uibuilder",
-     "file": "/Users/lucilejerber/Desktop/Doc/Travail/1. Developpement/02. 2019_10 - .../ta4/gitlab/NodeREDPAIRS/.node-red/node_modules/node-red-contrib-uibuilder/nodes/uibuilder.js"
     }
    }
   }
